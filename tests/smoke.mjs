@@ -17,7 +17,7 @@ const server = http.createServer((req, res) => {
 await new Promise((r) => server.listen(0, r));
 const URL = `http://localhost:${server.address().port}/demo.html`;
 
-const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'pixel-notes-'));
+const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'browser-annotation-'));
 const ctx = await chromium.launchPersistentContext(profile, {
   headless: !process.env.HEADED,
   channel: 'chromium',
@@ -35,7 +35,7 @@ try {
   await page.goto(URL);
   await page.waitForTimeout(600);
   const count = (sel) =>
-    page.evaluate((s) => document.querySelector('pixel-notes-root')?.shadowRoot.querySelectorAll(s).length ?? -1, sel);
+    page.evaluate((s) => document.querySelector('browser-annotation-root')?.shadowRoot.querySelectorAll(s).length ?? -1, sel);
 
   await page.keyboard.press("Control+'");
   assert.equal(await count('.toolbar'), 1, 'toolbar aparece ao ativar o modo');
@@ -57,13 +57,13 @@ try {
   await page.keyboard.press("Control+Shift+'");
   await page.waitForTimeout(300);
   assert.equal(await count('.panel .card'), 1, 'painel lista o comentário');
-  await page.evaluate(() => document.querySelector('pixel-notes-root').shadowRoot.querySelector('.panel-foot .btn.primary').click());
+  await page.evaluate(() => document.querySelector('browser-annotation-root').shadowRoot.querySelector('.panel-foot .btn.primary').click());
   await page.waitForTimeout(300);
   const clip = await page.evaluate(() => navigator.clipboard.readText());
   assert.match(clip, /Aumentar o padding do botão/);
   assert.match(clip, /data-testid="cta-primary"/);
 
-  await page.evaluate(() => document.querySelector('pixel-notes-root').shadowRoot.querySelector('.panel .card [title="Resolver"]').click());
+  await page.evaluate(() => document.querySelector('browser-annotation-root').shadowRoot.querySelector('.panel .card [title="Resolver"]').click());
   await page.waitForTimeout(600);
   assert.equal(await count('.pin'), 0, 'pin some ao resolver');
   console.log('✓ smoke test ok');

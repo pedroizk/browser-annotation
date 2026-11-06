@@ -1,6 +1,6 @@
-/* Pixel Notes — página de histórico completo. */
+/* Browser Annotation — página de histórico completo. */
 (function () {
-  const PN = globalThis.PixelNotes;
+  const PN = globalThis.BrowserAnnotation;
   const store = PN.store;
   const $ = (sel) => document.querySelector(sel);
   const IS_MAC = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
@@ -313,11 +313,11 @@
 
   function exportJson() {
     const list = filtered();
-    const blob = new Blob([JSON.stringify({ app: 'pixel-notes', version: PN.VERSION, exportedAt: new Date().toISOString(), annotations: list }, null, 2)], {
+    const blob = new Blob([JSON.stringify({ app: 'browser-annotation', version: PN.VERSION, exportedAt: new Date().toISOString(), annotations: list }, null, 2)], {
       type: 'application/json',
     });
     const url = URL.createObjectURL(blob);
-    const a = el('a', { href: url, download: `pixel-notes-${new Date().toISOString().slice(0, 10)}.json` });
+    const a = el('a', { href: url, download: `browser-annotation-${new Date().toISOString().slice(0, 10)}.json` });
     document.body.append(a);
     a.click();
     a.remove();

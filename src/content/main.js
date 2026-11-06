@@ -1,12 +1,12 @@
-/* Pixel Notes — controlador do content script.
+/* Browser Annotation — controlador do content script.
  * Responsável pelo modo anotação, pins, popovers, painel de histórico e sincronização com o storage. */
 (function () {
-  const PN = globalThis.PixelNotes;
+  const PN = globalThis.BrowserAnnotation;
   if (!PN || window.top !== window) return;
   // Se houver uma instância anterior (ex.: extensão recarregada e script reinjetado), desmonta-a.
-  if (window.__pixelNotesInstance) {
+  if (window.__browserAnnotationInstance) {
     try {
-      window.__pixelNotesInstance.teardown();
+      window.__browserAnnotationInstance.teardown();
     } catch (_) {
       /* ignora */
     }
@@ -45,8 +45,8 @@
 
   // ------------------------------------------------------------------ montagem do Shadow DOM
   // Remove instâncias órfãs (ex.: extensão recarregada).
-  document.querySelectorAll('pixel-notes-root').forEach((n) => n.remove());
-  const host = document.createElement('pixel-notes-root');
+  document.querySelectorAll('browser-annotation-root').forEach((n) => n.remove());
+  const host = document.createElement('browser-annotation-root');
   host.setAttribute('aria-live', 'polite');
   const shadow = host.attachShadow({ mode: 'open' });
   shadow.append(h('style', { text: PN.CSS }));
@@ -97,9 +97,9 @@
     });
     if (S.active) setCursorStyle(false);
     host.remove();
-    if (window.__pixelNotesInstance && window.__pixelNotesInstance.teardown === teardown) window.__pixelNotesInstance = null;
+    if (window.__browserAnnotationInstance && window.__browserAnnotationInstance.teardown === teardown) window.__browserAnnotationInstance = null;
   }
-  window.__pixelNotesInstance = { teardown };
+  window.__browserAnnotationInstance = { teardown };
 
   function send(msg) {
     if (!alive()) return teardown();
@@ -130,7 +130,7 @@
       S.all = await store.all();
     } catch (err) {
       if (!alive()) return teardown();
-      console.warn('[Pixel Notes]', err);
+      console.warn('[Browser Annotation]', err);
       return;
     }
     recompute();
@@ -332,12 +332,12 @@
 
   // ------------------------------------------------------------------ modo anotação
   function setCursorStyle(onOff) {
-    const id = 'pixelnotes-cursor-style';
+    const id = 'browser-annotation-cursor-style';
     const existing = document.getElementById(id);
     if (onOff && !existing) {
       const st = document.createElement('style');
       st.id = id;
-      st.textContent = 'html, html * { cursor: crosshair !important; } pixel-notes-root { cursor: auto !important; }';
+      st.textContent = 'html, html * { cursor: crosshair !important; } browser-annotation-root { cursor: auto !important; }';
       (document.head || document.documentElement).append(st);
     } else if (!onOff && existing) {
       existing.remove();
@@ -583,7 +583,7 @@
     try {
       target = L.describe(el);
     } catch (err) {
-      console.warn('[Pixel Notes] falha ao descrever elemento', err);
+      console.warn('[Browser Annotation] falha ao descrever elemento', err);
       target = { tag: el.tagName.toLowerCase(), classes: [], label: el.tagName.toLowerCase() };
     }
     const now = Date.now();
@@ -882,7 +882,7 @@
       <span class="sep"></span>
       <button type="button" data-act="exit" title="Sair do modo anotação">${PN.icons.close}<span>Sair</span><kbd class="dark">Esc</kbd></button>`;
     if (!toolbarEl) {
-      toolbarEl = h('div.toolbar', { role: 'toolbar', 'aria-label': 'Pixel Notes' });
+      toolbarEl = h('div.toolbar', { role: 'toolbar', 'aria-label': 'Browser Annotation' });
       toolbarEl.addEventListener('click', (e) => {
         const btn = e.target.closest('button[data-act]');
         if (!btn) return;
@@ -919,12 +919,12 @@
 
     const root = h(
       'div.panel',
-      { role: 'complementary', 'aria-label': 'Comentários Pixel Notes' },
+      { role: 'complementary', 'aria-label': 'Comentários Browser Annotation' },
       h(
         'div.panel-head',
         null,
         svg(PN.icons.bubble(26)),
-        h('div.title', null, h('div.t1', { text: 'Pixel Notes' }), h('div.t2', { text: PN.prettyUrl(location.href) })),
+        h('div.title', null, h('div.t1', { text: 'Browser Annotation' }), h('div.t2', { text: PN.prettyUrl(location.href) })),
         modeBtn,
         h('button.icon-btn', { type: 'button', title: 'Fechar painel', html: PN.icons.close, onclick: closePanel })
       ),

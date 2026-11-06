@@ -1,8 +1,8 @@
-/* Pixel Notes — persistência em chrome.storage.local.
+/* Browser Annotation — persistência em chrome.storage.local.
  * Cada comentário fica numa chave própria ("ann:<id>") para evitar condições de corrida
  * entre abas diferentes salvando ao mesmo tempo. */
 (function (g) {
-  const PN = (g.PixelNotes = g.PixelNotes || {});
+  const PN = (g.BrowserAnnotation = g.BrowserAnnotation || {});
   const P = PN.KEY_PREFIX;
 
   function area() {

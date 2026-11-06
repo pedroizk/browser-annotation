@@ -1,9 +1,9 @@
-/* Pixel Notes — identificação de elementos.
+/* Browser Annotation — identificação de elementos.
  *  - describe(el): captura uma "impressão digital" do elemento (seletores, texto, componente…)
  *  - resolve(target): reencontra o elemento depois de recarregar/trocar de página
  */
 (function (g) {
-  const PN = (g.PixelNotes = g.PixelNotes || {});
+  const PN = (g.BrowserAnnotation = g.BrowserAnnotation || {});
 
   const TEST_ATTRS = ['data-testid', 'data-test-id', 'data-test', 'data-cy', 'data-qa', 'data-pw', 'data-component', 'data-id'];
   const KEEP_ATTRS = ['name', 'type', 'role', 'aria-label', 'title', 'placeholder', 'alt', 'href', 'src', 'for', 'value'];
@@ -20,7 +20,7 @@
 
   function isStableClass(c) {
     if (!c || c.length > 48) return false;
-    if (/^pixelnotes/.test(c)) return false;
+    if (/^browser-annotation/.test(c)) return false;
     if (/[:[\]/@!%()]/.test(c)) return false; // variantes tailwind: hover:x, w-[10px], md:flex
     if (/^(css|sc|jsx|emotion|svelte|astro|tw|chakra|mantine|styles?)-[a-z0-9]{4,}$/i.test(c)) return false;
     if (/__[a-zA-Z0-9_-]{5}$/.test(c)) return false; // CSS Modules: Button_primary__x7Yz2
@@ -36,7 +36,7 @@
     return cls
       .split(/\s+/)
       .filter(Boolean)
-      .filter((c) => !/^pixelnotes/.test(c));
+      .filter((c) => !/^browser-annotation/.test(c));
   }
 
   function testIdOf(el) {
@@ -184,7 +184,7 @@
     } catch (_) {
       return '';
     }
-    html = html.replace(/\s(data-pixelnotes-[a-z-]+)="[^"]*"/g, '');
+    html = html.replace(/\s(data-browser-annotation-[a-z-]+)="[^"]*"/g, '');
     if (html.length <= max) return html;
     const open = html.match(/^<[^>]+>/);
     const tag = el.tagName.toLowerCase();
@@ -218,11 +218,11 @@
         /* ignora */
       }
     };
-    window.addEventListener('pixelnotes:probe-result', onResult, true);
+    window.addEventListener('browser-annotation:probe-result', onResult, true);
     try {
-      el.dispatchEvent(new CustomEvent('pixelnotes:probe', { detail: token, bubbles: true, composed: true }));
+      el.dispatchEvent(new CustomEvent('browser-annotation:probe', { detail: token, bubbles: true, composed: true }));
     } finally {
-      window.removeEventListener('pixelnotes:probe-result', onResult, true);
+      window.removeEventListener('browser-annotation:probe-result', onResult, true);
     }
     probeCache.set(el, info);
     return info;
@@ -290,7 +290,7 @@
     const cands = new Map();
     const add = (el, base) => {
       if (!el || el.nodeType !== 1) return;
-      if (el.closest && el.closest('pixel-notes-root')) return;
+      if (el.closest && el.closest('browser-annotation-root')) return;
       cands.set(el, Math.max(cands.get(el) || -Infinity, base));
     };
 
@@ -326,7 +326,7 @@
       for (let i = 0; i < limit; i++) {
         const el = list[i];
         if (textKeyOf(el) !== t.textKey) continue;
-        if (el.closest('pixel-notes-root')) continue;
+        if (el.closest('browser-annotation-root')) continue;
         if (jaccard(classesOf(el), t.classes || []) < 0.3 && (t.classes || []).length) continue;
         let dist = 0;
         if (t.rect) {

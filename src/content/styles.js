@@ -1,6 +1,6 @@
-/* Pixel Notes — CSS injetado no Shadow DOM (isolado do CSS da página). */
+/* Browser Annotation — CSS injetado no Shadow DOM (isolado do CSS da página). */
 (function (g) {
-  const PN = (g.PixelNotes = g.PixelNotes || {});
+  const PN = (g.BrowserAnnotation = g.BrowserAnnotation || {});
 
   PN.CSS = String.raw`
 :host {

@@ -1,8 +1,8 @@
-# Pixel Notes — Browser Annotation
+# Browser Annotation
 
 Extensão do Chrome (Manifest V3) inspirada no *Orca annotation* para devs anotarem a tela em que estão trabalhando. Você passa o mouse, a extensão identifica o componente, você comenta em cima dele e o comentário fica preso ali até ser **resolvido**. Depois é só copiar todos os comentários em aberto e colar no Claude (ou outra LLM) para que as mudanças sejam feitas.
 
-<p align="center"><img src="icons/icon128.png" width="96" alt="Ícone Pixel Notes: balão de comentário em pixel-art laranja" /></p>
+<p align="center"><img src="icons/icon128.png" width="96" alt="Ícone Browser Annotation: balão de comentário em pixel-art laranja" /></p>
 
 ## Funcionalidades
 
@@ -59,7 +59,7 @@ Ao abrir a página, cada comentário é reencontrado pontuando os candidatos (te
 ````markdown
 # Ajustes de interface solicitados
 
-Abaixo está 1 comentário feito diretamente sobre elementos da interface (extensão Pixel Notes).
+Abaixo está 1 comentário feito diretamente sobre elementos da interface (extensão Browser Annotation).
 ...
 
 ## Página: Acme — http://localhost:3000/dashboard

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "Pixel Notes — Browser Annotation",
-  "short_name": "Pixel Notes",
+  "name": "Browser Annotation",
+  "short_name": "Browser Annotation",
   "version": "0.1.0",
   "description": "Anote componentes da tela em que você está trabalhando e copie os comentários em aberto para o Claude ou outra LLM.",
   "minimum_chrome_version": "111",
@@ -12,7 +12,7 @@
     "128": "icons/icon128.png"
   },
   "action": {
-    "default_title": "Pixel Notes — ativar modo anotação (⌘/Ctrl + ')",
+    "default_title": "Browser Annotation — ativar modo anotação (⌘/Ctrl + ')",
     "default_icon": {
       "16": "icons/icon16.png",
       "32": "icons/icon32.png",

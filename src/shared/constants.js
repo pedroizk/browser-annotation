@@ -1,6 +1,6 @@
-/* Pixel Notes — constantes compartilhadas (content script, service worker e página de histórico). */
+/* Browser Annotation — constantes compartilhadas (content script, service worker e página de histórico). */
 (function (g) {
-  const PN = (g.PixelNotes = g.PixelNotes || {});
+  const PN = (g.BrowserAnnotation = g.BrowserAnnotation || {});
 
   PN.VERSION = '0.1.0';
   PN.KEY_PREFIX = 'ann:';

@@ -1,6 +1,6 @@
-/* Pixel Notes — normalização de URL para vincular comentários a uma página. */
+/* Browser Annotation — normalização de URL para vincular comentários a uma página. */
 (function (g) {
-  const PN = (g.PixelNotes = g.PixelNotes || {});
+  const PN = (g.BrowserAnnotation = g.BrowserAnnotation || {});
 
   // Parâmetros que nunca identificam a "tela" (rastreamento, cache-busting…).
   const NOISE_PARAMS = /^(utm_.*|fbclid|gclid|mc_eid|ref|_|t|ts|v|cb|cache|hsCtaTracking)$/i;

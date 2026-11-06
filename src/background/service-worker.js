@@ -1,10 +1,10 @@
-/* Pixel Notes — service worker (MV3).
+/* Browser Annotation — service worker (MV3).
  * - Clique no ícone / atalho de comando → alterna o modo anotação na aba.
  * - Badge com a quantidade de comentários em aberto na página.
  * - Menu de contexto do ícone: histórico, painel e copiar. */
 importScripts('../shared/constants.js', '../shared/url.js', '../shared/storage.js');
 
-const PN = globalThis.PixelNotes;
+const PN = globalThis.BrowserAnnotation;
 const HISTORY_URL = chrome.runtime.getURL('src/history/history.html');
 
 const CONTENT_FILES = [
@@ -35,7 +35,7 @@ async function ensureInjected(tabId) {
     await chrome.scripting.executeScript({ target: { tabId }, files: CONTENT_FILES });
     return true;
   } catch (err) {
-    console.warn('[Pixel Notes] não foi possível injetar na aba', err);
+    console.warn('[Browser Annotation] não foi possível injetar na aba', err);
     return false;
   }
 }
@@ -53,7 +53,7 @@ async function sendToTab(tab, message) {
   try {
     await chrome.tabs.sendMessage(tab.id, message);
   } catch (err) {
-    console.warn('[Pixel Notes]', err);
+    console.warn('[Browser Annotation]', err);
   }
 }
 
@@ -70,7 +70,7 @@ function setBadge(tabId, count, active) {
   if (chrome.action.setBadgeTextColor) chrome.action.setBadgeTextColor({ tabId, color: '#FFFFFF' });
   chrome.action.setTitle({
     tabId,
-    title: `Pixel Notes — ${active ? 'modo anotação ATIVO' : 'clique para anotar'} (⌘/Ctrl + ')` + (count ? ` · ${count} em aberto nesta página` : ''),
+    title: `Browser Annotation — ${active ? 'modo anotação ATIVO' : 'clique para anotar'} (⌘/Ctrl + ')` + (count ? ` · ${count} em aberto nesta página` : ''),
   });
 }
 

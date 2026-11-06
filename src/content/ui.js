@@ -1,6 +1,6 @@
-/* Pixel Notes — utilitários de interface: criação de elementos, posicionamento e efeitos. */
+/* Browser Annotation — utilitários de interface: criação de elementos, posicionamento e efeitos. */
 (function (g) {
-  const PN = (g.PixelNotes = g.PixelNotes || {});
+  const PN = (g.BrowserAnnotation = g.BrowserAnnotation || {});
 
   /** h('div.cls', {attrs}, children) — mini hyperscript */
   function h(tagSpec, props, ...children) {

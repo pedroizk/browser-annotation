@@ -1,6 +1,6 @@
-/* Pixel Notes — geração do texto para colar no Claude (ou outra LLM). */
+/* Browser Annotation — geração do texto para colar no Claude (ou outra LLM). */
 (function (g) {
-  const PN = (g.PixelNotes = g.PixelNotes || {});
+  const PN = (g.BrowserAnnotation = g.BrowserAnnotation || {});
 
   function code(s) {
     s = String(s == null ? '' : s);
@@ -101,7 +101,7 @@
       out.push(
         `Abaixo ${list.length === 1 ? 'está 1 comentário feito' : `estão ${list.length} comentários feitos`}` +
           (open.length !== list.length ? ` (${open.length} em aberto)` : '') +
-          ' diretamente sobre elementos da interface (extensão Pixel Notes).'
+          ' diretamente sobre elementos da interface (extensão Browser Annotation).'
       );
       out.push(
         'Cada item traz o pedido de mudança e informações para localizar o elemento no código: componente e arquivo de origem (quando detectados), seletor CSS, texto visível e trecho do HTML renderizado.'

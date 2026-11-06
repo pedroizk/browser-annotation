@@ -1,16 +1,16 @@
-/* Pixel Notes — ponte no "MAIN world".
+/* Browser Annotation — ponte no "MAIN world".
  *
  * Content scripts rodam num mundo isolado e não enxergam as propriedades que os frameworks
  * penduram nos nós do DOM (__reactFiber$…, __vueParentComponent, __svelte_meta…).
  * Este script roda no contexto da página e responde, de forma síncrona, qual componente
  * renderizou um elemento — e, em builds de desenvolvimento, o arquivo/linha de origem.
  *
- * Protocolo: o content script dispara `pixelnotes:probe` NO PRÓPRIO ELEMENTO (o nó do DOM é
- * compartilhado entre os mundos) e escuta `pixelnotes:probe-result` com um JSON em `detail`.
+ * Protocolo: o content script dispara `browser-annotation:probe` NO PRÓPRIO ELEMENTO (o nó do DOM é
+ * compartilhado entre os mundos) e escuta `browser-annotation:probe-result` com um JSON em `detail`.
  */
 (function () {
-  if (window.__pixelNotesBridge) return;
-  window.__pixelNotesBridge = true;
+  if (window.__browserAnnotationBridge) return;
+  window.__browserAnnotationBridge = true;
 
   const MAX_DEPTH = 40;
   const MAX_PATH = 8;
@@ -222,7 +222,7 @@
   }
 
   window.addEventListener(
-    'pixelnotes:probe',
+    'browser-annotation:probe',
     (e) => {
       const el = e.target;
       let info = null;
@@ -232,7 +232,7 @@
         info = null;
       }
       const token = typeof e.detail === 'string' ? e.detail : '';
-      window.dispatchEvent(new CustomEvent('pixelnotes:probe-result', { detail: JSON.stringify({ token, info }) }));
+      window.dispatchEvent(new CustomEvent('browser-annotation:probe-result', { detail: JSON.stringify({ token, info }) }));
     },
     true
   );

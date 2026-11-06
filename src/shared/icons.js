@@ -1,6 +1,6 @@
-/* Pixel Notes — ícones SVG (pixel-art) usados na interface. */
+/* Browser Annotation — ícones SVG (pixel-art) usados na interface. */
 (function (g) {
-  const PN = (g.PixelNotes = g.PixelNotes || {});
+  const PN = (g.BrowserAnnotation = g.BrowserAnnotation || {});
 
   // Mesmo bitmap de scripts/generate-icons.py
   const BUBBLE = [
