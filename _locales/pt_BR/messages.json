@@ -1,0 +1,819 @@
+{
+  "comment": {
+    "message": "Comentário"
+  },
+  "comments": {
+    "message": "Comentários"
+  },
+  "close": {
+    "message": "Fechar"
+  },
+  "cancel": {
+    "message": "Cancelar"
+  },
+  "save": {
+    "message": "Salvar"
+  },
+  "edit": {
+    "message": "Editar"
+  },
+  "delete": {
+    "message": "Excluir"
+  },
+  "deleteTwice": {
+    "message": "Excluir (clique duas vezes)"
+  },
+  "resolve": {
+    "message": "Resolver"
+  },
+  "reopen": {
+    "message": "Reabrir"
+  },
+  "copyForLlm": {
+    "message": "Copiar para LLM"
+  },
+  "commentCopied": {
+    "message": "Comentário copiado"
+  },
+  "relink": {
+    "message": "Vincular a outro elemento"
+  },
+  "statusOpen": {
+    "message": "Aberto"
+  },
+  "statusResolved": {
+    "message": "Resolvido"
+  },
+  "or": {
+    "message": "ou"
+  },
+  "element": {
+    "message": "elemento"
+  },
+  "history": {
+    "message": "Histórico"
+  },
+  "search": {
+    "message": "Buscar"
+  },
+  "timeNow": {
+    "message": "agora"
+  },
+  "timeMinutes": {
+    "message": "há $P1$ min",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "timeHours": {
+    "message": "há $P1$ h",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "timeYesterday": {
+    "message": "ontem"
+  },
+  "timeDays": {
+    "message": "há $P1$ dias",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "pinLabel": {
+    "message": "Comentário $P1$: $P2$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "activateWithShortcut": {
+    "message": "com $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "activateByHolding": {
+    "message": "segurando $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "activateByIcon": {
+    "message": "pelo ícone da extensão"
+  },
+  "emptyActivateHint": {
+    "message": "Ative o modo anotação $P1$ e clique em um elemento.",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "composerPlaceholder": {
+    "message": "O que precisa mudar aqui?"
+  },
+  "commentButton": {
+    "message": "Comentar"
+  },
+  "composerHint": {
+    "message": "$P1$ para salvar · $P2$ fecha",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "newComment": {
+    "message": "Novo comentário"
+  },
+  "pressEscAgain": {
+    "message": "Pressione $P1$ de novo para descartar",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "toastSaved": {
+    "message": "Comentário salvo · $P1$ em aberto nesta página",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "toastSaveFailed": {
+    "message": "Não foi possível salvar o comentário: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "editComment": {
+    "message": "Editar comentário"
+  },
+  "editHint": {
+    "message": "$P1$ salvar",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "createdAgo": {
+    "message": "Criado $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "edited": {
+    "message": "editado"
+  },
+  "resolvedAgo": {
+    "message": "resolvido $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "elementNotFound": {
+    "message": "elemento não encontrado"
+  },
+  "pickElement": {
+    "message": "Escolher elemento"
+  },
+  "relinkBanner": {
+    "message": "Clique no novo elemento do comentário"
+  },
+  "relinkBannerN": {
+    "message": "Clique no novo elemento do comentário $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "toastRelinked": {
+    "message": "Comentário vinculado ao novo elemento"
+  },
+  "toastResolved": {
+    "message": "Comentário resolvido"
+  },
+  "toastReopened": {
+    "message": "Comentário reaberto"
+  },
+  "toastDeleted": {
+    "message": "Comentário excluído"
+  },
+  "nothingToCopy": {
+    "message": "Nenhum comentário em aberto para copiar"
+  },
+  "toastCopied": {
+    "message": "$P1$ — cole no Claude",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "commentsCopied_one": {
+    "message": "1 comentário copiado"
+  },
+  "commentsCopied_other": {
+    "message": "$P1$ comentários copiados",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "manualCopy": {
+    "message": "Copie o texto abaixo (Ctrl/⌘ + C)"
+  },
+  "toastInsideClosed": {
+    "message": "Este comentário está dentro de $P1$ que está fechado. Abra-o para ver o ícone.",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "toastElementMissing": {
+    "message": "Elemento não encontrado — a página pode ter mudado. Mostrando a posição original."
+  },
+  "inContainer_modal": {
+    "message": "um modal"
+  },
+  "inContainer_sheet": {
+    "message": "um sheet"
+  },
+  "inContainer_popover": {
+    "message": "um popover"
+  },
+  "inContainer_menu": {
+    "message": "um menu"
+  },
+  "inContainer_overlay": {
+    "message": "uma camada flutuante"
+  },
+  "tipBrand": {
+    "message": "Modo anotação ativo — clique em um elemento"
+  },
+  "tipParent": {
+    "message": "↑ seleciona o pai · ↓ volta · Enter comenta"
+  },
+  "tipHold": {
+    "message": "Segure $P1$ para usar a página",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "copySiteOpen": {
+    "message": "Copiar abertos do site"
+  },
+  "exit": {
+    "message": "Sair"
+  },
+  "usingPage": {
+    "message": "Usando a página"
+  },
+  "copySiteN_one": {
+    "message": "Copiar 1 comentário aberto do site"
+  },
+  "copySiteN_other": {
+    "message": "Copiar $P1$ comentários abertos do site",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "copySiteNone": {
+    "message": "Nenhum comentário aberto no site"
+  },
+  "searchComments": {
+    "message": "Buscar comentários…"
+  },
+  "panelLabel": {
+    "message": "Comentários Browser Annotation"
+  },
+  "closePanel": {
+    "message": "Fechar painel"
+  },
+  "openHistoryTitle": {
+    "message": "Abrir o histórico completo em uma nova aba"
+  },
+  "annotating": {
+    "message": "Anotando"
+  },
+  "annotate": {
+    "message": "Anotar"
+  },
+  "turnOnMode": {
+    "message": "Ativar modo anotação"
+  },
+  "turnOffMode": {
+    "message": "Desativar modo anotação"
+  },
+  "tabOpen": {
+    "message": "Abertos"
+  },
+  "tabResolved": {
+    "message": "Resolvidos"
+  },
+  "tabAll": {
+    "message": "Todos"
+  },
+  "scopePage": {
+    "message": "Esta página"
+  },
+  "scopeSite": {
+    "message": "Este site"
+  },
+  "scopeAll": {
+    "message": "Tudo"
+  },
+  "copyNOpen": {
+    "message": "Copiar $P1$ em aberto",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "copyTitle_page": {
+    "message": "Copia os comentários em aberto desta página em Markdown, prontos para colar no Claude"
+  },
+  "copyTitle_site": {
+    "message": "Copia os comentários em aberto deste site em Markdown, prontos para colar no Claude"
+  },
+  "copyTitle_all": {
+    "message": "Copia os comentários em aberto de todos os sites em Markdown, prontos para colar no Claude"
+  },
+  "emptyOpen_page": {
+    "message": "Nenhum comentário em aberto desta página."
+  },
+  "emptyOpen_site": {
+    "message": "Nenhum comentário em aberto deste site."
+  },
+  "emptyOpen_all": {
+    "message": "Nenhum comentário em aberto de todos os sites."
+  },
+  "noSearchResults": {
+    "message": "Nada encontrado para essa busca."
+  },
+  "noResolved": {
+    "message": "Nenhum comentário resolvido ainda."
+  },
+  "containerClosed_modal": {
+    "message": "Modal fechado"
+  },
+  "containerClosed_sheet": {
+    "message": "Sheet fechado"
+  },
+  "containerClosed_popover": {
+    "message": "Popover fechado"
+  },
+  "containerClosed_menu": {
+    "message": "Menu fechado"
+  },
+  "containerClosed_overlay": {
+    "message": "Camada fechada"
+  },
+  "closedHint": {
+    "message": "O ícone aparece quando o modal/sheet for aberto de novo"
+  },
+  "orphanHint": {
+    "message": "O elemento mudou ou foi removido. O comentário continua salvo e o ícone fica na posição original."
+  },
+  "elementNotFoundOnPage": {
+    "message": "Elemento não encontrado na página"
+  },
+  "showOnPage": {
+    "message": "Mostrar na página"
+  },
+  "openCommentPage": {
+    "message": "Abrir a página deste comentário"
+  },
+  "mdComponent": {
+    "message": "Componente"
+  },
+  "mdHierarchy": {
+    "message": "Hierarquia"
+  },
+  "mdSourceHint": {
+    "message": "Pista de origem (bundle)"
+  },
+  "mdSourceFile": {
+    "message": "Arquivo de origem"
+  },
+  "mdInside": {
+    "message": "Dentro de $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "mdKind_modal": {
+    "message": "modal"
+  },
+  "mdKind_sheet": {
+    "message": "sheet/drawer"
+  },
+  "mdKind_popover": {
+    "message": "popover"
+  },
+  "mdKind_menu": {
+    "message": "menu"
+  },
+  "mdKind_overlay": {
+    "message": "camada flutuante (position: fixed)"
+  },
+  "mdKind_other": {
+    "message": "contêiner"
+  },
+  "mdElement": {
+    "message": "Elemento"
+  },
+  "mdVisibleText": {
+    "message": "Texto visível"
+  },
+  "mdOriginalText": {
+    "message": "Texto quando o comentário foi feito"
+  },
+  "mdSelector": {
+    "message": "Seletor CSS"
+  },
+  "mdDomPath": {
+    "message": "Caminho no DOM"
+  },
+  "mdSizePosition": {
+    "message": "Tamanho/posição: $P1$×$P2$px em ($P3$, $P4$)",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      },
+      "p3": {
+        "content": "$3"
+      },
+      "p4": {
+        "content": "$4"
+      }
+    }
+  },
+  "mdTitle": {
+    "message": "Ajustes de interface solicitados"
+  },
+  "mdIntroCount_one": {
+    "message": "Abaixo está 1 comentário feito"
+  },
+  "mdIntroCount_other": {
+    "message": "Abaixo estão $P1$ comentários feitos",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "mdOpenCount": {
+    "message": "$P1$ em aberto",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "mdIntroRest": {
+    "message": "diretamente sobre elementos da interface (extensão Browser Annotation)."
+  },
+  "mdIntroDetails": {
+    "message": "Cada item traz o pedido de mudança e informações para localizar o elemento no código: componente e arquivo de origem (quando detectados), seletor CSS, texto visível e trecho do HTML renderizado."
+  },
+  "mdIntroTask": {
+    "message": "Implemente as mudanças pedidas em cada item. Se algum pedido for ambíguo, explique a interpretação que você adotou."
+  },
+  "mdPage": {
+    "message": "Página"
+  },
+  "mdResolvedMark": {
+    "message": "resolvido"
+  },
+  "mdComment": {
+    "message": "Comentário"
+  },
+  "mdWhere": {
+    "message": "Onde"
+  },
+  "extDescription": {
+    "message": "Anote componentes da tela em que você está trabalhando e copie os comentários em aberto para o Claude ou outra LLM."
+  },
+  "actionTitle": {
+    "message": "Browser Annotation — ativar modo anotação"
+  },
+  "cmdToggle": {
+    "message": "Ativar/desativar o modo anotação"
+  },
+  "cmdPanel": {
+    "message": "Mostrar/esconder a lista de comentários"
+  },
+  "actionTitleActive": {
+    "message": "Browser Annotation — modo anotação ATIVO"
+  },
+  "actionTitleIdle": {
+    "message": "Browser Annotation — clique para anotar"
+  },
+  "openOnThisPage": {
+    "message": "$P1$ em aberto nesta página",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "menuToggle": {
+    "message": "Ativar/desativar modo anotação"
+  },
+  "menuPanel": {
+    "message": "Mostrar comentários desta página"
+  },
+  "menuCopy": {
+    "message": "Copiar comentários em aberto desta página"
+  },
+  "menuHistory": {
+    "message": "Abrir histórico completo"
+  },
+  "hPageTitle": {
+    "message": "Browser Annotation — Histórico"
+  },
+  "hSubtitle": {
+    "message": "Histórico de comentários"
+  },
+  "hImport": {
+    "message": "Importar"
+  },
+  "hImportTitle": {
+    "message": "Importar comentários de um arquivo JSON"
+  },
+  "hExport": {
+    "message": "Exportar JSON"
+  },
+  "hExportTitle": {
+    "message": "Exportar os comentários filtrados como JSON"
+  },
+  "hCopyOpen": {
+    "message": "Copiar abertos"
+  },
+  "hStatus": {
+    "message": "Status"
+  },
+  "hSites": {
+    "message": "Sites"
+  },
+  "hSettings": {
+    "message": "Configurações"
+  },
+  "hOptPins": {
+    "message": "Mostrar ícones com o modo anotação desligado"
+  },
+  "hOptQuery": {
+    "message": "Considerar a query string ($P1$) ao vincular comentários à página",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "hOptToolbarSize": {
+    "message": "Tamanho da barra de ações"
+  },
+  "hSizeSmall": {
+    "message": "Pequena"
+  },
+  "hSizeMedium": {
+    "message": "Média"
+  },
+  "hSizeLarge": {
+    "message": "Grande"
+  },
+  "hOptHold": {
+    "message": "Segurar para comentar"
+  },
+  "hHoldOff": {
+    "message": "Desativado"
+  },
+  "hHoldHelp": {
+    "message": "Enquanto a tecla estiver pressionada, o modo anotação fica ativo; ao soltar, ele desliga."
+  },
+  "hShortcuts": {
+    "message": "Atalhos: $P1$ ativa o modo anotação · $P2$ abre a lista na página.",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "hChangeShortcuts": {
+    "message": "Trocar atalhos"
+  },
+  "hNoShortcut": {
+    "message": "sem atalho"
+  },
+  "hClearResolved": {
+    "message": "Excluir todos os resolvidos"
+  },
+  "hSearchPlaceholder": {
+    "message": "Buscar por comentário, componente, URL…"
+  },
+  "hSort": {
+    "message": "Ordenar"
+  },
+  "hSortNew": {
+    "message": "Mais recentes primeiro"
+  },
+  "hSortOld": {
+    "message": "Mais antigos primeiro"
+  },
+  "hFilterOpen": {
+    "message": "Em aberto"
+  },
+  "hAllSites": {
+    "message": "Todos os sites"
+  },
+  "hOpenLower": {
+    "message": "em aberto"
+  },
+  "hSiteCount": {
+    "message": "$P1$ em aberto de $P2$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "hStats": {
+    "message": "$P1$ em aberto · $P2$ resolvidos",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "hCreatedAt": {
+    "message": "Criado em $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "hResolvedAt": {
+    "message": "resolvido em $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "hViewOnPage": {
+    "message": "Ver na página"
+  },
+  "hCopyNOpen": {
+    "message": "Copiar $P1$ em aberto",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "hCopyTitle": {
+    "message": "Copia em Markdown os comentários em aberto que estão visíveis com os filtros atuais"
+  },
+  "hNoMatch": {
+    "message": "Nenhum comentário corresponde aos filtros."
+  },
+  "hEmptyShortcut": {
+    "message": "Ainda não há comentários. Abra qualquer página e pressione $P1$ para começar a anotar.",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "hEmptyIcon": {
+    "message": "Ainda não há comentários. Abra qualquer página e clique no ícone da extensão para começar a anotar."
+  },
+  "hGroupCount": {
+    "message": "$P1$ em aberto · $P2$ no total",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "hCopyFailed": {
+    "message": "Não foi possível copiar: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "hInvalidUrl": {
+    "message": "Endereço da página inválido"
+  },
+  "hExported_one": {
+    "message": "1 comentário exportado"
+  },
+  "hExported_other": {
+    "message": "$P1$ comentários exportados",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "hInvalidFormat": {
+    "message": "formato inválido"
+  },
+  "hImported_one": {
+    "message": "1 comentário importado"
+  },
+  "hImported_other": {
+    "message": "$P1$ comentários importados",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "hSkipped": {
+    "message": "$P1$ ignorado(s) por estarem inválidos",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "hImportFailed": {
+    "message": "Falha ao importar: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "hConfirmDelete": {
+    "message": "Confirmar exclusão?"
+  },
+  "hDeletedResolved_one": {
+    "message": "1 comentário resolvido excluído"
+  },
+  "hDeletedResolved_other": {
+    "message": "$P1$ comentários resolvidos excluídos",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  }
+}

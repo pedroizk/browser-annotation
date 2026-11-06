@@ -5,6 +5,7 @@
 importScripts('../shared/constants.js', '../shared/url.js', '../shared/storage.js');
 
 const PN = globalThis.BrowserAnnotation;
+const T = PN.t;
 const HISTORY_URL = chrome.runtime.getURL('src/history/history.html');
 
 const CONTENT_FILES = [
@@ -100,7 +101,7 @@ function setBadge(tabId, count, active) {
   getShortcuts().then((sc) => {
     chrome.action.setTitle({
       tabId,
-      title: withShortcut(`Browser Annotation — ${active ? 'modo anotação ATIVO' : 'clique para anotar'}`, PN.shortcutLabel(sc, 'toggle')) + (count ? ` · ${count} em aberto nesta página` : ''),
+      title: withShortcut(T(active ? 'actionTitleActive' : 'actionTitleIdle'), PN.shortcutLabel(sc, 'toggle')) + (count ? ` · ${T('openOnThisPage', count)}` : ''),
     });
   });
 }
@@ -148,8 +149,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 });
 
 const menuTitles = (sc) => ({
-  'pn-toggle': withShortcut('Ativar/desativar modo anotação', PN.shortcutLabel(sc, 'toggle')),
-  'pn-panel': withShortcut('Mostrar comentários desta página', PN.shortcutLabel(sc, 'panel')),
+  'pn-toggle': withShortcut(T('menuToggle'), PN.shortcutLabel(sc, 'toggle')),
+  'pn-panel': withShortcut(T('menuPanel'), PN.shortcutLabel(sc, 'panel')),
 });
 
 async function setupMenus() {
@@ -157,8 +158,8 @@ async function setupMenus() {
   chrome.contextMenus.removeAll(() => {
     chrome.contextMenus.create({ id: 'pn-toggle', title: titles['pn-toggle'], contexts: ['action'] });
     chrome.contextMenus.create({ id: 'pn-panel', title: titles['pn-panel'], contexts: ['action'] });
-    chrome.contextMenus.create({ id: 'pn-copy', title: 'Copiar comentários em aberto desta página', contexts: ['action'] });
-    chrome.contextMenus.create({ id: 'pn-history', title: 'Abrir histórico completo', contexts: ['action'] });
+    chrome.contextMenus.create({ id: 'pn-copy', title: T('menuCopy'), contexts: ['action'] });
+    chrome.contextMenus.create({ id: 'pn-history', title: T('menuHistory'), contexts: ['action'] });
   });
 }
 

@@ -4,6 +4,7 @@
   const store = PN.store;
   const $ = (sel) => document.querySelector(sel);
   const IS_MAC = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
+  const T = PN.t;
 
   const state = {
     all: [],
@@ -97,9 +98,9 @@
     const statusNav = $('#status-filter');
     statusNav.innerHTML = '';
     for (const [id, label, n] of [
-      ['open', 'Em aberto', open],
-      ['resolved', 'Resolvidos', siteScoped.length - open],
-      ['all', 'Todos', siteScoped.length],
+      ['open', T('hFilterOpen'), open],
+      ['resolved', T('tabResolved'), siteScoped.length - open],
+      ['all', T('tabAll'), siteScoped.length],
     ]) {
       statusNav.append(
         el(
@@ -134,8 +135,8 @@
       el(
         'button',
         { type: 'button', class: state.site === 'all' ? 'on' : '', onclick: () => ((state.site = 'all'), render()) },
-        el('span', { class: 'name', text: 'Todos os sites' }),
-        el('span', { class: 'n', text: allOpen, title: 'em aberto' })
+        el('span', { class: 'name', text: T('hAllSites') }),
+        el('span', { class: 'n', text: allOpen, title: T('hOpenLower') })
       )
     );
     [...sites.entries()]
@@ -147,23 +148,23 @@
             'button',
             { type: 'button', class: state.site === origin ? 'on' : '', title: origin, onclick: () => ((state.site = origin), render()) },
             el('span', { class: 'name', text: name }),
-            el('span', { class: 'n', text: s.open, title: `${s.open} em aberto de ${s.total}` })
+            el('span', { class: 'n', text: s.open, title: T('hSiteCount', s.open, s.total) })
           )
         );
       });
 
     const totalOpen = state.all.filter((a) => a.status !== 'resolved').length;
-    $('#stats').innerHTML = `<b>${totalOpen}</b> em aberto · <b>${state.all.length - totalOpen}</b> resolvidos`;
+    $('#stats').innerHTML = T('hStats', `<b>${totalOpen}</b>`, `<b>${state.all.length - totalOpen}</b>`);
   }
 
   function cardFor(a) {
     const t = a.target || {};
     const fw = t.framework || {};
     const resolved = a.status === 'resolved';
-    const label = (t.label || t.tag || 'elemento') + (fw.component ? `  ·  <${fw.component}>` : '');
+    const label = (t.label || t.tag || T('element')) + (fw.component ? `  ·  <${fw.component}>` : '');
 
     const details = el('div', { class: 'details' });
-    if (fw.source) details.append(el('span', { title: 'Arquivo de origem' }, el('code', { text: fw.source })));
+    if (fw.source) details.append(el('span', { title: T('mdSourceFile') }, el('code', { text: fw.source })));
     if (t.text) details.append(el('span', { title: t.text, text: `“${PN.truncate(t.text, 70)}”` }));
     if (t.selector) details.append(el('span', { title: t.selector }, el('code', { text: PN.truncate(t.selector, 80) })));
 
@@ -172,11 +173,11 @@
       'div',
       { class: 'card-head' },
       el('code', { text: label, title: t.domPath || label }),
-      el('span', { class: 'status ' + (resolved ? 'resolved' : 'open'), text: resolved ? 'Resolvido' : 'Aberto' }),
+      el('span', { class: 'status ' + (resolved ? 'resolved' : 'open'), text: resolved ? T('statusResolved') : T('statusOpen') }),
       el('span', {
         class: 'date',
-        title: `Criado em ${PN.formatDate(a.createdAt)}` + (a.resolvedAt ? ` · resolvido em ${PN.formatDate(a.resolvedAt)}` : ''),
-        text: resolved && a.resolvedAt ? `resolvido ${PN.relativeTime(a.resolvedAt)}` : PN.relativeTime(a.createdAt),
+        title: T('hCreatedAt', PN.formatDate(a.createdAt)) + (a.resolvedAt ? ` · ${T('hResolvedAt', PN.formatDate(a.resolvedAt))}` : ''),
+        text: resolved && a.resolvedAt ? T('resolvedAgo', PN.relativeTime(a.resolvedAt)) : PN.relativeTime(a.createdAt),
       })
     );
     card.append(head);
@@ -203,8 +204,8 @@
           'div',
           { class: 'card-foot' },
           el('span', { class: 'spacer' }),
-          el('button', { class: 'btn sm', type: 'button', text: 'Cancelar', onclick: () => ((state.editing = null), render()) }),
-          el('button', { class: 'btn sm primary', type: 'button', text: 'Salvar', onclick: save })
+          el('button', { class: 'btn sm', type: 'button', text: T('cancel'), onclick: () => ((state.editing = null), render()) }),
+          el('button', { class: 'btn sm primary', type: 'button', text: T('save'), onclick: save })
         )
       );
       setTimeout(() => ta.focus(), 0);
@@ -212,21 +213,21 @@
     }
 
     card.append(el('div', { class: 'comment', text: a.comment }), details);
-    const del = confirmButton(el('button', { class: 'icon-btn danger', type: 'button', title: 'Excluir', html: PN.icons.trash }), null, async () => {
+    const del = confirmButton(el('button', { class: 'icon-btn danger', type: 'button', title: T('delete'), html: PN.icons.trash }), null, async () => {
       await store.remove(a.id);
-      toast('Comentário excluído');
+      toast(T('toastDeleted'));
     });
     card.append(
       el(
         'div',
         { class: 'card-foot' },
-        el('button', { class: 'btn sm', type: 'button', html: `${PN.icons.target} Ver na página`, onclick: () => openOnPage(a) }),
+        el('button', { class: 'btn sm', type: 'button', html: `${PN.icons.target} ${T('hViewOnPage')}`, onclick: () => openOnPage(a) }),
         resolved
-          ? el('button', { class: 'btn sm', type: 'button', html: `${PN.icons.undo} Reabrir`, onclick: () => store.setStatus(a.id, 'open') })
-          : el('button', { class: 'btn sm', type: 'button', html: `${PN.icons.check} Resolver`, onclick: () => store.setStatus(a.id, 'resolved') }),
+          ? el('button', { class: 'btn sm', type: 'button', html: `${PN.icons.undo} ${T('reopen')}`, onclick: () => store.setStatus(a.id, 'open') })
+          : el('button', { class: 'btn sm', type: 'button', html: `${PN.icons.check} ${T('resolve')}`, onclick: () => store.setStatus(a.id, 'resolved') }),
         el('span', { class: 'spacer' }),
-        el('button', { class: 'icon-btn', type: 'button', title: 'Copiar para LLM', html: PN.icons.copy, onclick: () => copy([a]) }),
-        el('button', { class: 'icon-btn', type: 'button', title: 'Editar', html: PN.icons.edit, onclick: () => ((state.editing = a.id), render()) }),
+        el('button', { class: 'icon-btn', type: 'button', title: T('copyForLlm'), html: PN.icons.copy, onclick: () => copy([a]) }),
+        el('button', { class: 'icon-btn', type: 'button', title: T('edit'), html: PN.icons.edit, onclick: () => ((state.editing = a.id), render()) }),
         del
       )
     );
@@ -240,16 +241,16 @@
 
     const openInView = list.filter((a) => a.status !== 'resolved');
     const copyBtn = $('#btn-copy');
-    copyBtn.innerHTML = `${PN.icons.copy} Copiar ${openInView.length} em aberto`;
+    copyBtn.innerHTML = `${PN.icons.copy} ${T('hCopyNOpen', openInView.length)}`;
     copyBtn.disabled = !openInView.length;
-    copyBtn.title = 'Copia em Markdown os comentários em aberto que estão visíveis com os filtros atuais';
+    copyBtn.title = T('hCopyTitle');
 
     if (!list.length) {
       const msg = state.all.length
-        ? 'Nenhum comentário corresponde aos filtros.'
+        ? PN.escapeHtml(T('hNoMatch'))
         : PN.shortcutLabel(state.shortcuts, 'toggle')
-          ? `Ainda não há comentários. Abra qualquer página e pressione ${PN.shortcutHtml(PN.shortcutLabel(state.shortcuts, 'toggle'))} para começar a anotar.`
-          : 'Ainda não há comentários. Abra qualquer página e clique no ícone da extensão para começar a anotar.';
+          ? T('hEmptyShortcut', PN.shortcutHtml(PN.shortcutLabel(state.shortcuts, 'toggle')))
+          : T('hEmptyIcon');
       content.append(el('div', { class: 'empty', html: PN.icons.bubble(48) }, el('div', { html: msg })));
       return;
     }
@@ -268,7 +269,7 @@
           { class: 'group-head' },
           el('h3', { text: g.title || PN.prettyUrl(g.url), title: g.title || g.url }),
           el('a', { href: PN.isSafePageUrl(g.url) ? g.url : null, target: '_blank', rel: 'noopener noreferrer', text: PN.prettyUrl(g.url), title: g.url }),
-          el('span', { class: 'count', text: `${open} em aberto · ${g.items.length} no total` })
+          el('span', { class: 'count', text: T('hGroupCount', open, g.items.length) })
         ),
         el('div', { class: 'cards' }, g.items.map(cardFor))
       );
@@ -287,14 +288,14 @@
     const md = PN.buildExportMarkdown(list, { settings: state.settings });
     try {
       await navigator.clipboard.writeText(md);
-      toast(`${list.length} comentário${list.length === 1 ? '' : 's'} copiado${list.length === 1 ? '' : 's'} — cole no Claude`);
+      toast(T('toastCopied', PN.tn(list.length, 'commentsCopied')));
     } catch (err) {
-      toast('Não foi possível copiar: ' + err.message);
+      toast(T('hCopyFailed', err.message));
     }
   }
 
   async function openOnPage(a) {
-    if (!PN.isSafePageUrl(a.page.url)) return toast('Endereço da página inválido');
+    if (!PN.isSafePageUrl(a.page.url)) return toast(T('hInvalidUrl'));
     const key = PN.pageKey(a.page.url, state.settings);
     const tabs = await chrome.tabs.query({});
     const existing = tabs.find((t) => t.url && PN.pageKey(t.url, state.settings) === key);
@@ -327,20 +328,20 @@
     a.click();
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
-    toast(`${list.length} comentário(s) exportado(s)`);
+    toast(PN.tn(list.length, 'hExported'));
   }
 
   async function importJson(file) {
     try {
       const data = JSON.parse(await file.text());
       const list = Array.isArray(data) ? data : data.annotations;
-      if (!Array.isArray(list)) throw new Error('formato inválido');
+      if (!Array.isArray(list)) throw new Error(T('hInvalidFormat'));
       const valid = list.map(PN.sanitizeAnnotation).filter(Boolean);
       await store.putMany(valid);
       const skipped = list.length - valid.length;
-      toast(`${valid.length} comentário(s) importado(s)` + (skipped ? ` · ${skipped} ignorado(s) por estarem inválidos` : ''));
+      toast(PN.tn(valid.length, 'hImported') + (skipped ? ` · ${T('hSkipped', skipped)}` : ''));
     } catch (err) {
-      toast('Falha ao importar: ' + err.message);
+      toast(T('hImportFailed', err.message));
     }
   }
 
@@ -351,9 +352,8 @@
     } catch (_) {
       /* service worker indisponível: mostra os padrões */
     }
-    const show = (kind) => PN.shortcutHtml(PN.shortcutLabel(state.shortcuts, kind)) || '<em>sem atalho</em>';
-    $('#sc-toggle').innerHTML = show('toggle');
-    $('#sc-panel').innerHTML = show('panel');
+    const show = (kind) => PN.shortcutHtml(PN.shortcutLabel(state.shortcuts, kind)) || `<em>${T('hNoShortcut')}</em>`;
+    $('#sc-help').innerHTML = T('hShortcuts', `<span id="sc-toggle">${show('toggle')}</span>`, `<span id="sc-panel">${show('panel')}</span>`);
     if (state.loaded) renderContent(); // a mensagem de "sem comentários" cita o atalho
   }
 
@@ -368,7 +368,18 @@
     render();
   }
 
+  // textos fixos da página (data-i18n, data-i18n-title, data-i18n-placeholder, data-i18n-aria-label)
+  function localizePage() {
+    document.documentElement.lang = PN.locale();
+    for (const node of document.querySelectorAll('[data-i18n]')) node.textContent = T(node.dataset.i18n);
+    for (const node of document.querySelectorAll('[data-i18n-title]')) node.title = T(node.dataset.i18nTitle);
+    for (const node of document.querySelectorAll('[data-i18n-placeholder]')) node.placeholder = T(node.dataset.i18nPlaceholder);
+    for (const node of document.querySelectorAll('[data-i18n-aria-label]')) node.setAttribute('aria-label', T(node.dataset.i18nAriaLabel));
+    $('#opt-query-label').innerHTML = T('hOptQuery', '<code>?tab=…</code>');
+  }
+
   function init() {
+    localizePage();
     $('#logo').innerHTML = PN.icons.bubble(36);
     loadShortcuts();
     window.addEventListener('focus', loadShortcuts); // o usuário pode ter trocado em chrome://extensions/shortcuts
@@ -398,10 +409,10 @@
       e.preventDefault();
       chrome.tabs.create({ url: 'chrome://extensions/shortcuts' });
     });
-    confirmButton($('#btn-clear-resolved'), 'Confirmar exclusão?', async () => {
+    confirmButton($('#btn-clear-resolved'), T('hConfirmDelete'), async () => {
       const ids = state.all.filter((a) => a.status === 'resolved').map((a) => a.id);
       await store.remove(ids);
-      toast(`${ids.length} comentário(s) resolvido(s) excluído(s)`);
+      toast(PN.tn(ids.length, 'hDeletedResolved'));
     });
 
     store.onChange(() => load());

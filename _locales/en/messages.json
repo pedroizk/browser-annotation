@@ -1,0 +1,819 @@
+{
+  "comment": {
+    "message": "Comment"
+  },
+  "comments": {
+    "message": "Comments"
+  },
+  "close": {
+    "message": "Close"
+  },
+  "cancel": {
+    "message": "Cancel"
+  },
+  "save": {
+    "message": "Save"
+  },
+  "edit": {
+    "message": "Edit"
+  },
+  "delete": {
+    "message": "Delete"
+  },
+  "deleteTwice": {
+    "message": "Delete (click twice)"
+  },
+  "resolve": {
+    "message": "Resolve"
+  },
+  "reopen": {
+    "message": "Reopen"
+  },
+  "copyForLlm": {
+    "message": "Copy for LLM"
+  },
+  "commentCopied": {
+    "message": "Comment copied"
+  },
+  "relink": {
+    "message": "Link to another element"
+  },
+  "statusOpen": {
+    "message": "Open"
+  },
+  "statusResolved": {
+    "message": "Resolved"
+  },
+  "or": {
+    "message": "or"
+  },
+  "element": {
+    "message": "element"
+  },
+  "history": {
+    "message": "History"
+  },
+  "search": {
+    "message": "Search"
+  },
+  "timeNow": {
+    "message": "just now"
+  },
+  "timeMinutes": {
+    "message": "$P1$ min ago",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "timeHours": {
+    "message": "$P1$ h ago",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "timeYesterday": {
+    "message": "yesterday"
+  },
+  "timeDays": {
+    "message": "$P1$ days ago",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "pinLabel": {
+    "message": "Comment $P1$: $P2$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "activateWithShortcut": {
+    "message": "with $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "activateByHolding": {
+    "message": "by holding $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "activateByIcon": {
+    "message": "with the extension icon"
+  },
+  "emptyActivateHint": {
+    "message": "Turn on annotation mode $P1$ and click an element.",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "composerPlaceholder": {
+    "message": "What needs to change here?"
+  },
+  "commentButton": {
+    "message": "Comment"
+  },
+  "composerHint": {
+    "message": "$P1$ to save · $P2$ to close",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "newComment": {
+    "message": "New comment"
+  },
+  "pressEscAgain": {
+    "message": "Press $P1$ again to discard",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "toastSaved": {
+    "message": "Comment saved · $P1$ open on this page",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "toastSaveFailed": {
+    "message": "Couldn't save the comment: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "editComment": {
+    "message": "Edit comment"
+  },
+  "editHint": {
+    "message": "$P1$ save",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "createdAgo": {
+    "message": "Created $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "edited": {
+    "message": "edited"
+  },
+  "resolvedAgo": {
+    "message": "resolved $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "elementNotFound": {
+    "message": "element not found"
+  },
+  "pickElement": {
+    "message": "Pick element"
+  },
+  "relinkBanner": {
+    "message": "Click the new element for this comment"
+  },
+  "relinkBannerN": {
+    "message": "Click the new element for comment $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "toastRelinked": {
+    "message": "Comment linked to the new element"
+  },
+  "toastResolved": {
+    "message": "Comment resolved"
+  },
+  "toastReopened": {
+    "message": "Comment reopened"
+  },
+  "toastDeleted": {
+    "message": "Comment deleted"
+  },
+  "nothingToCopy": {
+    "message": "No open comments to copy"
+  },
+  "toastCopied": {
+    "message": "$P1$ — paste it into Claude",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "commentsCopied_one": {
+    "message": "1 comment copied"
+  },
+  "commentsCopied_other": {
+    "message": "$P1$ comments copied",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "manualCopy": {
+    "message": "Copy the text below (Ctrl/⌘ + C)"
+  },
+  "toastInsideClosed": {
+    "message": "This comment is inside $P1$, which is closed. Open it to see the icon.",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "toastElementMissing": {
+    "message": "Element not found — the page may have changed. Showing the original position."
+  },
+  "inContainer_modal": {
+    "message": "a modal"
+  },
+  "inContainer_sheet": {
+    "message": "a sheet"
+  },
+  "inContainer_popover": {
+    "message": "a popover"
+  },
+  "inContainer_menu": {
+    "message": "a menu"
+  },
+  "inContainer_overlay": {
+    "message": "a floating layer"
+  },
+  "tipBrand": {
+    "message": "Annotation mode on — click an element"
+  },
+  "tipParent": {
+    "message": "↑ selects the parent · ↓ goes back · Enter comments"
+  },
+  "tipHold": {
+    "message": "Hold $P1$ to use the page",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "copySiteOpen": {
+    "message": "Copy open comments on this site"
+  },
+  "exit": {
+    "message": "Exit"
+  },
+  "usingPage": {
+    "message": "Using the page"
+  },
+  "copySiteN_one": {
+    "message": "Copy 1 open comment on this site"
+  },
+  "copySiteN_other": {
+    "message": "Copy $P1$ open comments on this site",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "copySiteNone": {
+    "message": "No open comments on this site"
+  },
+  "searchComments": {
+    "message": "Search comments…"
+  },
+  "panelLabel": {
+    "message": "Browser Annotation comments"
+  },
+  "closePanel": {
+    "message": "Close panel"
+  },
+  "openHistoryTitle": {
+    "message": "Open the full history in a new tab"
+  },
+  "annotating": {
+    "message": "Annotating"
+  },
+  "annotate": {
+    "message": "Annotate"
+  },
+  "turnOnMode": {
+    "message": "Turn on annotation mode"
+  },
+  "turnOffMode": {
+    "message": "Turn off annotation mode"
+  },
+  "tabOpen": {
+    "message": "Open"
+  },
+  "tabResolved": {
+    "message": "Resolved"
+  },
+  "tabAll": {
+    "message": "All"
+  },
+  "scopePage": {
+    "message": "This page"
+  },
+  "scopeSite": {
+    "message": "This site"
+  },
+  "scopeAll": {
+    "message": "Everything"
+  },
+  "copyNOpen": {
+    "message": "Copy $P1$ open",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "copyTitle_page": {
+    "message": "Copies the open comments on this page as Markdown, ready to paste into Claude"
+  },
+  "copyTitle_site": {
+    "message": "Copies the open comments on this site as Markdown, ready to paste into Claude"
+  },
+  "copyTitle_all": {
+    "message": "Copies the open comments from all sites as Markdown, ready to paste into Claude"
+  },
+  "emptyOpen_page": {
+    "message": "No open comments on this page."
+  },
+  "emptyOpen_site": {
+    "message": "No open comments on this site."
+  },
+  "emptyOpen_all": {
+    "message": "No open comments on any site."
+  },
+  "noSearchResults": {
+    "message": "Nothing found for this search."
+  },
+  "noResolved": {
+    "message": "No resolved comments yet."
+  },
+  "containerClosed_modal": {
+    "message": "Closed modal"
+  },
+  "containerClosed_sheet": {
+    "message": "Closed sheet"
+  },
+  "containerClosed_popover": {
+    "message": "Closed popover"
+  },
+  "containerClosed_menu": {
+    "message": "Closed menu"
+  },
+  "containerClosed_overlay": {
+    "message": "Closed layer"
+  },
+  "closedHint": {
+    "message": "The icon appears when the modal/sheet is opened again"
+  },
+  "orphanHint": {
+    "message": "The element changed or was removed. The comment is still saved and the icon stays at the original position."
+  },
+  "elementNotFoundOnPage": {
+    "message": "Element not found on the page"
+  },
+  "showOnPage": {
+    "message": "Show on page"
+  },
+  "openCommentPage": {
+    "message": "Open this comment's page"
+  },
+  "mdComponent": {
+    "message": "Component"
+  },
+  "mdHierarchy": {
+    "message": "Hierarchy"
+  },
+  "mdSourceHint": {
+    "message": "Source hint (bundle)"
+  },
+  "mdSourceFile": {
+    "message": "Source file"
+  },
+  "mdInside": {
+    "message": "Inside $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "mdKind_modal": {
+    "message": "modal"
+  },
+  "mdKind_sheet": {
+    "message": "sheet/drawer"
+  },
+  "mdKind_popover": {
+    "message": "popover"
+  },
+  "mdKind_menu": {
+    "message": "menu"
+  },
+  "mdKind_overlay": {
+    "message": "floating layer (position: fixed)"
+  },
+  "mdKind_other": {
+    "message": "container"
+  },
+  "mdElement": {
+    "message": "Element"
+  },
+  "mdVisibleText": {
+    "message": "Visible text"
+  },
+  "mdOriginalText": {
+    "message": "Text when the comment was made"
+  },
+  "mdSelector": {
+    "message": "CSS selector"
+  },
+  "mdDomPath": {
+    "message": "DOM path"
+  },
+  "mdSizePosition": {
+    "message": "Size/position: $P1$×$P2$px at ($P3$, $P4$)",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      },
+      "p3": {
+        "content": "$3"
+      },
+      "p4": {
+        "content": "$4"
+      }
+    }
+  },
+  "mdTitle": {
+    "message": "Requested UI changes"
+  },
+  "mdIntroCount_one": {
+    "message": "Below is 1 comment"
+  },
+  "mdIntroCount_other": {
+    "message": "Below are $P1$ comments",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "mdOpenCount": {
+    "message": "$P1$ open",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "mdIntroRest": {
+    "message": "made directly on UI elements (Browser Annotation extension)."
+  },
+  "mdIntroDetails": {
+    "message": "Each item has the change request and details to find the element in the code: component and source file (when detected), CSS selector, visible text and a snippet of the rendered HTML."
+  },
+  "mdIntroTask": {
+    "message": "Implement the requested changes in each item. If a request is ambiguous, explain the interpretation you chose."
+  },
+  "mdPage": {
+    "message": "Page"
+  },
+  "mdResolvedMark": {
+    "message": "resolved"
+  },
+  "mdComment": {
+    "message": "Comment"
+  },
+  "mdWhere": {
+    "message": "Where"
+  },
+  "extDescription": {
+    "message": "Annotate components of the page you're working on and copy the open comments to Claude or another LLM."
+  },
+  "actionTitle": {
+    "message": "Browser Annotation — turn on annotation mode"
+  },
+  "cmdToggle": {
+    "message": "Turn annotation mode on/off"
+  },
+  "cmdPanel": {
+    "message": "Show/hide the comment list"
+  },
+  "actionTitleActive": {
+    "message": "Browser Annotation — annotation mode ON"
+  },
+  "actionTitleIdle": {
+    "message": "Browser Annotation — click to annotate"
+  },
+  "openOnThisPage": {
+    "message": "$P1$ open on this page",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "menuToggle": {
+    "message": "Turn annotation mode on/off"
+  },
+  "menuPanel": {
+    "message": "Show comments on this page"
+  },
+  "menuCopy": {
+    "message": "Copy open comments on this page"
+  },
+  "menuHistory": {
+    "message": "Open full history"
+  },
+  "hPageTitle": {
+    "message": "Browser Annotation — History"
+  },
+  "hSubtitle": {
+    "message": "Comment history"
+  },
+  "hImport": {
+    "message": "Import"
+  },
+  "hImportTitle": {
+    "message": "Import comments from a JSON file"
+  },
+  "hExport": {
+    "message": "Export JSON"
+  },
+  "hExportTitle": {
+    "message": "Export the filtered comments as JSON"
+  },
+  "hCopyOpen": {
+    "message": "Copy open"
+  },
+  "hStatus": {
+    "message": "Status"
+  },
+  "hSites": {
+    "message": "Sites"
+  },
+  "hSettings": {
+    "message": "Settings"
+  },
+  "hOptPins": {
+    "message": "Show icons when annotation mode is off"
+  },
+  "hOptQuery": {
+    "message": "Consider the query string ($P1$) when linking comments to the page",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "hOptToolbarSize": {
+    "message": "Action bar size"
+  },
+  "hSizeSmall": {
+    "message": "Small"
+  },
+  "hSizeMedium": {
+    "message": "Medium"
+  },
+  "hSizeLarge": {
+    "message": "Large"
+  },
+  "hOptHold": {
+    "message": "Hold to comment"
+  },
+  "hHoldOff": {
+    "message": "Off"
+  },
+  "hHoldHelp": {
+    "message": "While the key is held down, annotation mode stays on; when you release it, it turns off."
+  },
+  "hShortcuts": {
+    "message": "Shortcuts: $P1$ turns on annotation mode · $P2$ opens the list on the page.",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "hChangeShortcuts": {
+    "message": "Change shortcuts"
+  },
+  "hNoShortcut": {
+    "message": "no shortcut"
+  },
+  "hClearResolved": {
+    "message": "Delete all resolved"
+  },
+  "hSearchPlaceholder": {
+    "message": "Search by comment, component, URL…"
+  },
+  "hSort": {
+    "message": "Sort"
+  },
+  "hSortNew": {
+    "message": "Newest first"
+  },
+  "hSortOld": {
+    "message": "Oldest first"
+  },
+  "hFilterOpen": {
+    "message": "Open"
+  },
+  "hAllSites": {
+    "message": "All sites"
+  },
+  "hOpenLower": {
+    "message": "open"
+  },
+  "hSiteCount": {
+    "message": "$P1$ open out of $P2$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "hStats": {
+    "message": "$P1$ open · $P2$ resolved",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "hCreatedAt": {
+    "message": "Created on $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "hResolvedAt": {
+    "message": "resolved on $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "hViewOnPage": {
+    "message": "View on page"
+  },
+  "hCopyNOpen": {
+    "message": "Copy $P1$ open",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "hCopyTitle": {
+    "message": "Copies the open comments visible with the current filters as Markdown"
+  },
+  "hNoMatch": {
+    "message": "No comments match the filters."
+  },
+  "hEmptyShortcut": {
+    "message": "No comments yet. Open any page and press $P1$ to start annotating.",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "hEmptyIcon": {
+    "message": "No comments yet. Open any page and click the extension icon to start annotating."
+  },
+  "hGroupCount": {
+    "message": "$P1$ open · $P2$ total",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      },
+      "p2": {
+        "content": "$2"
+      }
+    }
+  },
+  "hCopyFailed": {
+    "message": "Couldn't copy: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "hInvalidUrl": {
+    "message": "Invalid page address"
+  },
+  "hExported_one": {
+    "message": "1 comment exported"
+  },
+  "hExported_other": {
+    "message": "$P1$ comments exported",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "hInvalidFormat": {
+    "message": "invalid format"
+  },
+  "hImported_one": {
+    "message": "1 comment imported"
+  },
+  "hImported_other": {
+    "message": "$P1$ comments imported",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "hSkipped": {
+    "message": "$P1$ skipped because they were invalid",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "hImportFailed": {
+    "message": "Import failed: $P1$",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "hConfirmDelete": {
+    "message": "Confirm deletion?"
+  },
+  "hDeletedResolved_one": {
+    "message": "1 resolved comment deleted"
+  },
+  "hDeletedResolved_other": {
+    "message": "$P1$ resolved comments deleted",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  }
+}

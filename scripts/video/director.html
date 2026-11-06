@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<style>
+  :root {
+    --orange: #D97757; --orange-dark: #AE5630; --cream: #FAF9F5; --cream-2: #F0EEE6; --ink: #1F1E1D; --ink-2: #2B2A28; --muted: #8A877E;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1280px; height: 720px; overflow: hidden; background: var(--ink); font-family: "Inter", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  .abs { position: absolute; }
+  #bg-light { position: absolute; inset: 0; background:
+      radial-gradient(1200px 600px at 20% 0%, #FFFDF8 0%, rgba(255,253,248,0) 60%),
+      radial-gradient(900px 500px at 100% 100%, #F6E6DC 0%, rgba(246,230,220,0) 60%),
+      var(--cream-2); }
+  #bg-light::after { content: ""; position: absolute; inset: 0; opacity: .5;
+      background-image: linear-gradient(rgba(31,30,29,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(31,30,29,.035) 1px, transparent 1px);
+      background-size: 24px 24px; }
+  #bg-dark { position: absolute; inset: 0; background:
+      radial-gradient(800px 500px at 50% 45%, #2E2C29 0%, rgba(46,44,41,0) 70%), var(--ink); }
+
+  /* intro */
+  #logo { position: absolute; left: 50%; top: 200px; width: 176px; height: 176px; margin-left: -88px; }
+  #logo i { position: absolute; width: 11px; height: 11px; }
+  #title { position: absolute; width: 100%; top: 392px; text-align: center; color: #F5F4EE; font-family: "Inter Display", "Inter"; font-weight: 800; font-size: 64px; letter-spacing: -0.03em; }
+  #tagline { position: absolute; width: 100%; top: 478px; text-align: center; color: #BDB9AE; font-size: 22px; font-weight: 500; }
+  #tagline b { color: var(--orange); font-weight: 700; }
+
+  /* hook */
+  .hook-line { position: absolute; width: 100%; text-align: center; font-family: "Inter Display", "Inter"; font-weight: 800; letter-spacing: -0.03em; color: #F5F4EE; }
+  #hook1 { top: 250px; font-size: 52px; }
+  #hook2 { top: 330px; font-size: 52px; color: #8A877E; }
+  #hook2 s { text-decoration-thickness: 6px; text-decoration-color: var(--orange); }
+  #hook3 { top: 280px; font-size: 92px; display: flex; justify-content: center; gap: 30px; }
+  #hook3 span { display: inline-block; }
+  #hook3 span:last-child { color: var(--orange); }
+
+  /* palco com o navegador */
+  #stage { position: absolute; inset: 0; }
+  #caption { position: absolute; left: 190px; right: 190px; top: 34px; height: 64px; display: flex; align-items: center; gap: 16px; font-family: "Inter Display", "Inter"; font-weight: 800; font-size: 34px; letter-spacing: -0.02em; color: var(--ink); white-space: nowrap; }
+  #caption .num { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 46px; height: 46px; background: var(--orange); color: #fff; font-family: "Inter"; font-size: 24px; font-weight: 800; box-shadow: 4px 4px 0 var(--orange-dark); }
+  #caption .cap-text { display: inline-flex; align-items: center; gap: 12px; }
+  .kc { display: inline-flex; align-items: center; justify-content: center; min-width: 46px; height: 46px; padding: 0 12px; border-radius: 10px; background: #fff; color: var(--ink); font: 700 22px/1 "Inter"; border: 1px solid rgba(31,30,29,.14); box-shadow: 0 4px 0 rgba(31,30,29,.16), 0 8px 20px rgba(31,30,29,.08); }
+  .plus { font-size: 26px; color: var(--muted); font-weight: 700; }
+  #frame { position: absolute; left: 190px; top: 118px; width: 900px; height: 568px; border-radius: 14px; overflow: hidden; background: #fff;
+      box-shadow: 0 0 0 1px rgba(31,30,29,.1), 0 30px 60px -20px rgba(31,30,29,.35), 0 12px 24px -12px rgba(31,30,29,.2); }
+  #chrome { position: absolute; left: 0; right: 0; top: 0; height: 28px; background: #ECEAE3; display: flex; align-items: center; padding: 0 12px; gap: 6px; border-bottom: 1px solid rgba(31,30,29,.08); }
+  #chrome i { width: 10px; height: 10px; border-radius: 50%; background: #D9D5CB; }
+  #chrome .url { margin-left: 18px; flex: 1; max-width: 420px; height: 18px; border-radius: 6px; background: #fff; color: #6E6B63; font: 500 11px/18px "Inter"; padding: 0 10px; }
+  #viewport { position: absolute; left: 0; top: 28px; width: 900px; height: 540px; overflow: hidden; }
+  #zoom { position: absolute; left: 0; top: 0; width: 1200px; height: 720px; transform-origin: 0 0; }
+  #clip { position: absolute; left: 0; top: 0; width: 1200px; height: 720px; }
+  #cursor { position: absolute; left: 0; top: 0; width: 26px; height: 34px; filter: drop-shadow(0 2px 3px rgba(0,0,0,.35)); }
+  .ripple { position: absolute; width: 60px; height: 60px; margin: -30px 0 0 -30px; border-radius: 50%; border: 4px solid var(--orange); }
+  #keys { position: absolute; left: 0; right: 0; bottom: 26px; display: flex; justify-content: center; gap: 10px; align-items: center; }
+  #keys .chip { display: inline-flex; align-items: center; gap: 10px; padding: 10px 16px; border-radius: 16px; background: rgba(31,30,29,.88); color: #fff; font: 700 20px/1 "Inter"; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+  #keys .kc { background: #F5F4EE; }
+
+  /* colar na IA */
+  #paste-title { position: absolute; width: 100%; top: 48px; text-align: center; font-family: "Inter Display", "Inter"; font-weight: 800; font-size: 44px; letter-spacing: -0.02em; color: var(--ink); }
+  #paste-title b { color: var(--orange); }
+  #paste-sub { position: absolute; width: 100%; top: 108px; text-align: center; font-size: 19px; color: #6E6B63; font-weight: 500; }
+  #editor { position: absolute; left: 190px; top: 160px; width: 900px; height: 500px; border-radius: 14px; background: #1F1E1D; overflow: hidden;
+      box-shadow: 0 30px 60px -20px rgba(31,30,29,.45), 0 0 0 1px rgba(0,0,0,.2); }
+  #editor .bar { height: 34px; display: flex; align-items: center; gap: 7px; padding: 0 14px; background: #2B2A28; color: #A6A39A; font: 500 12px "Inter"; }
+  #editor .bar i { width: 10px; height: 10px; border-radius: 50%; background: #45433F; }
+  #editor .bar span { margin-left: 10px; }
+  #code { position: absolute; left: 0; right: 0; top: 34px; bottom: 0; padding: 18px 26px; font: 500 14px/1.6 "DejaVu Sans Mono", ui-monospace, monospace; color: #E8E6DF; white-space: pre-wrap; word-break: break-word; overflow: hidden; }
+  #code .h { color: var(--orange); font-weight: 700; }
+  #code .q { color: #C9C6BC; }
+  #code .k { color: #9CC4A6; }
+  #code .c { color: #E8B98F; }
+  #code .caret { display: inline-block; width: 9px; height: 18px; background: var(--orange); vertical-align: -3px; }
+
+  /* recursos */
+  #feat-title { position: absolute; width: 100%; top: 70px; text-align: center; font-family: "Inter Display", "Inter"; font-weight: 800; font-size: 46px; letter-spacing: -0.02em; color: var(--ink); }
+  .card { position: absolute; width: 430px; height: 170px; padding: 26px 28px; border-radius: 18px; background: #fff; box-shadow: 0 0 0 1px rgba(31,30,29,.08), 0 20px 40px -20px rgba(31,30,29,.3); }
+  .card .ic { width: 44px; height: 44px; border-radius: 12px; background: #F6E3D9; color: var(--orange-dark); display: flex; align-items: center; justify-content: center; }
+  .card .ic svg { width: 24px; height: 24px; }
+  .card h3 { margin-top: 16px; font-family: "Inter Display", "Inter"; font-size: 25px; font-weight: 800; letter-spacing: -0.02em; color: var(--ink); }
+  .card p { margin-top: 6px; font-size: 16.5px; line-height: 1.4; color: #6E6B63; font-weight: 500; }
+
+  /* encerramento */
+  .outro-word { position: absolute; width: 100%; text-align: center; font-family: "Inter Display", "Inter"; font-weight: 900; font-size: 96px; letter-spacing: -0.04em; color: #F5F4EE; }
+  #ow1 { top: 150px; } #ow2 { top: 270px; } #ow3 { top: 390px; color: var(--orange); }
+  #end-logo { position: absolute; left: 50%; top: 150px; width: 112px; height: 112px; margin-left: -56px; }
+  #end-title { position: absolute; width: 100%; top: 282px; text-align: center; color: #F5F4EE; font-family: "Inter Display", "Inter"; font-weight: 800; font-size: 54px; letter-spacing: -0.03em; }
+  #end-repo { position: absolute; left: 50%; top: 372px; transform: translateX(-50%); display: flex; align-items: center; gap: 12px; padding: 14px 24px; border-radius: 14px; background: #2B2A28; color: #F5F4EE; font: 600 24px "DejaVu Sans Mono", monospace; box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); white-space: nowrap; }
+  #end-repo svg { width: 26px; height: 26px; }
+  #end-cta { position: absolute; width: 100%; top: 470px; text-align: center; font-size: 24px; font-weight: 600; color: #BDB9AE; }
+  #end-cta b { color: var(--orange); }
+
+  #wipe { position: absolute; inset: 0; pointer-events: none; }
+  #wipe i { position: absolute; width: 54px; height: 54px; background: var(--orange); }
+</style>
+</head>
+<body>
+  <div id="bg-light"></div>
+  <div id="bg-dark"></div>
+
+  <div id="intro" class="abs" style="inset:0">
+    <div id="logo"></div>
+    <div id="title">Browser Annotation</div>
+    <div id="tagline">Comente direto na interface. <b>Copie para a IA.</b></div>
+  </div>
+
+  <div id="hook" class="abs" style="inset:0">
+    <div id="hook1" class="hook-line">Explicar ajustes de interface para a IA?</div>
+    <div id="hook2" class="hook-line"><s>prints, setas, "o botão azul lá em cima"</s></div>
+    <div id="hook3" class="hook-line"><span>Aponte.</span><span>Comente.</span><span>Cole.</span></div>
+  </div>
+
+  <div id="stage">
+    <div id="caption"></div>
+    <div id="frame">
+      <div id="chrome"><i></i><i></i><i></i><div class="url">localhost:3000/dashboard</div></div>
+      <div id="viewport">
+        <div id="zoom">
+          <img id="clip" alt="" />
+          <div id="ripples"></div>
+          <svg id="cursor" viewBox="0 0 26 34"><path d="M2 2 L2 28 L8.5 22 L13 32 L17.5 30 L13 20.5 L22 20.5 Z" fill="#fff" stroke="#1F1E1D" stroke-width="2" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+      <div id="keys"></div>
+    </div>
+  </div>
+
+  <div id="paste" class="abs" style="inset:0">
+    <div id="paste-title">Cole no <b>Claude</b>, ChatGPT ou Cursor</div>
+    <div id="paste-sub">Cada pedido vai com o contexto do código: componente, arquivo, seletor e HTML.</div>
+    <div id="editor"><div class="bar"><i></i><i></i><i></i><span>ajustes-de-interface.md</span></div><div id="code"></div></div>
+  </div>
+
+  <div id="features" class="abs" style="inset:0">
+    <div id="feat-title">Feita para o seu fluxo de dev</div>
+  </div>
+
+  <div id="outro" class="abs" style="inset:0">
+    <div id="ow1" class="outro-word">Prático.</div>
+    <div id="ow2" class="outro-word">Eficiente.</div>
+    <div id="ow3" class="outro-word">Open source.</div>
+    <div id="end-logo"></div>
+    <div id="end-title">Browser Annotation</div>
+    <div id="end-repo"><svg viewBox="0 0 16 16" fill="#F5F4EE"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>github.com/pedroizk/browser-annotation</div>
+    <div id="end-cta">Grátis e open source · <b>deixe uma ⭐ e contribua</b></div>
+  </div>
+
+  <div id="wipe"></div>
+
+<script>
+// ============================================================== utilidades
+const $ = (s) => document.querySelector(s);
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const prog = (t, a, b) => clamp((t - a) / (b - a));
+const lerp = (a, b, p) => a + (b - a) * p;
+const easeOut = (p) => 1 - Math.pow(1 - p, 3);
+const easeIn = (p) => p * p * p;
+const easeInOut = (p) => (p < .5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2);
+const easeBack = (p) => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(p - 1, 3) + c1 * Math.pow(p - 1, 2); };
+const show = (el, o) => { el.style.opacity = o; el.style.visibility = o > 0.001 ? 'visible' : 'hidden'; };
+// visibilidade de uma janela [a,b] com fade de entrada/saída
+const win = (t, a, b, fin = .3, fout = .3) => Math.min(prog(t, a, a + fin), 1 - prog(t, b - fout, b));
+
+// ============================================================== idioma
+// ?lang=en | pt-BR (padrão: pt-BR). Os clipes também são gravados no idioma escolhido.
+const LANG = new URLSearchParams(location.search).get('lang') || 'pt-BR';
+const KC = (k) => `<span class="kc">${k}</span>`;
+const PLUS = '<span class="plus">+</span>';
+const STR = {
+  'pt-BR': {
+    tagline: 'Comente direto na interface. <b>Copie para a IA.</b>',
+    hook1: 'Explicar ajustes de interface para a IA?',
+    hook2: '<s>prints, setas, "o botão azul lá em cima"</s>',
+    hook3: ['Aponte.', 'Comente.', 'Cole.'],
+    pasteTitle: 'Cole no <b>Claude</b>, ChatGPT ou Cursor',
+    pasteSub: 'Cada pedido vai com o contexto do código: componente, arquivo, seletor e HTML.',
+    file: 'ajustes-de-interface.md',
+    featTitle: 'Feita para o seu fluxo de dev',
+    outro: ['Prático.', 'Eficiente.', 'Open source.'],
+    cta: 'Grátis e open source · <b>deixe uma ⭐ e contribua</b>',
+    hold: 'Segure',
+    caps: [
+      `Ative com ${KC('⌘/Alt')}${PLUS}${KC('⇧')}${PLUS}${KC('E')}`, 'Clique no componente', 'Escreva o que mudar', 'Salvo no componente',
+      `Segure ${KC('Ctrl')} e abra o modal`, 'Comente dentro dele', 'Fechou? O ícone some.', 'Abriu? Ele volta.', 'Tudo num painel', 'Copie com 1 clique',
+    ],
+    feats: [
+      ['Acompanha o seu código', 'Mudou o componente? O comentário continua no lugar certo.'],
+      ['React · Vue · Svelte · Angular', 'Mostra o componente e o arquivo:linha de cada elemento.'],
+      ['100% local e grátis', 'Sem servidor, sem conta, sem telemetria. Open source.'],
+      ['Segure Alt e comente', 'Anota só enquanto a tecla estiver pressionada.'],
+    ],
+  },
+  en: {
+    tagline: 'Comment right on the UI. <b>Copy it to the AI.</b>',
+    hook1: 'Explaining UI changes to an AI?',
+    hook2: '<s>screenshots, arrows, "the blue button up top"</s>',
+    hook3: ['Point.', 'Comment.', 'Paste.'],
+    pasteTitle: 'Paste into <b>Claude</b>, ChatGPT or Cursor',
+    pasteSub: 'Every request carries the code context: component, file, selector and HTML.',
+    file: 'ui-changes.md',
+    featTitle: 'Built for your dev workflow',
+    outro: ['Practical.', 'Efficient.', 'Open source.'],
+    cta: 'Free and open source · <b>leave a ⭐ and contribute</b>',
+    hold: 'Hold',
+    caps: [
+      `Turn on with ${KC('⌘/Alt')}${PLUS}${KC('⇧')}${PLUS}${KC('E')}`, 'Click the component', 'Write what to change', 'Saved on the component',
+      `Hold ${KC('Ctrl')} and open the modal`, 'Comment inside it', 'Closed? The icon hides.', 'Opened? It comes back.', 'Everything in one panel', 'Copy in 1 click',
+    ],
+    feats: [
+      ['Follows your code', 'Changed the component? The comment stays in the right place.'],
+      ['React · Vue · Svelte · Angular', 'Shows the component and file:line of each element.'],
+      ['100% local and free', 'No server, no account, no telemetry. Open source.'],
+      ['Hold Alt and comment', 'Annotates only while the key is held down.'],
+    ],
+  },
+}[LANG];
+document.documentElement.lang = LANG;
+$('#tagline').innerHTML = STR.tagline;
+$('#hook1').innerHTML = STR.hook1;
+$('#hook2').innerHTML = STR.hook2;
+$('#hook3').innerHTML = STR.hook3.map((w) => `<span>${w}</span>`).join('');
+$('#paste-title').innerHTML = STR.pasteTitle;
+$('#paste-sub').innerHTML = STR.pasteSub;
+$('#editor .bar span').textContent = STR.file;
+$('#feat-title').textContent = STR.featTitle;
+['#ow1', '#ow2', '#ow3'].forEach((id, i) => ($(id).textContent = STR.outro[i]));
+$('#end-cta').innerHTML = STR.cta;
+
+// ============================================================== dados
+const CLIPS = window.__CLIPS__; // injetado pelo renderizador: { nome: { t0, frames:[{file,ts}], events } }
+const MD = window.__MARKDOWN__ || '';
+
+const BUBBLE = [
+  '................', '................', '...oooooooooo...', '..oooooooooooo..', '.oooooooooooooo.', '.oooooooooooooo.',
+  '.ooowwowwowwooo.', '.ooowwowwowwooo.', '.oooooooooooooo.', '.ooooooooooooood', '..oooooooooooodd', '..ooodddddddddd.',
+  '..ood...........', '..od............', '..d.............', '................',
+];
+const COL = { o: '#D97757', d: '#AE5630', w: '#FAF9F5' };
+function buildLogo(el, cell) {
+  const px = [];
+  BUBBLE.forEach((row, y) => [...row].forEach((ch, x) => {
+    if (!COL[ch]) return;
+    const i = document.createElement('i');
+    i.style.cssText = `left:${x * cell}px;top:${y * cell}px;width:${cell}px;height:${cell}px;background:${COL[ch]}`;
+    el.append(i);
+    px.push({ el: i, x, y, r: Math.random() });
+  }));
+  return px;
+}
+const logoPx = buildLogo($('#logo'), 11);
+buildLogo($('#end-logo'), 7);
+// ordem de entrada dos pixels: de baixo para cima com um pouco de aleatoriedade
+logoPx.forEach((p) => (p.d = (15 - p.y) * 0.025 + p.r * 0.1));
+
+// ============================================================== linha do tempo
+const SC = {
+  intro: [0, 1.6], hook: [1.6, 3.9],
+  stage: [3.9, 19.4], paste: [19.4, 22.0], alt: [-1, -1],
+  features: [22.0, 24.8], outro: [24.8, 28.6],
+};
+const DURATION = 28.6;
+const WIPES = [3.9, 19.4, 22.0, 24.8]; // momento em que a cena troca (meio da transição)
+const WIPE_HALF = 0.32;
+
+// trechos dos clipes, encadeados: { clip, de, até, velocidade }
+const PIECES = [
+  // comentar
+  { clip: 'comment', c0: 0.45, c1: 5.65, r: 2.0 },
+  { clip: 'comment', c0: 5.65, c1: 8.35, r: 2.2 },
+  { clip: 'comment', c0: 8.35, c1: 9.85, r: 1.0 },
+  // modal
+  { clip: 'modal', c0: 1.5, c1: 2.6, r: 1.4 },
+  { clip: 'modal', c0: 2.6, c1: 6.2, r: 2.2 },
+  { clip: 'modal', c0: 6.2, c1: 7.3, r: 1.0 },
+  { clip: 'modal', c0: 8.6, c1: 9.9, r: 1.4 },
+  { clip: 'modal', c0: 11.25, c1: 12.6, r: 1.2 },
+  // painel + copiar
+  { clip: 'panel', c0: 0.35, c1: 1.45, r: 1.2 },
+  { clip: 'panel', c0: 1.45, c1: 4.6, r: 3.0 },
+  { clip: 'panel', c0: 4.6, c1: 7.6, r: 1.4 },
+];
+const SEGS = [];
+{
+  let v = SC.stage[0] + 0.2;
+  for (const p of PIECES) { const s = Object.assign({ v0: v }, p); s.v1 = v + (p.c1 - p.c0) / p.r; v = s.v1; SEGS.push(s); }
+}
+
+// legendas: (trecho, tempo no clipe)
+const CAPTIONS = [
+  { seg: 0, at: 0.5, num: 1, html: STR.caps[0] },
+  { seg: 0, at: 3.0, num: 2, html: STR.caps[1] },
+  { seg: 1, at: 5.8, num: 3, html: STR.caps[2] },
+  { seg: 2, at: 8.4, num: '✓', html: STR.caps[3] },
+  { seg: 3, at: 1.5, num: '✋', html: STR.caps[4] },
+  { seg: 4, at: 4.4, num: '★', html: STR.caps[5] },
+  { seg: 6, at: 8.7, num: '★', html: STR.caps[6] },
+  { seg: 7, at: 11.3, num: '★', html: STR.caps[7] },
+  { seg: 8, at: 0.4, num: '☰', html: STR.caps[8] },
+  { seg: 10, at: 5.2, num: '⧉', html: STR.caps[9] },
+];
+const toVideo = (s, c) => s.v0 + Math.max(0, c - s.c0) / s.r;
+CAPTIONS.forEach((c) => (c.v = toVideo(SEGS[c.seg], c.at) - 0.08));
+
+// zoom: pontos-chave em tempo de clipe {c, z, x, y}
+const ZOOM = {
+  comment: [
+    { c: 0, z: 1, x: 600, y: 360 }, { c: 5.1, z: 1, x: 600, y: 360 }, { c: 5.75, z: 1.3, x: 300, y: 330 },
+    { c: 9.85, z: 1.3, x: 300, y: 330 },
+  ],
+  modal: [
+    { c: 0, z: 1, x: 600, y: 360 }, { c: 3.0, z: 1, x: 600, y: 360 }, { c: 3.6, z: 1.22, x: 560, y: 330 },
+    { c: 7.3, z: 1.22, x: 560, y: 330 }, { c: 8.5, z: 1.0, x: 600, y: 360 },
+  ],
+  panel: [
+    { c: 0, z: 1, x: 600, y: 360 }, { c: 0.6, z: 1, x: 600, y: 360 }, { c: 1.3, z: 1.25, x: 1080, y: 250 },
+    { c: 4.9, z: 1.25, x: 1080, y: 250 }, { c: 5.5, z: 1.15, x: 1080, y: 700 }, { c: 7.9, z: 1.15, x: 1080, y: 700 },
+  ],
+};
+
+function zoomAt(clip, c) {
+  const k = ZOOM[clip] || [{ c: 0, z: 1, x: 600, y: 360 }];
+  if (c <= k[0].c) return k[0];
+  for (let i = 1; i < k.length; i++) {
+    if (c <= k[i].c) {
+      const p = easeInOut(prog(c, k[i - 1].c, k[i].c));
+      return { z: lerp(k[i - 1].z, k[i].z, p), x: lerp(k[i - 1].x, k[i].x, p), y: lerp(k[i - 1].y, k[i].y, p) };
+    }
+  }
+  return k[k.length - 1];
+}
+
+// segmento ativo para o tempo do vídeo (antes do primeiro: segura o 1º quadro do próximo)
+function segAt(t) {
+  for (const s of SEGS) if (t >= s.v0 && t < s.v1) return s;
+  // fora dos trechos: segura o quadro mais próximo (até 0,6 s)
+  let best = null, dist = 0.6;
+  for (const s of SEGS) {
+    const d = t < s.v0 ? s.v0 - t : t - s.v1;
+    if (d < dist) { best = s; dist = d; }
+  }
+  return best;
+}
+function clipTime(s, t) { return clamp(s.c0 + (t - s.v0) * s.r, s.c0, s.c1); }
+
+function frameFor(clip, c) {
+  const d = CLIPS[clip];
+  const ts = d.t0 + c;
+  let lo = 0, hi = d.frames.length - 1;
+  if (d.frames[0].ts > ts) return d.frames[0].file;
+  while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (d.frames[mid].ts <= ts) lo = mid; else hi = mid - 1; }
+  return d.frames[lo].file;
+}
+
+function mouseAt(clip, c) {
+  const d = CLIPS[clip];
+  const ts = d.t0 + c;
+  const ms = d.mouse;
+  if (!ms.length) return { x: 900, y: 576 };
+  if (ts <= ms[0].ts) return ms[0];
+  for (let i = 1; i < ms.length; i++) {
+    if (ms[i].ts >= ts) {
+      const p = (ts - ms[i - 1].ts) / Math.max(1e-6, ms[i].ts - ms[i - 1].ts);
+      return { x: lerp(ms[i - 1].x, ms[i].x, p), y: lerp(ms[i - 1].y, ms[i].y, p) };
+    }
+  }
+  return ms[ms.length - 1];
+}
+
+// prepara listas de mouse/eventos (tempos relativos ao clipe)
+for (const [name, d] of Object.entries(CLIPS)) {
+  const first = d.events.find((e) => e.type === 'mouse');
+  d.mouse = [{ ts: d.t0 - 10, x: first ? first.x : 900, y: first ? first.y : 576 }, ...d.events.filter((e) => e.type === 'mouse')];
+  d.ev = d.events.map((e) => Object.assign({}, e, { c: e.ts - d.t0 }));
+}
+
+// eventos do vídeo (para sobreposições e para o áudio)
+function videoEvents() {
+  const out = [];
+  SEGS.forEach((s, si) => {
+    for (const e of CLIPS[s.clip].ev) {
+      if (e.c < s.c0 || e.c > s.c1) continue;
+      out.push(Object.assign({}, e, { v: toVideo(s, e.c), seg: si }));
+    }
+  });
+  return out;
+}
+const VEV = videoEvents();
+
+// ============================================================== transição pixelada
+const WCOLS = 24, WROWS = 14;
+const wipeCells = [];
+for (let r = 0; r < WROWS; r++) for (let c = 0; c < WCOLS; c++) {
+  const i = document.createElement('i');
+  i.style.left = c * 54 - 6 + 'px'; i.style.top = r * 54 - 18 + 'px';
+  $('#wipe').append(i);
+  wipeCells.push({ el: i, d: (c / WCOLS) * 0.22 + (r / WROWS) * 0.08 + Math.random() * 0.08 });
+}
+function renderWipe(t) {
+  let active = null;
+  for (const w of WIPES) if (t > w - WIPE_HALF && t < w + WIPE_HALF) active = w;
+  for (const cell of wipeCells) {
+    if (active == null) { cell.el.style.transform = 'scale(0)'; continue; }
+    // cobrir: [w-0.45, w]  |  descobrir: [w, w+0.45]
+    const pin = easeOut(prog(t, active - WIPE_HALF + cell.d * 0.45, active - 0.06 + cell.d * 0.25));
+    const pout = easeIn(prog(t, active + 0.02 + cell.d * 0.45, active + 0.22 + cell.d * 0.4));
+    const s = t < active ? pin : 1 - pout;
+    cell.el.style.transform = `scale(${s.toFixed(3)})`;
+  }
+}
+
+// ============================================================== cenas
+function renderIntro(t) {
+  const vis = t < SC.intro[1] ? 1 : 0;
+  show($('#intro'), vis * (1 - prog(t, SC.intro[1] - 0.35, SC.intro[1])));
+  if (!vis) return;
+  for (const p of logoPx) {
+    const q = prog(t, 0.05 + p.d, 0.05 + p.d + 0.16);
+    const s = q <= 0 ? 0 : easeBack(q);
+    p.el.style.transform = `scale(${s.toFixed(3)})`;
+  }
+  const float = Math.sin(t * 2.2) * 3;
+  $('#logo').style.transform = `translateY(${(float * prog(t, 0.6, 1.0)).toFixed(2)}px)`;
+  const tp = easeOut(prog(t, 0.55, 0.9));
+  $('#title').style.opacity = tp; $('#title').style.transform = `translateY(${(1 - tp) * 30}px)`;
+  const gp = easeOut(prog(t, 0.8, 1.15));
+  $('#tagline').style.opacity = gp; $('#tagline').style.transform = `translateY(${(1 - gp) * 18}px)`;
+}
+
+function renderHook(t) {
+  const [a, b] = SC.hook;
+  show($('#hook'), t >= a - 0.05 && t < b ? 1 : 0);
+  if (t < a - 0.05 || t >= b) return;
+  const p1 = easeOut(prog(t, a + 0.0, a + 0.25));
+  const out12 = prog(t, a + 0.85, a + 1.0);
+  $('#hook1').style.opacity = p1 * (1 - out12);
+  $('#hook1').style.transform = `translateY(${(1 - p1) * 24 - out12 * 20}px)`;
+  $('#hook2').style.opacity = 0;
+
+  const words = document.querySelectorAll('#hook3 span');
+  words.forEach((w, i) => {
+    const q = prog(t, a + 1.0 + i * 0.32, a + 1.0 + i * 0.32 + 0.22);
+    const s = q <= 0 ? 0 : easeBack(q);
+    w.style.opacity = clamp(q * 3);
+    w.style.transform = `scale(${(0.6 + 0.4 * s).toFixed(3)}) translateY(${((1 - s) * 20).toFixed(1)}px)`;
+  });
+}
+
+let currentCaption = null;
+function renderStage(t) {
+  const inStage = (t >= SC.stage[0] && t < SC.stage[1]) || (t >= SC.alt[0] && t < SC.alt[1]);
+  show($('#stage'), inStage ? 1 : 0);
+  show($('#bg-light'), (t >= SC.stage[0] && t < SC.features[1]) ? 1 : 0);
+  if (!inStage) return null;
+  // entrada do quadro
+  const enter = SC.stage[0] <= t && t < SC.stage[0] + 1 ? easeOut(prog(t, SC.stage[0], SC.stage[0] + 0.45))
+    : SC.alt[0] <= t && t < SC.alt[0] + 1 ? easeOut(prog(t, SC.alt[0], SC.alt[0] + 0.7)) : 1;
+  $('#frame').style.transform = `translateY(${((1 - enter) * 40).toFixed(1)}px) scale(${(0.96 + 0.04 * enter).toFixed(4)})`;
+
+  const s = segAt(t);
+  let src = null;
+  if (s) {
+    const c = clipTime(s, t);
+    src = `clips-${LANG}/${s.clip}/${frameFor(s.clip, c)}`;
+    const z = zoomAt(s.clip, c);
+    // escala do clipe (1200x720) para a janela (900x540) + zoom em torno do foco
+    const base = 0.75;
+    const sc = base * z.z;
+    let tx = 450 - z.x * sc, ty = 270 - z.y * sc;
+    tx = clamp(tx, 900 - 1200 * sc, 0); ty = clamp(ty, 540 - 720 * sc, 0);
+    $('#zoom').style.transform = `translate(${tx.toFixed(2)}px, ${ty.toFixed(2)}px) scale(${sc.toFixed(4)})`;
+    // cursor
+    const m = mouseAt(s.clip, c);
+    $('#cursor').style.transform = `translate(${(m.x - 3).toFixed(1)}px, ${(m.y - 2).toFixed(1)}px) scale(${(1 / z.z * 1.25).toFixed(3)})`;
+    $('#cursor').style.transformOrigin = '0 0';
+    // cliques
+    const rip = $('#ripples'); rip.innerHTML = '';
+    for (const e of VEV) {
+      if (e.type !== 'click' || SEGS[e.seg] !== s) continue;
+      const q = prog(t, e.v, e.v + 0.35);
+      if (q <= 0 || q >= 1) continue;
+      const d = document.createElement('div'); d.className = 'ripple';
+      d.style.left = e.x + 'px'; d.style.top = e.y + 'px';
+      d.style.transform = `scale(${(0.3 + easeOut(q) * 1.1).toFixed(3)})`; d.style.opacity = (1 - q).toFixed(3);
+      rip.append(d);
+    }
+    // teclas
+    renderKeys(t, s);
+  }
+  // legenda
+  let cap = null;
+  for (const c of CAPTIONS) if (t >= c.v) cap = c;
+  const segOfCap = cap && SEGS[cap.seg];
+  if (t >= SC.stage[1]) cap = null;
+  const capEl = $('#caption');
+  if (cap !== currentCaption) {
+    currentCaption = cap;
+    capEl.innerHTML = cap ? `<span class="num">${cap.num}</span><span class="cap-text">${cap.html}</span>` : '';
+  }
+  if (cap) {
+    const q = easeOut(prog(t, cap.v, cap.v + 0.2));
+    capEl.style.opacity = q; capEl.style.transform = `translateY(${((1 - q) * 14).toFixed(1)}px)`;
+  }
+  return src;
+}
+
+function renderKeys(t, s) {
+  const box = $('#keys');
+  let html = '', vis = 0;
+  for (const e of VEV) {
+    if (SEGS[e.seg] !== s) continue;
+    if (e.type === 'key') {
+      const q = prog(t, e.v - 0.05, e.v + 0.75);
+      if (q > 0 && q < 1) {
+        const keys = e.label.split(' + ').map((k) => `<span class="kc">${k}</span>`).join('<span class="plus" style="color:#fff">+</span>');
+        html = `<span class="chip">${keys}</span>`;
+        vis = Math.min(prog(t, e.v - 0.05, e.v + 0.08), 1 - prog(t, e.v + 0.6, e.v + 0.75));
+      }
+    }
+    if (e.type === 'keydown') {
+      const up = VEV.find((u) => u.type === 'keyup' && u.v > e.v && u.key === e.key);
+      const end = (up ? up.v : e.v + 1) + 0.25;
+      if (t >= e.v - 0.05 && t < end) {
+        const label = e.label.replace(/^(Segure|Hold) /, '');
+        html = `<span class="chip">${STR.hold} <span class="kc">${label}</span></span>`;
+        vis = Math.min(prog(t, e.v - 0.05, e.v + 0.1), 1 - prog(t, end - 0.2, end));
+      }
+    }
+  }
+  if (box.innerHTML !== html) box.innerHTML = html;
+  box.style.opacity = vis;
+  box.style.transform = `translateY(${((1 - vis) * 10).toFixed(1)}px)`;
+}
+
+// markdown colorido
+const mdAll = MD.split('\n');
+const firstPage = Math.max(0, mdAll.findIndex((l) => l.startsWith('## ')));
+const mdLines = [mdAll[0], ''].concat(mdAll.slice(firstPage)).filter((l, i, arr) => !(l === '' && arr[i - 1] === '')).slice(0, 70);
+function mdHtml(text) {
+  return text.split('\n').map((l) => {
+    const e = l.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    if (/^#/.test(l)) return `<span class="h">${e}</span>`;
+    if (/^&gt;/.test(e)) return `<span class="q">${e}</span>`;
+    return e.replace(/(`[^`]*`)/g, '<span class="c">$1</span>').replace(/(\*\*[^*]+\*\*)/g, '<span class="k">$1</span>');
+  }).join('\n');
+}
+function renderPaste(t) {
+  const [a, b] = SC.paste;
+  const vis = t >= a && t < b;
+  show($('#paste'), vis ? 1 : 0);
+  if (!vis) return;
+  const tp = easeOut(prog(t, a + 0.05, a + 0.3));
+  $('#paste-title').style.opacity = tp; $('#paste-title').style.transform = `translateY(${(1 - tp) * 16}px)`;
+  const sp = easeOut(prog(t, a + 0.2, a + 0.45));
+  $('#paste-sub').style.opacity = sp;
+  const ep = easeOut(prog(t, a + 0.15, a + 0.45));
+  $('#editor').style.opacity = ep; $('#editor').style.transform = `translateY(${(1 - ep) * 30}px)`;
+  // "cola" tudo de uma vez e rola
+  const full = mdLines.join('\n');
+  const pasted = t >= a + 0.5;
+  const code = $('#code');
+  const scrollP = easeInOut(prog(t, a + 0.8, b - 0.3));
+  const html = `<div class="inner">${pasted ? mdHtml(full) : '<span class="caret"></span>'}</div>`;
+  if (code.dataset.state !== String(pasted)) { code.innerHTML = html; code.dataset.state = String(pasted); code.dataset.max = ''; }
+  const inner = code.firstElementChild;
+  if (pasted && !code.dataset.max) code.dataset.max = String(Math.max(0, inner.offsetHeight - (code.clientHeight - 36)));
+  inner.style.transform = `translateY(${(-scrollP * (parseFloat(code.dataset.max) || 0)).toFixed(1)}px)`;
+  // flash ao colar
+  const flash = 1 - prog(t, a + 0.5, a + 0.85);
+  $('#editor').style.boxShadow = `0 30px 60px -20px rgba(31,30,29,.45), 0 0 0 ${pasted ? (flash * 6).toFixed(1) : 0}px rgba(217,119,87,${(flash * 0.8).toFixed(2)})`;
+}
+
+const FEATS = [
+  { ic: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 9.5l3-3"/><path d="M7.2 4.6l1.1-1.1a2.8 2.8 0 0 1 4 4l-1.1 1.1"/><path d="M8.8 11.4l-1.1 1.1a2.8 2.8 0 0 1-4-4l1.1-1.1"/></svg>', h: STR.feats[0][0], p: STR.feats[0][1] },
+  { ic: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4L1.5 8 5 12M11 4l3.5 4-3.5 4M9.5 2.5l-3 11"/></svg>', h: STR.feats[1][0], p: STR.feats[1][1] },
+  { ic: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/></svg>', h: STR.feats[2][0], p: STR.feats[2][1] },
+  { ic: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 1.5L3.5 9H8l-1 5.5L12.5 7H8z"/></svg>', h: STR.feats[3][0], p: STR.feats[3][1] },
+];
+const featEls = FEATS.map((f, i) => {
+  const d = document.createElement('div'); d.className = 'card';
+  d.innerHTML = `<div class="ic">${f.ic}</div><h3>${f.h}</h3><p>${f.p}</p>`;
+  d.style.left = (i % 2 ? 660 : 190) + 'px'; d.style.top = (i < 2 ? 170 : 370) + 'px';
+  $('#features').append(d); return d;
+});
+function renderFeatures(t) {
+  const [a, b] = SC.features;
+  const vis = t >= a && t < b;
+  show($('#features'), vis ? 1 : 0);
+  if (!vis) return;
+  const tp = easeOut(prog(t, a + 0.05, a + 0.3));
+  $('#feat-title').style.opacity = tp; $('#feat-title').style.transform = `translateY(${(1 - tp) * 16}px)`;
+  featEls.forEach((el, i) => {
+    const q = prog(t, a + 0.25 + i * 0.16, a + 0.25 + i * 0.16 + 0.3);
+    const s = q <= 0 ? 0 : easeBack(q);
+    el.style.opacity = clamp(q * 2.5);
+    el.style.transform = `translateY(${((1 - s) * 40).toFixed(1)}px) scale(${(0.92 + 0.08 * s).toFixed(3)})`;
+  });
+}
+
+function renderOutro(t) {
+  const [a, b] = SC.outro;
+  const vis = t >= a && t < b + 1;
+  show($('#outro'), vis ? 1 : 0);
+  if (!vis) return;
+  const words = ['#ow1', '#ow2', '#ow3'];
+  const gone = easeIn(prog(t, a + 1.3, a + 1.5));
+  words.forEach((w, i) => {
+    const q = prog(t, a + 0.15 + i * 0.3, a + 0.15 + i * 0.3 + 0.22);
+    const s = q <= 0 ? 0 : easeBack(q);
+    $(w).style.opacity = clamp(q * 3) * (1 - gone);
+    $(w).style.transform = `scale(${(0.7 + 0.3 * s - gone * 0.1).toFixed(3)})`;
+  });
+  const lp = prog(t, a + 1.5, a + 1.8);
+  const ls = lp <= 0 ? 0 : easeBack(lp);
+  $('#end-logo').style.opacity = clamp(lp * 3);
+  $('#end-logo').style.transform = `scale(${ls.toFixed(3)}) translateY(${(Math.sin(t * 2.2) * 3 * lp).toFixed(2)}px)`;
+  const tp = easeOut(prog(t, a + 1.6, a + 1.9));
+  $('#end-title').style.opacity = tp; $('#end-title').style.transform = `translateY(${(1 - tp) * 20}px)`;
+  const rp = easeOut(prog(t, a + 1.75, a + 2.05));
+  $('#end-repo').style.opacity = rp; $('#end-repo').style.transform = `translateX(-50%) translateY(${(1 - rp) * 20}px)`;
+  const cp = easeOut(prog(t, a + 1.9, a + 2.2));
+  $('#end-cta').style.opacity = cp; $('#end-cta').style.transform = `translateY(${(1 - cp) * 14}px)`;
+  // fade final
+  document.body.style.filter = `brightness(${(1 - prog(t, DURATION - 0.35, DURATION) * 0.9).toFixed(3)})`;
+}
+
+// ============================================================== render
+window.render = async function (t) {
+  document.body.style.filter = '';
+  const dark = t < SC.stage[0] || t >= SC.outro[0];
+  show($('#bg-dark'), dark ? 1 : 0);
+  renderIntro(t);
+  renderHook(t);
+  const src = renderStage(t);
+  renderPaste(t);
+  renderFeatures(t);
+  renderOutro(t);
+  renderWipe(t);
+  if (src) {
+    const img = $('#clip');
+    if (img.getAttribute('src') !== src) { img.setAttribute('src', src); try { await img.decode(); } catch (_) {} }
+  }
+};
+
+// eventos para o mixer de áudio
+window.audioEvents = function () {
+  const out = [];
+  const sorted = [...logoPx].sort((p, q) => p.d - q.d);
+  for (let i = 0; i < sorted.length; i += 14) out.push({ t: 0.05 + sorted[i].d, type: 'blip', n: Math.floor(i / 14) });
+  out.push({ t: 0.55, type: 'whoosh-soft' });
+  const a = SC.hook[0];
+  out.push({ t: a, type: 'tick' });
+  [0, 1, 2].forEach((i) => out.push({ t: a + 1.0 + i * 0.32, type: 'pop', n: i }));
+  for (const w of WIPES) out.push({ t: w - WIPE_HALF, type: 'whoosh-fast' });
+  for (const c of CAPTIONS) out.push({ t: c.v, type: 'tick-soft' });
+  let lastType = -1;
+  for (const e of VEV) {
+    if (e.type === 'click') out.push({ t: e.v, type: 'click' });
+    if (e.type === 'key' || e.type === 'keydown') out.push({ t: e.v, type: 'key' });
+    if (e.type === 'char' && e.v - lastType >= 0.055) { out.push({ t: e.v, type: 'type' }); lastType = e.v; }
+    if (e.type === 'key' && /Enter/.test(e.label)) out.push({ t: e.v + 0.06, type: 'drop' }, { t: e.v + 0.16, type: 'sparkle' });
+  }
+  const copy = VEV.find((e) => e.type === 'click' && SEGS[e.seg].clip === 'panel');
+  if (copy) out.push({ t: copy.v + 0.1, type: 'success' });
+  out.push({ t: SC.paste[0] + 0.5, type: 'paste' });
+  FEATS.forEach((_, i) => out.push({ t: SC.features[0] + 0.25 + i * 0.16, type: 'pop', n: i }));
+  [0, 1, 2].forEach((i) => out.push({ t: SC.outro[0] + 0.15 + i * 0.3, type: 'punch', n: i }));
+  out.push({ t: SC.outro[0] + 1.5, type: 'chime' });
+  return out.sort((x, y) => x.t - y.t);
+};
+window.DURATION = DURATION;
+window.SC = SC;
+</script>
+</body>
+</html>

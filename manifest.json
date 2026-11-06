@@ -3,7 +3,8 @@
   "name": "Browser Annotation",
   "short_name": "Browser Annotation",
   "version": "0.1.0",
-  "description": "Anote componentes da tela em que você está trabalhando e copie os comentários em aberto para o Claude ou outra LLM.",
+  "description": "__MSG_extDescription__",
+  "default_locale": "en",
   "minimum_chrome_version": "111",
   "icons": {
     "16": "icons/icon16.png",
@@ -12,7 +13,7 @@
     "128": "icons/icon128.png"
   },
   "action": {
-    "default_title": "Browser Annotation — ativar modo anotação",
+    "default_title": "__MSG_actionTitle__",
     "default_icon": {
       "16": "icons/icon16.png",
       "32": "icons/icon32.png",
@@ -37,14 +38,14 @@
         "default": "Alt+Shift+E",
         "mac": "Command+Shift+E"
       },
-      "description": "Ativar/desativar o modo anotação"
+      "description": "__MSG_cmdToggle__"
     },
     "toggle-panel": {
       "suggested_key": {
         "default": "Alt+Shift+K",
         "mac": "Command+Shift+K"
       },
-      "description": "Mostrar/esconder a lista de comentários"
+      "description": "__MSG_cmdPanel__"
     }
   },
   "content_scripts": [

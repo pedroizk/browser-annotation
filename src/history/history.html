@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Browser Annotation — Histórico</title>
+  <title data-i18n="hPageTitle">Browser Annotation — History</title>
   <link rel="icon" href="../../icons/icon32.png" />
   <link rel="stylesheet" href="history.css" />
 </head>
@@ -13,14 +13,14 @@
       <span id="logo"></span>
       <div>
         <h1>Browser Annotation</h1>
-        <p>Histórico de comentários</p>
+        <p data-i18n="hSubtitle"></p>
       </div>
     </div>
     <div class="top-actions">
       <span class="stats" id="stats"></span>
-      <button class="btn" id="btn-import" type="button" title="Importar comentários de um arquivo JSON">Importar</button>
-      <button class="btn" id="btn-export" type="button" title="Exportar os comentários filtrados como JSON">Exportar JSON</button>
-      <button class="btn primary" id="btn-copy" type="button">Copiar abertos</button>
+      <button class="btn" id="btn-import" type="button" data-i18n="hImport" data-i18n-title="hImportTitle"></button>
+      <button class="btn" id="btn-export" type="button" data-i18n="hExport" data-i18n-title="hExportTitle"></button>
+      <button class="btn primary" id="btn-copy" type="button" data-i18n="hCopyOpen"></button>
       <input type="file" id="file-import" accept="application/json,.json" hidden />
     </div>
   </header>
@@ -28,50 +28,49 @@
   <div class="layout">
     <aside class="sidebar">
       <section>
-        <h2>Status</h2>
+        <h2 data-i18n="hStatus"></h2>
         <nav class="filter-list" id="status-filter"></nav>
       </section>
       <section>
-        <h2>Sites</h2>
+        <h2 data-i18n="hSites"></h2>
         <nav class="filter-list" id="site-filter"></nav>
       </section>
       <section>
-        <h2>Configurações</h2>
+        <h2 data-i18n="hSettings"></h2>
         <label class="switch">
           <input type="checkbox" id="opt-pins" />
           <span class="track"></span>
-          <span class="txt">Mostrar ícones com o modo anotação desligado</span>
+          <span class="txt" data-i18n="hOptPins"></span>
         </label>
         <label class="switch">
           <input type="checkbox" id="opt-query" />
           <span class="track"></span>
-          <span class="txt">Considerar a query string (<code>?tab=…</code>) ao vincular comentários à página</span>
+          <span class="txt" id="opt-query-label"></span>
         </label>
         <label class="field">
-          <span class="txt">Tamanho da barra de ações</span>
+          <span class="txt" data-i18n="hOptToolbarSize"></span>
           <select id="opt-toolbar-size">
-            <option value="small">Pequena</option>
-            <option value="medium">Média</option>
-            <option value="large">Grande</option>
+            <option value="small" data-i18n="hSizeSmall"></option>
+            <option value="medium" data-i18n="hSizeMedium"></option>
+            <option value="large" data-i18n="hSizeLarge"></option>
           </select>
         </label>
         <label class="field">
-          <span class="txt">Segurar para comentar</span>
+          <span class="txt" data-i18n="hOptHold"></span>
           <select id="opt-hold" aria-describedby="opt-hold-help">
             <option value="Alt" id="opt-hold-alt">Alt</option>
             <option value="Shift">Shift</option>
-            <option value="off">Desativado</option>
+            <option value="off" data-i18n="hHoldOff"></option>
           </select>
         </label>
-        <p class="help" id="opt-hold-help">Enquanto a tecla estiver pressionada, o modo anotação fica ativo; ao soltar, ele desliga.</p>
+        <p class="help" id="opt-hold-help" data-i18n="hHoldHelp"></p>
         <p class="help">
-          Atalhos: <span id="sc-toggle"></span> ativa o modo anotação ·
-          <span id="sc-panel"></span> abre a lista na página.
-          <a href="#" id="link-shortcuts">Trocar atalhos</a>
+          <span id="sc-help"></span>
+          <a href="#" id="link-shortcuts" data-i18n="hChangeShortcuts"></a>
         </p>
       </section>
       <section>
-        <button class="btn danger full" id="btn-clear-resolved" type="button">Excluir todos os resolvidos</button>
+        <button class="btn danger full" id="btn-clear-resolved" type="button" data-i18n="hClearResolved"></button>
       </section>
     </aside>
 
@@ -79,11 +78,11 @@
       <div class="toolbar">
         <div class="search">
           <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg>
-          <input id="search" type="search" placeholder="Buscar por comentário, componente, URL…" autocomplete="off" />
+          <input id="search" type="search" data-i18n-placeholder="hSearchPlaceholder" autocomplete="off" />
         </div>
-        <select id="sort" aria-label="Ordenar">
-          <option value="new">Mais recentes primeiro</option>
-          <option value="old">Mais antigos primeiro</option>
+        <select id="sort" data-i18n-aria-label="hSort">
+          <option value="new" data-i18n="hSortNew"></option>
+          <option value="old" data-i18n="hSortOld"></option>
         </select>
       </div>
       <div id="content"></div>

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -35,50 +35,50 @@
 <body>
   <header>
     <strong class="logo">Acme Dashboard</strong>
-    <nav><a href="#">Visão geral</a><a href="#">Relatórios</a><a href="#">Configurações</a></nav>
+    <nav><a href="#">Overview</a><a href="#">Reports</a><a href="#">Settings</a></nav>
   </header>
   <main>
     <section class="hero">
-      <h1>Bem-vindo de volta 👋</h1>
-      <p class="subtitle">Aqui está o resumo da sua conta nesta semana.</p>
-      <button class="btn" data-testid="cta-primary" onclick="alert('clicou!')">Criar relatório</button>
-      <button class="btn secondary">Ver tutorial</button>
+      <h1>Welcome back 👋</h1>
+      <p class="subtitle">Here is your account summary for this week.</p>
+      <button class="btn" data-testid="cta-primary" onclick="alert('clicked!')">Create report</button>
+      <button class="btn secondary">View tutorial</button>
     </section>
     <div class="grid">
-      <div class="card"><h3>Receita</h3><p>R$ 12.430</p></div>
-      <div class="card"><h3>Usuários</h3><p>1.204</p></div>
-      <div class="card"><h3>Conversão</h3><p>3,2%</p></div>
+      <div class="card"><h3>Revenue</h3><p>$12,430</p></div>
+      <div class="card"><h3>Users</h3><p>1,204</p></div>
+      <div class="card"><h3>Conversion</h3><p>3.2%</p></div>
     </div>
     <form onsubmit="event.preventDefault()">
-      <input name="email" type="email" placeholder="voce@example.com" />
-      <button class="btn" type="submit">Assinar newsletter</button>
+      <input name="email" type="email" placeholder="you@example.com" />
+      <button class="btn" type="submit">Subscribe to newsletter</button>
     </form>
     <div class="actions">
-      <button class="btn secondary" id="open-modal">Abrir modal</button>
-      <button class="btn secondary" id="open-sheet">Abrir sheet lateral</button>
-      <button class="btn secondary" id="open-dialog">Abrir &lt;dialog&gt; nativo</button>
+      <button class="btn secondary" id="open-modal">Open modal</button>
+      <button class="btn secondary" id="open-sheet">Open side sheet</button>
+      <button class="btn secondary" id="open-dialog">Open native &lt;dialog&gt;</button>
     </div>
     <div class="tall"></div>
   </main>
-  <!-- Sheet lateral: fica no DOM e só é escondido; fecha ao clicar fora ou quando o foco sai (como Radix/MUI). -->
+  <!-- Side sheet: stays in the DOM and is only hidden; closes on outside click or when focus leaves (like Radix/MUI). -->
   <aside class="sheet" id="sheet" role="dialog" aria-labelledby="sheet-title" data-state="closed">
-    <h2 id="sheet-title">Filtros</h2>
-    <label for="f-name">Nome do cliente</label>
-    <input id="f-name" placeholder="Buscar cliente" />
+    <h2 id="sheet-title">Filters</h2>
+    <label for="f-name">Customer name</label>
+    <input id="f-name" placeholder="Search customers" />
     <label for="f-status">Status</label>
-    <input id="f-status" placeholder="Ativo, inativo…" />
-    <div class="modal-footer"><button class="btn" id="apply-filters">Aplicar filtros</button></div>
+    <input id="f-status" placeholder="Active, inactive…" />
+    <div class="modal-footer"><button class="btn" id="apply-filters">Apply filters</button></div>
   </aside>
 
-  <!-- <dialog> nativo com showModal(): top layer + resto da página inerte. -->
+  <!-- Native <dialog> with showModal(): top layer + rest of the page inert. -->
   <dialog class="native" id="native-dialog" aria-labelledby="nd-title">
-    <h2 id="nd-title" style="margin:0 0 12px">Excluir projeto?</h2>
-    <p>Essa ação não pode ser desfeita.</p>
-    <div class="modal-footer"><button class="btn secondary" id="nd-cancel">Cancelar</button><button class="btn" style="background:#dc2626" id="nd-confirm">Excluir</button></div>
+    <h2 id="nd-title" style="margin:0 0 12px">Delete project?</h2>
+    <p>This action cannot be undone.</p>
+    <div class="modal-footer"><button class="btn secondary" id="nd-cancel">Cancel</button><button class="btn" style="background:#dc2626" id="nd-confirm">Delete</button></div>
   </dialog>
 
   <script>
-    // Modal montado num "portal" (criado ao abrir, removido ao fechar), como em React/Radix/Headless UI.
+    // Modal mounted in a "portal" (created on open, removed on close), like React/Radix/Headless UI.
     let modal = null;
     function closeModal() {
       if (!modal) return;
@@ -96,10 +96,10 @@
       modal.innerHTML = `
         <div class="backdrop"></div>
         <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="m-title">
-          <h2 id="m-title">Editar perfil</h2>
-          <label for="m-name">Nome</label><input id="m-name" value="Maria Silva" />
-          <label for="m-mail">E-mail</label><input id="m-mail" value="maria@example.com" />
-          <div class="modal-footer"><button class="btn secondary" id="m-cancel">Cancelar</button><button class="btn" id="m-save">Salvar alterações</button></div>
+          <h2 id="m-title">Edit profile</h2>
+          <label for="m-name">Name</label><input id="m-name" value="Jane Cooper" />
+          <label for="m-mail">Email</label><input id="m-mail" value="jane@example.com" />
+          <div class="modal-footer"><button class="btn secondary" id="m-cancel">Cancel</button><button class="btn" id="m-save">Save changes</button></div>
         </div>`;
       document.body.append(modal);
       modal.querySelector('#m-cancel').onclick = closeModal;

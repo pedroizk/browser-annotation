@@ -2,6 +2,32 @@
 (function (g) {
   const PN = (g.BrowserAnnotation = g.BrowserAnnotation || {});
 
+  // ------------------------------------------------------------------ idioma
+  // Textos em _locales/<idioma>/messages.json; o Chrome escolhe pelo idioma do navegador
+  // (inglês por padrão, português quando o Chrome estiver em português).
+  PN.t = function (key, ...subs) {
+    let msg = '';
+    try {
+      msg = g.chrome && g.chrome.i18n ? g.chrome.i18n.getMessage(key, subs.map(String)) : '';
+    } catch (_) {
+      /* contexto sem chrome.i18n */
+    }
+    return msg || key;
+  };
+
+  /** Plural: usa `${key}_one` quando n === 1 e `${key}_other` nos demais casos; $1 recebe n. */
+  PN.tn = function (n, key, ...subs) {
+    return PN.t(`${key}_${n === 1 ? 'one' : 'other'}`, n, ...subs);
+  };
+
+  PN.locale = function () {
+    try {
+      return (g.chrome && g.chrome.i18n && g.chrome.i18n.getUILanguage()) || (g.navigator && g.navigator.language) || 'en';
+    } catch (_) {
+      return 'en';
+    }
+  };
+
   PN.KEY_PREFIX = 'ann:';
   PN.SETTINGS_KEY = 'settings';
   PN.PENDING_FOCUS_KEY = 'pendingFocus';
@@ -96,19 +122,19 @@
   PN.relativeTime = function (ts) {
     if (!ts) return '';
     const diff = Math.round((Date.now() - ts) / 1000);
-    if (diff < 45) return 'agora';
-    if (diff < 3600) return `há ${Math.round(diff / 60)} min`;
-    if (diff < 86400) return `há ${Math.round(diff / 3600)} h`;
+    if (diff < 45) return PN.t('timeNow');
+    if (diff < 3600) return PN.t('timeMinutes', Math.round(diff / 60));
+    if (diff < 86400) return PN.t('timeHours', Math.round(diff / 3600));
     if (diff < 86400 * 7) {
       const d = Math.round(diff / 86400);
-      return d === 1 ? 'ontem' : `há ${d} dias`;
+      return d === 1 ? PN.t('timeYesterday') : PN.t('timeDays', d);
     }
-    return new Date(ts).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
+    return new Date(ts).toLocaleDateString(PN.locale(), { day: '2-digit', month: 'short', year: 'numeric' });
   };
 
   PN.formatDate = function (ts) {
     if (!ts) return '';
-    return new Date(ts).toLocaleString('pt-BR', {
+    return new Date(ts).toLocaleString(PN.locale(), {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',

@@ -1,5 +1,7 @@
 // Teste de fumaça end-to-end: carrega a extensão num Chromium real e exercita o fluxo principal.
-// Uso: npm install && npm test   (ou: node tests/smoke.mjs)
+// Uso: npm install && npm test   (roda em inglês e em português)
+//      node tests/smoke.mjs            → inglês (padrão)
+//      PN_LANG=pt-BR node tests/smoke.mjs → português
 import { chromium } from 'playwright';
 import http from 'node:http';
 import fs from 'node:fs';
@@ -9,7 +11,22 @@ import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const demo = fs.readFileSync(path.join(ROOT, 'examples/demo.html'), 'utf8');
+const LANG = process.env.PN_LANG || 'en';
+// textos esperados em cada idioma (página de demo e interface da extensão)
+const L = {
+  en: {
+    demo: 'examples/demo.html', users: 'Users', usersActive: 'Active users', usersLong: 'Active users in the last 30 days', customers: 'Customers',
+    tipPanel: 'Comments  Alt+Shift+K', tipExit: 'Exit  Alt+Shift+E or Esc', resolve: 'Resolve',
+    mdOriginal: 'Text when the comment was made', mdVisible: 'Visible text', mdTitle: '# Requested UI changes',
+  },
+  'pt-BR': {
+    demo: 'examples/demo.pt-BR.html', users: 'Usuários', usersActive: 'Usuários ativos', usersLong: 'Usuários ativos nos últimos 30 dias', customers: 'Clientes',
+    tipPanel: 'Comentários  Alt+Shift+K', tipExit: 'Sair  Alt+Shift+E ou Esc', resolve: 'Resolver',
+    mdOriginal: 'Texto quando o comentário foi feito', mdVisible: 'Texto visível', mdTitle: '# Ajustes de interface solicitados',
+  },
+}[LANG];
+assert.ok(L, `idioma sem textos esperados: ${LANG}`);
+const demo = fs.readFileSync(path.join(ROOT, L.demo), 'utf8');
 let html = demo; // trocado durante o teste para simular mudanças no código da página
 const server = http.createServer((req, res) => {
   res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
@@ -22,7 +39,9 @@ const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'browser-annotation-'));
 const ctx = await chromium.launchPersistentContext(profile, {
   headless: !process.env.HEADED,
   channel: 'chromium',
-  args: [`--disable-extensions-except=${ROOT}`, `--load-extension=${ROOT}`],
+  args: [`--disable-extensions-except=${ROOT}`, `--load-extension=${ROOT}`, `--lang=${LANG}`],
+  env: { ...process.env, LANGUAGE: LANG.replace('-', '_'), LANG: `${LANG.replace('-', '_')}.UTF-8` }, // no Linux o idioma da interface vem do ambiente
+  locale: LANG,
   viewport: { width: 1280, height: 800 },
 });
 
@@ -31,6 +50,8 @@ try {
   await ctx.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: new globalThis.URL(URL).origin });
   const sw = ctx.serviceWorkers()[0] || (await ctx.waitForEvent('serviceworker'));
   const page = await ctx.newPage();
+  const uiLang = await sw.evaluate(() => chrome.i18n.getUILanguage());
+  assert.ok(uiLang.startsWith(LANG.slice(0, 2)), `Chrome no idioma do teste (${uiLang})`);
   // Os atalhos (⌘/Alt + Shift + E / K) são comandos do Chrome, que não chegam em modo
   // headless; o teste dispara o mesmo caminho que o comando usa: service worker → aba.
   const command = async (type) => {
@@ -69,8 +90,8 @@ try {
   assert.equal(await count('.tb-bar'), 1, 'barra de ações aparece ao ativar o modo');
   const tip = (act) =>
     page.evaluate((a) => document.querySelector('browser-annotation-root').shadowRoot.querySelector(`.tb-bar [data-act=${a}]`).dataset.tip, act);
-  assert.equal(await tip('panel'), 'Comentários  Alt+Shift+K', 'dica da lista mostra o atalho');
-  assert.equal(await tip('exit'), 'Sair  Alt+Shift+E ou Esc', 'dica de sair mostra o atalho');
+  assert.equal(await tip('panel'), L.tipPanel, 'dica da lista mostra o atalho');
+  assert.equal(await tip('exit'), L.tipExit, 'dica de sair mostra o atalho');
 
   await page.click('[data-testid=cta-primary]');
   await page.waitForTimeout(200);
@@ -94,8 +115,9 @@ try {
   const clip = await page.evaluate(() => navigator.clipboard.readText());
   assert.match(clip, /Aumentar o padding do botão/);
   assert.match(clip, /data-testid="cta-primary"/);
+  assert.ok(clip.startsWith(L.mdTitle), 'texto copiado no idioma da interface');
 
-  await page.evaluate(() => document.querySelector('browser-annotation-root').shadowRoot.querySelector('.panel .card [title="Resolver"]').click());
+  await page.evaluate((r) => document.querySelector('browser-annotation-root').shadowRoot.querySelector(`.panel .card [title="${r}"]`).click(), L.resolve);
   await page.waitForTimeout(600);
   assert.equal(await count('.pin'), 0, 'pin some ao resolver');
 
@@ -146,18 +168,18 @@ try {
   await page.waitForTimeout(600);
   const pinsBefore = await count('.pin');
 
-  html = demo.replace('<h3>Usuários</h3>', '<h3>Usuários ativos</h3>'); // 1ª mudança: texto
+  html = demo.replace(`<h3>${L.users}</h3>`, `<h3>${L.usersActive}</h3>`); // 1ª mudança: texto
   await page.reload();
   await page.waitForTimeout(2000); // reancora e atualiza as pistas
   assert.equal(await count('.pin.orphan'), 0, 'reencontra após trocar o texto');
 
-  html = demo.replace('<h3>Usuários</h3>', '<h3 class="card-title">Usuários ativos nos últimos 30 dias</h3>'); // 2ª mudança
+  html = demo.replace(`<h3>${L.users}</h3>`, `<h3 class="card-title">${L.usersLong}</h3>`); // 2ª mudança
   await page.reload();
   await page.waitForTimeout(1500);
   assert.equal(await count('.pin.orphan'), 0, 'reencontra após a segunda mudança');
 
   // Reancorar manualmente: o elemento some de vez
-  html = demo.replace('<h3>Usuários</h3>', '<h4>Clientes</h4>');
+  html = demo.replace(`<h3>${L.users}</h3>`, `<h4>${L.customers}</h4>`);
   await page.reload();
   await page.waitForTimeout(1200);
   assert.equal(await count('.pin.orphan'), 1, 'elemento removido vira pin órfão');
@@ -181,8 +203,8 @@ try {
   await page.evaluate(() => document.querySelector('browser-annotation-root').shadowRoot.querySelector('.panel-foot .btn.primary').click());
   await page.waitForTimeout(300);
   const clip2 = await page.evaluate(() => navigator.clipboard.readText());
-  assert.match(clip2, /Texto quando o comentário foi feito: "Usuários"/);
-  assert.match(clip2, /Texto visível: "Clientes"/);
+  assert.ok(clip2.includes(`${L.mdOriginal}: "${L.users}"`), 'texto original no texto copiado');
+  assert.ok(clip2.includes(`${L.mdVisible}: "${L.customers}"`), 'texto atual no texto copiado');
 
   // página de histórico mostra os atalhos configurados
   const history = await ctx.newPage();
@@ -192,7 +214,7 @@ try {
   assert.equal(await history.textContent('#sc-panel'), 'Alt+Shift+K', 'histórico mostra o atalho da lista');
   await history.close();
 
-  console.log('✓ smoke test ok');
+  console.log(`✓ smoke test ok (${LANG})`);
 } catch (err) {
   failed = true;
   console.error('✗', err.message);
