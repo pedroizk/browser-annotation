@@ -12,7 +12,7 @@
     "128": "icons/icon128.png"
   },
   "action": {
-    "default_title": "Browser Annotation — ativar modo anotação (⌘/Ctrl + ')",
+    "default_title": "Browser Annotation — ativar modo anotação",
     "default_icon": {
       "16": "icons/icon16.png",
       "32": "icons/icon32.png",
@@ -34,10 +34,17 @@
   "commands": {
     "toggle-annotation": {
       "suggested_key": {
-        "default": "Ctrl+Shift+Period",
-        "mac": "Command+Shift+Period"
+        "default": "Alt+Shift+E",
+        "mac": "Alt+Shift+E"
       },
-      "description": "Ativar/desativar o modo anotação (atalho alternativo; ⌘/Ctrl + ' funciona direto na página)"
+      "description": "Ativar/desativar o modo anotação"
+    },
+    "toggle-panel": {
+      "suggested_key": {
+        "default": "Alt+Shift+L",
+        "mac": "Alt+Shift+L"
+      },
+      "description": "Mostrar/esconder a lista de comentários"
     }
   },
   "content_scripts": [

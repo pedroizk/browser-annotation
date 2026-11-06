@@ -31,7 +31,7 @@ e copie todos os pedidos em aberto, com o contexto do código, para colar no Cla
 
 | Passo | Como |
 | --- | --- |
-| **1. Ative** | <kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>'</kbd> ou clique no ícone da extensão |
+| **1. Ative** | <kbd>⌥ Option</kbd>/<kbd>Alt</kbd> + <kbd>⇧</kbd> + <kbd>E</kbd> ou clique no ícone da extensão |
 | **2. Comente** | Passe o mouse, clique no elemento, escreva e salve com <kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>Enter</kbd> |
 | **3. Copie** | Clique no botão laranja da barra e cole na sua IA |
 
@@ -50,13 +50,17 @@ Para testar rápido, abra a página [`examples/demo.html`](examples/demo.html) p
 
 | Ação | Atalho |
 | --- | --- |
-| Ligar/desligar o modo anotação | <kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>'</kbd> |
+| Ligar/desligar o modo anotação | <kbd>⌥ Option</kbd>/<kbd>Alt</kbd> + <kbd>⇧</kbd> + <kbd>E</kbd> |
 | Anotar só enquanto segura a tecla | segure <kbd>Alt</kbd> (<kbd>⌥</kbd> no Mac) |
 | Usar a página sem comentar (abrir menus, modais, links) | segure <kbd>Ctrl</kbd> (<kbd>⌘</kbd> no Mac) |
 | Selecionar o elemento pai / voltar ao filho | <kbd>↑</kbd> / <kbd>↓</kbd> |
 | Salvar comentário | <kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>Enter</kbd> |
-| Abrir a lista de comentários | <kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>⇧</kbd> + <kbd>'</kbd> |
+| Abrir a lista de comentários | <kbd>⌥ Option</kbd>/<kbd>Alt</kbd> + <kbd>⇧</kbd> + <kbd>L</kbd> |
 | Fechar / sair | <kbd>Esc</kbd> |
+
+Os atalhos usam letras, que ficam no mesmo lugar em qualquer layout (inclusive ABNT2), e foram escolhidos para não colidir com atalhos do macOS, do Windows nem do Chrome. Para trocá-los, abra `chrome://extensions/shortcuts`: a interface da extensão passa a mostrar o atalho que você escolher.
+
+> No Windows, <kbd>Alt</kbd> + <kbd>⇧</kbd> sozinhos trocam o idioma do teclado quando há mais de um instalado. Pressionando a letra junto isso normalmente não acontece; se acontecer no seu caso, troque o atalho em `chrome://extensions/shortcuts`.
 
 ## Recursos
 

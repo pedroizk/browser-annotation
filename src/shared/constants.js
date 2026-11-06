@@ -17,6 +17,32 @@
     toolbarSize: 'small',
   };
 
+  // Atalhos padrão (definidos em manifest.json → commands). Letras em vez de pontuação:
+  // a posição de ' ; . / muda entre layouts (ex.: ABNT2) e esbarra em atalhos do sistema.
+  // Alt+Shift+letra não conflita com macOS/Windows; o Chrome reserva algumas (B, C, N, P, R,
+  // W, X, Z…), por isso E (Escrever) e L (Lista).
+  PN.SHORTCUTS = {
+    toggle: { code: 'KeyE', mac: '⌥⇧E', other: 'Alt+Shift+E' },
+    panel: { code: 'KeyL', mac: '⌥⇧L', other: 'Alt+Shift+L' },
+  };
+
+  PN.isMac = function () {
+    const p = (g.navigator && (g.navigator.userAgentData?.platform || g.navigator.platform || g.navigator.userAgent)) || '';
+    return /Mac|iPhone|iPad/i.test(p);
+  };
+
+  /** "⌥⇧X" → ['⌥','⇧','X'] | "Alt+Shift+X" → ['Alt','Shift','X'] */
+  PN.shortcutKeys = function (label) {
+    if (!label) return [];
+    return label.includes('+') ? label.split('+') : Array.from(label);
+  };
+
+  PN.shortcutHtml = function (label) {
+    return PN.shortcutKeys(label)
+      .map((k) => `<kbd>${PN.escapeHtml(k)}</kbd>`)
+      .join(label.includes('+') ? '+' : '');
+  };
+
   PN.uid = function () {
     try {
       if (g.crypto && typeof g.crypto.randomUUID === 'function') return g.crypto.randomUUID();

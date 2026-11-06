@@ -29,8 +29,20 @@ const ctx = await chromium.launchPersistentContext(profile, {
 let failed = false;
 try {
   await ctx.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: new globalThis.URL(URL).origin });
-  if (!ctx.serviceWorkers().length) await ctx.waitForEvent('serviceworker');
+  const sw = ctx.serviceWorkers()[0] || (await ctx.waitForEvent('serviceworker'));
   const page = await ctx.newPage();
+  // Os atalhos (Alt+Shift+E / Alt+Shift+L) são comandos do Chrome, que não chegam em modo
+  // headless; o teste dispara o mesmo caminho que o comando usa: service worker → aba.
+  const command = async (type) => {
+    await sw.evaluate(async (t) => {
+      const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+      await sendToTab(tab, { type: t });
+    }, type);
+    await page.waitForTimeout(300);
+  };
+  const shortcuts = await sw.evaluate(() => chrome.commands.getAll());
+  assert.equal(shortcuts.find((c) => c.name === 'toggle-annotation').shortcut, 'Alt+Shift+E', 'atalho do modo registrado');
+  assert.equal(shortcuts.find((c) => c.name === 'toggle-panel').shortcut, 'Alt+Shift+L', 'atalho da lista registrado');
   let dialogs = 0;
   page.on('dialog', (d) => (dialogs++, d.dismiss()));
   await page.goto(URL);
@@ -38,7 +50,7 @@ try {
   const count = (sel) =>
     page.evaluate((s) => document.querySelector('browser-annotation-root')?.shadowRoot.querySelectorAll(s).length ?? -1, sel);
 
-  await page.keyboard.press("Control+'");
+  await command('pn:toggle');
   assert.equal(await count('.tb-bar'), 1, 'barra de ações aparece ao ativar o modo');
 
   await page.click('[data-testid=cta-primary]');
@@ -55,7 +67,7 @@ try {
   assert.equal(await count('.pin'), 1, 'pin persiste após recarregar');
   assert.equal(await count('.pin.orphan'), 0, 'pin reancorado no elemento');
 
-  await page.keyboard.press("Control+Shift+'");
+  await command('pn:panel');
   await page.waitForTimeout(300);
   assert.equal(await count('.panel .card'), 1, 'painel lista o comentário');
   await page.evaluate(() => document.querySelector('browser-annotation-root').shadowRoot.querySelector('.panel-foot .btn.primary').click());
@@ -94,7 +106,7 @@ try {
   assert.equal(await cursorStyle(), false, 'modo desliga depois de salvar');
 
   // Impressão digital viva: o componente muda entre um reload e outro
-  await page.keyboard.press("Control+'");
+  await command('pn:toggle');
   await page.click('.grid .card:nth-child(2) h3');
   await page.waitForTimeout(250);
   await page.keyboard.type('Trocar o título do card');
@@ -133,7 +145,7 @@ try {
   assert.equal(await count('.pin.orphan'), 0, 'novo vínculo persiste após recarregar');
 
   // o texto copiado inclui o texto original
-  await page.keyboard.press("Control+Shift+'");
+  await command('pn:panel');
   await page.waitForTimeout(300);
   await page.evaluate(() => document.querySelector('browser-annotation-root').shadowRoot.querySelector('.panel-foot .btn.primary').click());
   await page.waitForTimeout(300);

@@ -13,6 +13,7 @@
     search: '',
     sort: 'new',
     editing: null,
+    shortcuts: { toggle: '', panel: '' },
   };
 
   function el(tag, props, ...children) {
@@ -246,7 +247,7 @@
     if (!list.length) {
       const msg = state.all.length
         ? 'Nenhum comentário corresponde aos filtros.'
-        : 'Ainda não há comentários. Abra qualquer página e pressione ⌘/Ctrl + \' para começar a anotar.';
+        : `Ainda não há comentários. Abra qualquer página e pressione ${state.shortcuts.toggle || 'o atalho do modo anotação'} para começar a anotar.`;
       content.append(el('div', { class: 'empty', html: PN.icons.bubble(48) }, el('div', { text: msg })));
       return;
     }
@@ -342,6 +343,20 @@
   }
 
   // ------------------------------------------------------------------ init
+  async function loadShortcuts() {
+    const def = (k) => (IS_MAC ? PN.SHORTCUTS[k].mac : PN.SHORTCUTS[k].other);
+    try {
+      for (const c of await chrome.commands.getAll()) {
+        if (c.name === 'toggle-annotation') state.shortcuts.toggle = c.shortcut || '';
+        if (c.name === 'toggle-panel') state.shortcuts.panel = c.shortcut || '';
+      }
+    } catch (_) {
+      /* ignora */
+    }
+    $('#sc-toggle').innerHTML = PN.shortcutHtml(state.shortcuts.toggle || def('toggle'));
+    $('#sc-panel').innerHTML = PN.shortcutHtml(state.shortcuts.panel || def('panel'));
+  }
+
   async function load() {
     state.settings = await store.getSettings();
     state.all = await store.all();
@@ -354,9 +369,8 @@
 
   function init() {
     $('#logo').innerHTML = PN.icons.bubble(36);
-    const mod = IS_MAC ? '⌘' : 'Ctrl';
-    $('#kbd-mod').textContent = mod;
-    $('#kbd-mod2').textContent = mod;
+    loadShortcuts();
+    window.addEventListener('focus', loadShortcuts); // o usuário pode ter trocado em chrome://extensions/shortcuts
 
     $('#search').addEventListener('input', (e) => {
       state.search = e.target.value;

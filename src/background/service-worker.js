@@ -63,14 +63,32 @@ function flashBadge(tabId, text) {
   setTimeout(() => chrome.action.setBadgeText({ tabId, text: '' }), 1500);
 }
 
+// Atalhos realmente configurados (o usuário pode trocar em chrome://extensions/shortcuts).
+async function getShortcuts() {
+  const out = { toggle: '', panel: '' };
+  try {
+    for (const c of await chrome.commands.getAll()) {
+      if (c.name === 'toggle-annotation') out.toggle = c.shortcut || '';
+      if (c.name === 'toggle-panel') out.panel = c.shortcut || '';
+    }
+  } catch (_) {
+    /* sem suporte */
+  }
+  return out;
+}
+
+const withShortcut = (text, sc) => (sc ? `${text} (${sc})` : text);
+
 function setBadge(tabId, count, active) {
   const text = count > 0 ? String(count) : active ? '•' : '';
   chrome.action.setBadgeText({ tabId, text });
   chrome.action.setBadgeBackgroundColor({ tabId, color: active ? '#D97757' : '#5E5D59' });
   if (chrome.action.setBadgeTextColor) chrome.action.setBadgeTextColor({ tabId, color: '#FFFFFF' });
-  chrome.action.setTitle({
-    tabId,
-    title: `Browser Annotation — ${active ? 'modo anotação ATIVO' : 'clique para anotar'} (⌘/Ctrl + ')` + (count ? ` · ${count} em aberto nesta página` : ''),
+  getShortcuts().then((sc) => {
+    chrome.action.setTitle({
+      tabId,
+      title: withShortcut(`Browser Annotation — ${active ? 'modo anotação ATIVO' : 'clique para anotar'}`, sc.toggle) + (count ? ` · ${count} em aberto nesta página` : ''),
+    });
   });
 }
 
@@ -88,9 +106,10 @@ async function refreshBadgeFromStorage(tab) {
 chrome.action.onClicked.addListener((tab) => sendToTab(tab, { type: 'pn:toggle' }));
 
 chrome.commands.onCommand.addListener(async (command, tab) => {
-  if (command !== 'toggle-annotation') return;
+  const type = { 'toggle-annotation': 'pn:toggle', 'toggle-panel': 'pn:panel' }[command];
+  if (!type) return;
   if (!tab) [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  sendToTab(tab, { type: 'pn:toggle' });
+  sendToTab(tab, { type });
 });
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
@@ -100,6 +119,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     case 'pn:badge':
       if (tabId != null) setBadge(tabId, msg.count || 0, !!msg.active);
       break;
+    case 'pn:get-shortcuts':
+      getShortcuts().then(sendResponse);
+      return true; // resposta assíncrona
     case 'pn:open-history':
       chrome.tabs.create({ url: HISTORY_URL, index: sender.tab ? sender.tab.index + 1 : undefined });
       break;
@@ -109,10 +131,11 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   sendResponse({ ok: true });
 });
 
-function setupMenus() {
+async function setupMenus() {
+  const sc = await getShortcuts();
   chrome.contextMenus.removeAll(() => {
-    chrome.contextMenus.create({ id: 'pn-toggle', title: "Ativar/desativar modo anotação (⌘/Ctrl + ')", contexts: ['action'] });
-    chrome.contextMenus.create({ id: 'pn-panel', title: "Mostrar comentários desta página (⌘/Ctrl + ⇧ + ')", contexts: ['action'] });
+    chrome.contextMenus.create({ id: 'pn-toggle', title: withShortcut('Ativar/desativar modo anotação', sc.toggle), contexts: ['action'] });
+    chrome.contextMenus.create({ id: 'pn-panel', title: withShortcut('Mostrar comentários desta página', sc.panel), contexts: ['action'] });
     chrome.contextMenus.create({ id: 'pn-copy', title: 'Copiar comentários em aberto desta página', contexts: ['action'] });
     chrome.contextMenus.create({ id: 'pn-history', title: 'Abrir histórico completo', contexts: ['action'] });
   });
