@@ -440,5 +440,5 @@
     return null;
   }
 
-  PN.locator = { describe, resolve, uniqueSelector, shortLabel, probeFramework, domPath, isStableClass, containerOf };
+  PN.locator = { describe, resolve, uniqueSelector, shortLabel, probeFramework, domPath };
 })(globalThis);

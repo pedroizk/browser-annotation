@@ -264,7 +264,7 @@
           'div',
           { class: 'group-head' },
           el('h3', { text: g.title || PN.prettyUrl(g.url), title: g.title || g.url }),
-          el('a', { href: g.url, target: '_blank', rel: 'noopener', text: PN.prettyUrl(g.url), title: g.url }),
+          el('a', { href: PN.isSafePageUrl(g.url) ? g.url : null, target: '_blank', rel: 'noopener noreferrer', text: PN.prettyUrl(g.url), title: g.url }),
           el('span', { class: 'count', text: `${open} em aberto · ${g.items.length} no total` })
         ),
         el('div', { class: 'cards' }, g.items.map(cardFor))
@@ -291,6 +291,7 @@
   }
 
   async function openOnPage(a) {
+    if (!PN.isSafePageUrl(a.page.url)) return toast('Endereço da página inválido');
     const key = PN.pageKey(a.page.url, state.settings);
     const tabs = await chrome.tabs.query({});
     const existing = tabs.find((t) => t.url && PN.pageKey(t.url, state.settings) === key);
@@ -313,7 +314,8 @@
 
   function exportJson() {
     const list = filtered();
-    const blob = new Blob([JSON.stringify({ app: 'browser-annotation', version: PN.VERSION, exportedAt: new Date().toISOString(), annotations: list }, null, 2)], {
+    const version = chrome.runtime.getManifest().version;
+    const blob = new Blob([JSON.stringify({ app: 'browser-annotation', version, exportedAt: new Date().toISOString(), annotations: list }, null, 2)], {
       type: 'application/json',
     });
     const url = URL.createObjectURL(blob);
@@ -330,9 +332,10 @@
       const data = JSON.parse(await file.text());
       const list = Array.isArray(data) ? data : data.annotations;
       if (!Array.isArray(list)) throw new Error('formato inválido');
-      const valid = list.filter((a) => a && a.id && a.comment && a.page && a.page.url && a.target);
+      const valid = list.map(PN.sanitizeAnnotation).filter(Boolean);
       await store.putMany(valid);
-      toast(`${valid.length} comentário(s) importado(s)`);
+      const skipped = list.length - valid.length;
+      toast(`${valid.length} comentário(s) importado(s)` + (skipped ? ` · ${skipped} ignorado(s) por estarem inválidos` : ''));
     } catch (err) {
       toast('Falha ao importar: ' + err.message);
     }

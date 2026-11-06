@@ -1007,6 +1007,7 @@
 
   async function focusAnnotation(a) {
     if (!isHere(a)) {
+      if (!PN.isSafePageUrl(a.page.url)) return;
       await store.setPendingFocus(a.id, a.page.url);
       location.href = a.page.url;
       return;

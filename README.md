@@ -132,6 +132,16 @@ O teste carrega a extensão num Chromium real, cria um comentário, recarrega a 
 
 Para regenerar os ícones (requer Pillow): `npm run icons`. Para gerar um `.zip` para a Chrome Web Store: `npm run zip`.
 
+## Privacidade e segurança
+
+- **Nada sai do navegador.** A extensão não faz requisições de rede, não tem telemetria e não usa servidores: os comentários ficam apenas no `chrome.storage.local` do seu perfil do Chrome.
+- **Permissões** (`manifest.json`): `storage`/`unlimitedStorage` para salvar os comentários, `scripting` para injetar o script em abas que já estavam abertas antes da instalação, `contextMenus` para o menu do ícone e acesso a `<all_urls>` para mostrar os ícones de comentário em qualquer página.
+- O script que roda no contexto da página (`page-bridge.js`) só **lê** metadados de componentes (nome, arquivo, linha) e não expõe nenhuma API da extensão para a página.
+- A UI fica num Shadow DOM isolado; textos vindos da página ou de arquivos importados são sempre inseridos como texto (sem HTML).
+- Arquivos JSON importados são validados campo a campo; só são aceitas URLs `http(s)` e `file`.
+
+Encontrou um problema de segurança? Abra uma issue sem detalhes sensíveis pedindo um contato privado.
+
 ## Limitações conhecidas
 
 - Funciona no frame principal; conteúdo dentro de `<iframe>` é anotado como o iframe inteiro.

@@ -26,8 +26,7 @@
     "storage",
     "unlimitedStorage",
     "scripting",
-    "contextMenus",
-    "tabs"
+    "contextMenus"
   ],
   "host_permissions": [
     "<all_urls>"

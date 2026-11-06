@@ -2,7 +2,6 @@
 (function (g) {
   const PN = (g.BrowserAnnotation = g.BrowserAnnotation || {});
 
-  PN.VERSION = '0.1.0';
   PN.KEY_PREFIX = 'ann:';
   PN.SETTINGS_KEY = 'settings';
   PN.PENDING_FOCUS_KEY = 'pendingFocus';
@@ -12,14 +11,6 @@
     matchQuery: false,
     // Mostra os ícones de comentário mesmo com o modo anotação desligado.
     showPinsWhenInactive: true,
-  };
-
-  PN.COLORS = {
-    orange: '#D97757',
-    orangeDark: '#AE5630',
-    orangeLight: '#F4D9CC',
-    cream: '#FAF9F5',
-    ink: '#1F1E1D',
   };
 
   PN.uid = function () {
@@ -63,6 +54,50 @@
       hour: '2-digit',
       minute: '2-digit',
     });
+  };
+
+  /** Só permitimos navegar/abrir páginas http(s) e file — nunca javascript:, data: etc. */
+  PN.isSafePageUrl = function (url) {
+    try {
+      return ['http:', 'https:', 'file:'].includes(new URL(url).protocol);
+    } catch (_) {
+      return false;
+    }
+  };
+
+  /**
+   * Normaliza um comentário vindo de fora (importação de JSON): mantém só os campos
+   * conhecidos, com os tipos esperados e tamanhos limitados. Retorna null se for inválido.
+   */
+  PN.sanitizeAnnotation = function (a) {
+    if (!a || typeof a !== 'object') return null;
+    const str = (v, max) => (typeof v === 'string' ? v.slice(0, max) : '');
+    const num = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
+    const id = str(a.id, 100);
+    const comment = str(a.comment, 20000).trim();
+    if (!id || !comment || !a.page || !PN.isSafePageUrl(a.page.url)) return null;
+    if (!a.target || typeof a.target !== 'object') return null;
+    let target;
+    try {
+      const json = JSON.stringify(a.target);
+      if (json.length > 100000) return null;
+      target = JSON.parse(json);
+    } catch (_) {
+      return null;
+    }
+    const now = Date.now();
+    const out = {
+      id,
+      status: a.status === 'resolved' ? 'resolved' : 'open',
+      comment,
+      createdAt: num(a.createdAt) || now,
+      updatedAt: num(a.updatedAt) || now,
+      resolvedAt: num(a.resolvedAt),
+      page: { url: String(a.page.url), title: str(a.page.title, 300) },
+      target,
+    };
+    if (num(a.editedAt)) out.editedAt = num(a.editedAt);
+    return out;
   };
 
   PN.escapeHtml = function (s) {
