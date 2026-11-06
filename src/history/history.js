@@ -348,6 +348,7 @@
     $('#opt-pins').checked = !!state.settings.showPinsWhenInactive;
     $('#opt-query').checked = !!state.settings.matchQuery;
     $('#opt-hold').value = state.settings.holdKey || 'Alt';
+    $('#opt-toolbar-size').value = state.settings.toolbarSize || 'small';
     render();
   }
 
@@ -376,6 +377,7 @@
     $('#opt-pins').addEventListener('change', (e) => store.setSettings({ showPinsWhenInactive: e.target.checked }));
     $('#opt-query').addEventListener('change', (e) => store.setSettings({ matchQuery: e.target.checked }));
     $('#opt-hold').addEventListener('change', (e) => store.setSettings({ holdKey: e.target.value }));
+    $('#opt-toolbar-size').addEventListener('change', (e) => store.setSettings({ toolbarSize: e.target.value }));
     if (IS_MAC) $('#opt-hold-alt').textContent = '⌥ Option';
     $('#link-shortcuts').addEventListener('click', (e) => {
       e.preventDefault();

@@ -50,7 +50,7 @@ Para testar rápido, abra a página [`examples/demo.html`](examples/demo.html) p
 
 <img src="docs/images/toolbar.png" width="293" alt="Barra de ações com ícones e tooltip" />
 
-Aparece com o modo anotação ligado. Da esquerda para a direita: indicador do modo, dicas de atalho, **lista de comentários** (com contador), **copiar abertos** e sair. Passe o mouse sobre um ícone para ver o que ele faz.
+Aparece com o modo anotação ligado. Da esquerda para a direita: indicador do modo, dicas de atalho, **lista de comentários** (com contador), **copiar abertos** e sair. Passe o mouse sobre um ícone para ver o que ele faz. O tamanho (pequena, média ou grande) pode ser ajustado nas configurações da página de histórico.
 
 ### Lista de comentários e histórico
 
