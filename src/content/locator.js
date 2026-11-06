@@ -228,6 +228,99 @@
     return info;
   }
 
+  // ------------------------------------------------------------------ contêineres temporários (modal, sheet, popover…)
+  const CONTAINER_SEL = [
+    'dialog',
+    '[role="dialog"]',
+    '[role="alertdialog"]',
+    '[aria-modal="true"]',
+    '[popover]',
+    '[role="menu"]',
+    '[role="listbox"]',
+    '[role="tooltip"]',
+    '[data-radix-popper-content-wrapper]',
+    '[data-headlessui-portal]',
+    '[data-vaul-drawer]',
+    '.modal',
+    '.drawer',
+    '.sheet',
+    '.offcanvas',
+    '.MuiDialog-root',
+    '.MuiDrawer-root',
+    '.MuiPopover-root',
+    '.ant-modal-root',
+    '.ant-drawer',
+    '.chakra-modal__content-container',
+  ].join(',');
+
+  function kindOf(node) {
+    const role = node.getAttribute('role');
+    const tag = node.tagName.toLowerCase();
+    const cls = (node.getAttribute('class') || '').toLowerCase();
+    if (role === 'menu' || role === 'listbox') return 'menu';
+    if (role === 'tooltip' || node.hasAttribute('popover') || node.hasAttribute('data-radix-popper-content-wrapper') || /popover/.test(cls)) return 'popover';
+    if (/drawer|sheet|offcanvas/.test(cls) || node.hasAttribute('data-vaul-drawer')) return 'sheet';
+    if (tag === 'dialog' || role === 'dialog' || role === 'alertdialog' || node.getAttribute('aria-modal') === 'true' || /modal|dialog/.test(cls)) return 'modal';
+    return 'overlay';
+  }
+
+  function titleOf(node) {
+    const aria = node.getAttribute('aria-label');
+    if (aria) return PN.truncate(aria, 60);
+    const ids = node.getAttribute('aria-labelledby');
+    if (ids) {
+      const t = ids
+        .split(/\s+/)
+        .map((id) => document.getElementById(id))
+        .filter(Boolean)
+        .map((n) => normText(n.textContent))
+        .join(' ');
+      if (t) return PN.truncate(t, 60);
+    }
+    const heading = node.querySelector('h1, h2, h3, h4, [role="heading"]');
+    if (heading) return PN.truncate(normText(heading.textContent), 60);
+    return '';
+  }
+
+  /** Procura o modal/sheet/popover (ou camada fixa) que contém o elemento. */
+  function containerOf(el) {
+    let node = el.closest(CONTAINER_SEL);
+    let kind = node ? kindOf(node) : null;
+    if (!node) {
+      // sheets/drawers sem semântica: ancestral com position: fixed
+      for (let n = el; n && n !== document.body && n !== document.documentElement; n = n.parentElement) {
+        let pos = '';
+        try {
+          pos = getComputedStyle(n).position;
+        } catch (_) {
+          pos = '';
+        }
+        if (pos === 'fixed') {
+          // ignora barras fixas que ocupam a largura toda e são baixas (headers/navbars)
+          const r = n.getBoundingClientRect();
+          if (r.height < 90 && r.width > window.innerWidth * 0.8) break;
+          node = n;
+          kind = 'overlay';
+          break;
+        }
+      }
+    }
+    if (!node) return null;
+    return { kind, label: shortLabel(node), title: titleOf(node), selector: uniqueSelector(node) };
+  }
+
+  function inAnyContainer(el) {
+    if (el.closest(CONTAINER_SEL)) return true;
+    for (let n = el; n && n !== document.body && n !== document.documentElement; n = n.parentElement) {
+      try {
+        if (getComputedStyle(n).position === 'fixed') return true;
+      } catch (_) {
+        /* ignora */
+      }
+    }
+    return false;
+  }
+
   // ------------------------------------------------------------------ API pública
   function describe(el) {
     const r = el.getBoundingClientRect();
@@ -253,6 +346,7 @@
       },
       viewport: { width: window.innerWidth, height: window.innerHeight },
       framework: fw,
+      container: containerOf(el),
     };
   }
 
@@ -291,6 +385,8 @@
     const add = (el, base) => {
       if (!el || el.nodeType !== 1) return;
       if (el.closest && el.closest('browser-annotation-root')) return;
+      // comentário feito dentro de um modal/sheet só vale para elementos dentro de um modal/sheet
+      if (t.container && !inAnyContainer(el)) return;
       cands.set(el, Math.max(cands.get(el) || -Infinity, base));
     };
 
@@ -327,6 +423,7 @@
         const el = list[i];
         if (textKeyOf(el) !== t.textKey) continue;
         if (el.closest('browser-annotation-root')) continue;
+        if (t.container && !inAnyContainer(el)) continue;
         if (jaccard(classesOf(el), t.classes || []) < 0.3 && (t.classes || []).length) continue;
         let dist = 0;
         if (t.rect) {
@@ -343,5 +440,5 @@
     return null;
   }
 
-  PN.locator = { describe, resolve, uniqueSelector, shortLabel, probeFramework, domPath, isStableClass };
+  PN.locator = { describe, resolve, uniqueSelector, shortLabel, probeFramework, domPath, isStableClass, containerOf };
 })(globalThis);

@@ -19,6 +19,17 @@
     form { margin-top: 24px; display: flex; gap: 8px; }
     input { flex: 1; padding: 10px 12px; border-radius: 8px; border: 1px solid #d1d5db; font: inherit; }
     .tall { height: 900px; }
+    .actions { display: flex; gap: 8px; margin-top: 24px; }
+    .backdrop { position: fixed; inset: 0; background: rgba(15, 23, 42, .45); }
+    .modal-content { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 420px; padding: 24px; background: #fff; border-radius: 14px; box-shadow: 0 20px 60px rgba(0,0,0,.25); }
+    .modal-content h2, .sheet h2 { margin: 0 0 12px; font-size: 20px; }
+    .modal-content label, .sheet label { display: block; margin: 12px 0 4px; font-size: 13px; color: #555; }
+    .modal-content input, .sheet input { width: 100%; box-sizing: border-box; }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+    .sheet { position: fixed; top: 0; right: 0; bottom: 0; width: 360px; padding: 24px; background: #fff; box-shadow: -10px 0 40px rgba(0,0,0,.15); transform: translateX(100%); visibility: hidden; transition: transform .25s, visibility .25s; }
+    .sheet[data-state="open"] { transform: none; visibility: visible; }
+    dialog.native { width: 380px; border: 0; border-radius: 14px; padding: 24px; box-shadow: 0 20px 60px rgba(0,0,0,.25); }
+    dialog.native::backdrop { background: rgba(15, 23, 42, .45); }
   </style>
 </head>
 <body>
@@ -42,7 +53,85 @@
       <input name="email" type="email" placeholder="seu@email.com" />
       <button class="btn" type="submit">Assinar newsletter</button>
     </form>
+    <div class="actions">
+      <button class="btn secondary" id="open-modal">Abrir modal</button>
+      <button class="btn secondary" id="open-sheet">Abrir sheet lateral</button>
+      <button class="btn secondary" id="open-dialog">Abrir &lt;dialog&gt; nativo</button>
+    </div>
     <div class="tall"></div>
   </main>
+  <!-- Sheet lateral: fica no DOM e só é escondido; fecha ao clicar fora ou quando o foco sai (como Radix/MUI). -->
+  <aside class="sheet" id="sheet" role="dialog" aria-labelledby="sheet-title" data-state="closed">
+    <h2 id="sheet-title">Filtros</h2>
+    <label for="f-name">Nome do cliente</label>
+    <input id="f-name" placeholder="Buscar cliente" />
+    <label for="f-status">Status</label>
+    <input id="f-status" placeholder="Ativo, inativo…" />
+    <div class="modal-footer"><button class="btn" id="apply-filters">Aplicar filtros</button></div>
+  </aside>
+
+  <!-- <dialog> nativo com showModal(): top layer + resto da página inerte. -->
+  <dialog class="native" id="native-dialog" aria-labelledby="nd-title">
+    <h2 id="nd-title" style="margin:0 0 12px">Excluir projeto?</h2>
+    <p>Essa ação não pode ser desfeita.</p>
+    <div class="modal-footer"><button class="btn secondary" id="nd-cancel">Cancelar</button><button class="btn" style="background:#dc2626" id="nd-confirm">Excluir</button></div>
+  </dialog>
+
+  <script>
+    // Modal montado num "portal" (criado ao abrir, removido ao fechar), como em React/Radix/Headless UI.
+    let modal = null;
+    function closeModal() {
+      if (!modal) return;
+      modal.remove();
+      modal = null;
+      document.removeEventListener('pointerdown', onOutside, true);
+      document.removeEventListener('focusin', trapFocus, true);
+      document.removeEventListener('keydown', onEsc);
+    }
+    function onOutside(e) { if (modal && !modal.querySelector('.modal-content').contains(e.target)) closeModal(); }
+    function trapFocus(e) { if (modal && !modal.contains(e.target)) modal.querySelector('input').focus(); }
+    function onEsc(e) { if (e.key === 'Escape') closeModal(); }
+    document.getElementById('open-modal').addEventListener('click', () => {
+      modal = document.createElement('div');
+      modal.innerHTML = `
+        <div class="backdrop"></div>
+        <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="m-title">
+          <h2 id="m-title">Editar perfil</h2>
+          <label for="m-name">Nome</label><input id="m-name" value="Maria Silva" />
+          <label for="m-mail">E-mail</label><input id="m-mail" value="maria@acme.com" />
+          <div class="modal-footer"><button class="btn secondary" id="m-cancel">Cancelar</button><button class="btn" id="m-save">Salvar alterações</button></div>
+        </div>`;
+      document.body.append(modal);
+      modal.querySelector('#m-cancel').onclick = closeModal;
+      modal.querySelector('#m-save').onclick = closeModal;
+      setTimeout(() => {
+        document.addEventListener('pointerdown', onOutside, true);
+        document.addEventListener('focusin', trapFocus, true);
+        document.addEventListener('keydown', onEsc);
+        modal && modal.querySelector('input').focus();
+      });
+    });
+
+    const sheet = document.getElementById('sheet');
+    function closeSheet() { sheet.dataset.state = 'closed'; }
+    document.getElementById('open-sheet').addEventListener('click', (e) => {
+      e.stopPropagation();
+      sheet.dataset.state = 'open';
+      setTimeout(() => document.getElementById('f-name').focus(), 50);
+    });
+    document.addEventListener('mousedown', (e) => { if (sheet.dataset.state === 'open' && !sheet.contains(e.target)) closeSheet(); });
+    document.addEventListener('focusin', (e) => { if (sheet.dataset.state === 'open' && !sheet.contains(e.target)) closeSheet(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSheet(); });
+    document.getElementById('apply-filters').onclick = closeSheet;
+
+    const dlg = document.getElementById('native-dialog');
+    document.getElementById('open-dialog').addEventListener('click', () => dlg.showModal());
+    dlg.addEventListener('click', (e) => {
+      const r = dlg.getBoundingClientRect();
+      if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) dlg.close();
+    });
+    document.getElementById('nd-cancel').onclick = () => dlg.close();
+    document.getElementById('nd-confirm').onclick = () => dlg.close();
+  </script>
 </body>
 </html>

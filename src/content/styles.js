@@ -98,7 +98,7 @@ svg { display: block; flex: none; }
   content: "?"; position: absolute; right: -2px; top: -4px; width: 13px; height: 13px; border-radius: 3px;
   background: var(--pn-ink); color: #fff; font: 700 9px/13px var(--pn-mono); text-align: center;
 }
-.pin.pop { animation: pin-pop .62s steps(1, end) both, pin-bounce .62s cubic-bezier(.2,1.8,.4,1) both; }
+.pin.dropping { animation: pin-pop .62s steps(1, end) both, pin-bounce .62s cubic-bezier(.2,1.8,.4,1) both; }
 @keyframes pin-bounce {
   0% { transform: translateY(-26px) scale(.2); }
   55% { transform: translateY(2px) scale(1.18, .86); }
@@ -189,34 +189,66 @@ kbd {
 .badge-n { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 5px; background: var(--pn-orange); color: #fff; font: 700 11px/1 var(--pn-mono); }
 .badge-n.muted { background: var(--pn-surface-2); color: var(--pn-muted); }
 
-/* ---------------------------------------------------------------- toolbar flutuante */
+/* ---------------------------------------------------------------- toolbar flutuante (só ícones) */
 .toolbar {
   position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%);
   display: flex; align-items: center; gap: 2px; padding: 5px; pointer-events: auto;
-  background: var(--pn-ink); color: var(--pn-ink-text); border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0,0,0,.3), 0 0 0 1px rgba(255,255,255,.06) inset;
+  background: var(--pn-ink); color: var(--pn-ink-text); border-radius: 14px;
+  box-shadow: 0 12px 32px rgba(0,0,0,.28), 0 2px 6px rgba(0,0,0,.18), 0 0 0 1px rgba(255,255,255,.07) inset;
   font: 500 12.5px/1 var(--pn-font);
   animation: tb-in .22s cubic-bezier(.2,.9,.3,1.15) both;
 }
 @keyframes tb-in { from { opacity: 0; transform: translate(-50%, 16px); } }
 .toolbar.out { animation: tb-out .16s ease-in forwards; }
 @keyframes tb-out { to { opacity: 0; transform: translate(-50%, 12px); } }
-.toolbar .brand { display: flex; align-items: center; gap: 8px; padding: 0 8px 0 6px; font-weight: 600; white-space: nowrap; }
-.toolbar .dot { width: 6px; height: 6px; margin-left: 2px; background: var(--pn-orange); box-shadow: 0 0 0 0 var(--pn-orange-glow); animation: blink 1.6s infinite; }
-.toolbar kbd.dark { background: transparent; border-color: rgba(255,255,255,.2); color: #A6A39A; }
-@keyframes blink { 0%,100% { box-shadow: 0 0 0 0 rgba(217,119,87,.6); } 70% { box-shadow: 0 0 0 7px rgba(217,119,87,0); } }
-.toolbar .hint { color: #A6A39A; padding: 0 8px; white-space: nowrap; }
-.toolbar .sep { width: 1px; height: 20px; background: rgba(255,255,255,.12); margin: 0 4px; }
-.toolbar button {
-  display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px;
-  border: 0; border-radius: 8px; background: transparent; color: var(--pn-ink-text); cursor: pointer; font: inherit; white-space: nowrap;
+.toolbar .brand { position: relative; display: flex; align-items: center; gap: 7px; height: 34px; padding: 0 9px 0 7px; border-radius: 9px; cursor: default; }
+.toolbar .dot { width: 6px; height: 6px; background: var(--pn-orange); animation: blink 1.6s infinite; }
+@keyframes blink { 0%,100% { box-shadow: 0 0 0 0 rgba(217,119,87,.6); opacity: 1; } 50% { opacity: .35; } 70% { box-shadow: 0 0 0 6px rgba(217,119,87,0); } }
+.toolbar.passthrough .dot { animation: none; background: #8F8C84; }
+.toolbar .sep { width: 1px; height: 18px; background: rgba(255,255,255,.1); margin: 0 4px; }
+.toolbar .tb {
+  position: relative; display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; padding: 0; border: 0; border-radius: 9px;
+  background: transparent; color: #C9C6BC; cursor: pointer;
+  transition: background .12s, color .12s, transform .08s;
 }
-.toolbar button:hover { background: rgba(255,255,255,.1); }
-.toolbar button.primary { background: var(--pn-orange); color: #fff; }
-.toolbar button.primary:hover { background: var(--pn-orange-hover); }
-.toolbar .count { font: 700 11px/1 var(--pn-mono); background: rgba(255,255,255,.14); padding: 3px 5px; border-radius: 4px; }
-.toolbar button.primary .count { background: rgba(0,0,0,.18); }
-@media (max-width: 720px) { .toolbar .hint { display: none; } }
+.toolbar .tb svg { width: 17px; height: 17px; }
+.toolbar button.tb:hover { background: rgba(255,255,255,.1); color: #fff; }
+.toolbar button.tb:active { transform: scale(.94); }
+.toolbar .tb.info { color: #7D7A72; cursor: help; }
+.toolbar .tb.info:hover { color: #C9C6BC; }
+.toolbar.passthrough .tb.hand { color: var(--pn-orange); background: rgba(217,119,87,.16); }
+.toolbar .tb.primary { background: var(--pn-orange); color: #fff; }
+.toolbar .tb.primary:hover { background: var(--pn-orange-hover); color: #fff; }
+.toolbar .tb.primary.empty { background: transparent; color: #C9C6BC; }
+.toolbar .tb.primary.empty:hover { background: rgba(255,255,255,.1); color: #fff; }
+.toolbar .badge {
+  position: absolute; top: 1px; right: 1px; min-width: 15px; height: 15px; padding: 0 3px;
+  border-radius: 5px; background: var(--pn-orange); color: #fff;
+  font: 700 9.5px/15px var(--pn-mono); text-align: center; letter-spacing: -.02em;
+  box-shadow: 0 0 0 2px var(--pn-ink); pointer-events: none;
+}
+.toolbar .tb.primary .badge { background: #FAF9F5; color: #AE5630; box-shadow: 0 0 0 2px var(--pn-orange); }
+.toolbar .tb.primary:hover .badge { box-shadow: 0 0 0 2px var(--pn-orange-hover); }
+.toolbar .badge.zero { display: none; }
+.toolbar [data-tip]::after {
+  content: attr(data-tip); position: absolute; left: 50%; bottom: calc(100% + 12px);
+  transform: translate(-50%, 4px); opacity: 0; pointer-events: none; white-space: nowrap;
+  padding: 6px 9px; border-radius: 7px; background: var(--pn-ink); color: var(--pn-ink-text);
+  font: 500 12px/1.2 var(--pn-font); letter-spacing: 0;
+  box-shadow: 0 6px 18px rgba(0,0,0,.25), 0 0 0 1px rgba(255,255,255,.08) inset;
+  transition: opacity .12s, transform .12s; z-index: 2;
+}
+.toolbar [data-tip]:hover::after, .toolbar [data-tip]:focus-visible::after { opacity: 1; transform: translate(-50%, 0); transition-delay: .2s; }
+.toolbar .tb:focus-visible { outline: 2px solid var(--pn-orange); outline-offset: 2px; }
+.toolbar .mode-chip {
+  position: absolute; left: 50%; bottom: calc(100% + 10px); transform: translate(-50%, 6px);
+  padding: 5px 10px; border-radius: 99px; background: var(--pn-orange); color: #fff;
+  font: 600 11.5px/1.2 var(--pn-font); white-space: nowrap; pointer-events: none;
+  opacity: 0; transition: opacity .12s, transform .12s; box-shadow: 0 6px 16px rgba(217,119,87,.35);
+}
+.toolbar.passthrough .mode-chip { opacity: 1; transform: translate(-50%, 0); }
+.toolbar.passthrough [data-tip]::after { display: none; }
 
 /* ---------------------------------------------------------------- painel lateral (histórico) */
 .panel {
