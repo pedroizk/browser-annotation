@@ -43,6 +43,13 @@
     } else if (fw && fw.source) {
       lines.push(`- Arquivo de origem: ${code(fw.source)}` + (fw.framework ? ` (${fw.framework})` : ""));
     }
+    if (t.container) {
+      const kinds = { modal: 'modal', sheet: 'sheet/drawer', popover: 'popover', menu: 'menu', overlay: 'camada flutuante (position: fixed)' };
+      let l = `- Dentro de ${kinds[t.container.kind] || 'contêiner'}`;
+      if (t.container.title) l += ` "${t.container.title}"`;
+      l += `: ${code(t.container.label)}`;
+      lines.push(l);
+    }
     lines.push(`- Elemento: ${code(openingTag(t))}`);
     if (t.text) lines.push(`- Texto visível: "${PN.truncate(t.text, 140)}"`);
     if (t.testId) lines.push(`- Test id: ${code(`${t.testId.attr}="${t.testId.value}"`)}`);

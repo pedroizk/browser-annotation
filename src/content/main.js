@@ -22,6 +22,7 @@
   const S = {
     alive: true,
     active: false,
+    passthrough: false,
     settings: Object.assign({}, PN.DEFAULT_SETTINGS),
     all: [], // todos os comentários (todas as páginas)
     pageAnns: [], // comentários desta página (abertos e resolvidos)
@@ -59,17 +60,83 @@
   const toolbarWrap = h('div');
   const panelWrap = h('div');
   const toastWrap = h('div');
-  layer.append(pinsWrap, peekBox, hlBox, fxWrap, toolbarWrap, panelWrap, popWrap, toastWrap);
+  layer.append(peekBox, hlBox, pinsWrap, fxWrap, toolbarWrap, panelWrap, popWrap, toastWrap);
   shadow.append(layer);
   document.documentElement.append(host);
 
-  // Evita que atalhos da página reajam ao que é digitado dentro da nossa UI.
-  for (const type of ['keydown', 'keyup', 'keypress']) {
-    host.addEventListener(type, (e) => e.stopPropagation());
-  }
-
   function isOwn(e) {
     return e.composedPath().includes(host);
+  }
+
+  /*
+   * Isolamento de eventos.
+   * Modais, sheets e popovers costumam fechar quando percebem um clique/foco "fora" deles
+   * (listeners em document para pointerdown, mousedown, focusin, keydown Esc…) e focus traps
+   * puxam o foco de volta. Como a nossa UI fica fora do DOM do modal, qualquer interação com
+   * ela fecharia o modal. Por isso, eventos que nascem na nossa UI são interrompidos já na
+   * fase de captura do window (antes de chegar no document) e reenviados apenas dentro do
+   * Shadow DOM, com composed: false — a página nunca os vê. As ações padrão (foco, digitação,
+   * seleção de texto) continuam acontecendo porque não chamamos preventDefault no original.
+   */
+  const GUARDED_EVENTS = [
+    'pointerdown', 'pointerup', 'mousedown', 'mouseup', 'click', 'dblclick', 'auxclick', 'contextmenu',
+    'touchstart', 'touchend', 'focusin', 'focusout', 'focus', 'blur', 'keydown', 'keyup', 'keypress',
+  ];
+  const CLONE_KEYS = [
+    'bubbles', 'cancelable', 'view', 'detail', 'screenX', 'screenY', 'clientX', 'clientY', 'ctrlKey', 'shiftKey',
+    'altKey', 'metaKey', 'button', 'buttons', 'pointerId', 'pointerType', 'isPrimary', 'width', 'height', 'pressure',
+    'key', 'code', 'location', 'repeat', 'isComposing', 'charCode', 'keyCode', 'which',
+  ];
+
+  function cloneInsideShadow(e, target) {
+    const init = { composed: false };
+    for (const k of CLONE_KEYS) if (k in e) init[k] = e[k];
+    let clone;
+    try {
+      clone = new e.constructor(e.type, init);
+    } catch (_) {
+      return;
+    }
+    target.dispatchEvent(clone);
+    if (clone.defaultPrevented && e.cancelable) e.preventDefault();
+  }
+
+  function guard(e) {
+    if (!e.isTrusted) return;
+    if (isOwn(e)) {
+      e.stopPropagation();
+      if (e.type === 'focus' || e.type === 'blur' || e.type.startsWith('touch')) return;
+      // atalhos globais (Ctrl+', Esc…) continuam sendo tratados pelos nossos listeners do window
+      cloneInsideShadow(e, e.composedPath()[0]);
+      return;
+    }
+    // foco saindo do modal para a nossa UI: o focus trap da página não deve perceber
+    if ((e.type === 'focusout' || e.type === 'blur') && e.relatedTarget === host) e.stopPropagation();
+  }
+
+  /*
+   * <dialog>.showModal() coloca o diálogo na "top layer" (acima de qualquer z-index) e deixa o
+   * resto do documento inerte. Nesse caso a nossa UI precisa morar dentro do diálogo aberto.
+   */
+  function desiredHostParent() {
+    let modal = null;
+    try {
+      const open = document.querySelectorAll('dialog:modal');
+      modal = open.length ? open[open.length - 1] : null;
+    } catch (_) {
+      modal = null;
+    }
+    return modal || document.documentElement;
+  }
+
+  function ensureHostPlacement() {
+    const parent = desiredHostParent();
+    if (host.parentNode !== parent || !host.isConnected) parent.append(host);
+    // se o diálogo tiver transform, ele vira o "containing block" dos elementos fixed:
+    // compensamos o deslocamento para que as coordenadas continuem relativas à viewport.
+    layer.style.transform = '';
+    const r = layer.getBoundingClientRect();
+    if (Math.abs(r.left) > 0.5 || Math.abs(r.top) > 0.5) layer.style.transform = `translate(${-r.left}px, ${-r.top}px)`;
   }
 
   function on(target, type, fn, opts) {
@@ -209,22 +276,70 @@
     }
   }
 
-  function anchorRect(ann) {
+  function isRendered(el) {
+    if (typeof el.checkVisibility !== 'function') return true;
+    try {
+      return el.checkVisibility({ opacityProperty: true, visibilityProperty: true, checkOpacity: true, checkVisibilityCSS: true });
+    } catch (_) {
+      return true;
+    }
+  }
+
+  /**
+   * Situação do elemento de um comentário:
+   *  - ok:      encontrado e visível            → pin no canto do elemento
+   *  - hidden:  existe mas está oculto          → sem pin
+   *  - closed:  estava num modal/sheet que fechou → sem pin até reabrir
+   *  - orphan:  não encontrado (página mudou)   → pin translúcido na posição original
+   */
+  function anchorInfo(ann) {
     const el = S.anchors.get(ann.id);
     if (el && el.isConnected) {
+      if (!isRendered(el)) return { state: ann.target && ann.target.container ? 'closed' : 'hidden', el };
       const r = el.getBoundingClientRect();
-      if (r.width || r.height) return { rect: r, orphan: false, el };
-      return null; // elemento existe mas está oculto
+      if (!r.width && !r.height) return { state: ann.target && ann.target.container ? 'closed' : 'hidden', el };
+      return { state: 'ok', rect: r, orphan: false, el };
     }
+    if (ann.target && ann.target.container) return { state: 'closed' };
     const t = ann.target && ann.target.rect;
-    if (!t) return null;
+    if (!t) return { state: 'missing' };
     const left = t.x - window.scrollX;
     const top = t.y - window.scrollY;
     return {
+      state: 'orphan',
       rect: { left, top, width: t.width, height: t.height, right: left + t.width, bottom: top + t.height },
       orphan: true,
       el: null,
     };
+  }
+
+  function anchorRect(ann) {
+    const info = anchorInfo(ann);
+    return info.rect ? info : null;
+  }
+
+  /** O elemento está coberto por outra coisa (ex.: backdrop de um modal)? */
+  function isCovered(el, r) {
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const left = Math.max(r.left, 0);
+    const right = Math.min(r.right, vw);
+    const top = Math.max(r.top, 0);
+    const bottom = Math.min(r.bottom, vh);
+    if (right - left < 1 || bottom - top < 1) return false;
+    const points = [
+      [0.5, 0.5],
+      [0.12, 0.12],
+      [0.88, 0.12],
+      [0.12, 0.88],
+      [0.88, 0.88],
+    ];
+    for (const [fx, fy] of points) {
+      const hit = document.elementFromPoint(left + (right - left) * fx, top + (bottom - top) * fy);
+      if (!hit || hit === host || hit === document.documentElement || hit === document.body) return false;
+      if (hit === el || el.contains(hit) || hit.contains(el)) return false;
+    }
+    return true;
   }
 
   function layout() {
@@ -241,7 +356,7 @@
         continue;
       }
       const r = info.rect;
-      if (r.bottom < 0 || r.top > vh || r.right < 0 || r.left > vw) {
+      if (r.bottom < 0 || r.top > vh || r.right < 0 || r.left > vw || (info.el && isCovered(info.el, r))) {
         pin.classList.add('hidden');
         continue;
       }
@@ -254,6 +369,10 @@
       pin.style.top = y + 'px';
       pin.classList.remove('hidden');
       pin.classList.toggle('orphan', info.orphan);
+    }
+    if (S.thread && !S.thread.editing) {
+      const a = S.all.find((x) => x.id === S.thread.id);
+      if (a && a.status !== 'resolved' && isHere(a) && anchorInfo(a).state === 'closed') closeThread();
     }
     paintHover();
     paintPeek();
@@ -289,7 +408,7 @@
   }
 
   function paintHover() {
-    const target = S.composer ? S.composer.el : S.active ? S.hoverEl : null;
+    const target = S.composer ? S.composer.el : S.active && !S.passthrough ? S.hoverEl : null;
     if (!target || !target.isConnected) {
       hlBox.classList.remove('show');
       return;
@@ -354,8 +473,22 @@
     send({ type: 'pn:badge', count: S.openAnns.length, active: true });
   }
 
+  /*
+   * Ctrl (⌘ no Mac) pressionado = modo "interagir": os cliques vão para a página normalmente
+   * (abrir menus, navegar, preencher campos) sem criar comentários.
+   */
+  function setPassthrough(on) {
+    on = !!(on && S.active);
+    if (S.passthrough === on) return;
+    S.passthrough = on;
+    setCursorStyle(S.active && !on);
+    if (toolbarEl) toolbarEl.classList.toggle('passthrough', on);
+    scheduleLayout();
+  }
+
   function deactivate() {
     if (!S.active) return;
+    setPassthrough(false);
     S.active = false;
     S.hoverEl = S.hoverBase = null;
     S.hoverStack = [];
@@ -377,6 +510,7 @@
 
   function onMouseMove(e) {
     if (!S.active) return;
+    setPassthrough(e.ctrlKey || e.metaKey);
     if (isOwn(e)) {
       if (S.hoverEl) {
         S.hoverEl = S.hoverBase = null;
@@ -395,6 +529,32 @@
   function blocker(e) {
     if (!S.active || isOwn(e)) return;
     if (e.type === 'contextmenu') return;
+    if (S.passthrough || e.ctrlKey || e.metaKey) {
+      // Interagindo com a página. Ctrl/⌘ + clique abriria links em nova aba (e muitos apps tratam
+      // Ctrl + clique como multisseleção), então trocamos o click por um click "limpo".
+      if (e.type === 'click' && e.isTrusted && e.button === 0 && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        const target = e.composedPath()[0];
+        const init = {
+          bubbles: true,
+          cancelable: true,
+          composed: true,
+          view: window,
+          detail: e.detail,
+          screenX: e.screenX,
+          screenY: e.screenY,
+          clientX: e.clientX,
+          clientY: e.clientY,
+          shiftKey: e.shiftKey,
+          altKey: e.altKey,
+          button: 0,
+          buttons: e.buttons,
+        };
+        target.dispatchEvent(new MouseEvent('click', init));
+      }
+      return;
+    }
     e.preventDefault();
     e.stopPropagation();
     e.stopImmediatePropagation();
@@ -416,7 +576,12 @@
     return e.shiftKey || e.key === '"' ? 'panel' : 'mode';
   }
 
+  function onKeyUp(e) {
+    if (e.key === 'Control' || e.key === 'Meta' || (!e.ctrlKey && !e.metaKey)) setPassthrough(e.ctrlKey || e.metaKey);
+  }
+
   function onKeyDown(e) {
+    if (e.key === 'Control' || e.key === 'Meta') setPassthrough(true);
     const shortcut = isToggleShortcut(e);
     if (shortcut) {
       e.preventDefault();
@@ -532,7 +697,13 @@
     });
     save.addEventListener('click', saveComposer);
     popWrap.append(root);
-    S.composer = { el, root, ta, hint, escArmed: false };
+    let desc = null;
+    try {
+      desc = L.describe(el); // capturado já, caso o modal/sheet feche antes de salvar
+    } catch (_) {
+      desc = null;
+    }
+    S.composer = { el, root, ta, hint, desc, escArmed: false };
     positionComposer();
     layout();
     setTimeout(() => ta.focus({ preventScroll: true }), 20);
@@ -544,8 +715,9 @@
 
   function positionComposer() {
     const c = S.composer;
-    if (!c) return;
+    if (!c || !c.el.isConnected) return;
     const r = c.el.getBoundingClientRect();
+    if (!r.width && !r.height) return;
     const box = c.root.getBoundingClientRect();
     const p = placeNear(r, box.width || 344, box.height || 200, { prefer: 'below', reserveRight: panelReserve() });
     c.root.style.left = p.x + 'px';
@@ -579,13 +751,15 @@
     const text = c.ta.value.trim();
     if (!text) return;
     const el = c.el;
-    let target;
-    try {
-      target = L.describe(el);
-    } catch (err) {
-      console.warn('[Browser Annotation] falha ao descrever elemento', err);
-      target = { tag: el.tagName.toLowerCase(), classes: [], label: el.tagName.toLowerCase() };
+    let target = c.desc;
+    if (el.isConnected) {
+      try {
+        target = L.describe(el);
+      } catch (err) {
+        console.warn('[Browser Annotation] falha ao descrever elemento', err);
+      }
     }
+    if (!target) target = { tag: el.tagName.toLowerCase(), classes: [], label: el.tagName.toLowerCase() };
     const now = Date.now();
     const ann = {
       id: PN.uid(),
@@ -606,8 +780,8 @@
     const pin = S.pinEls.get(ann.id);
     flashElement(el);
     if (pin) {
-      pin.classList.add('pop');
-      setTimeout(() => pin.classList.remove('pop'), 700);
+      pin.classList.add('dropping');
+      setTimeout(() => pin.classList.remove('dropping'), 700);
       const pr = pin.getBoundingClientRect();
       PN.ui.burst(fxWrap, pr.left + 12, pr.top + 14);
     }
@@ -839,6 +1013,11 @@
     }
     let el = S.anchors.get(a.id);
     if (!el || !el.isConnected) el = L.resolve(a.target);
+    if (el && a.target && a.target.container && !isRendered(el)) el = null;
+    if (!el && a.target && a.target.container) {
+      toast(`Este comentário está dentro de ${containerName(a.target.container)} que está fechado. Abra-o para ver o ícone.`, 3600);
+      return;
+    }
     if (el) {
       el.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' });
       setTimeout(() => {
@@ -853,6 +1032,13 @@
       toast('Elemento não encontrado — a página pode ter mudado. Mostrando a posição original.', 3200);
       setTimeout(() => openThread(a.id), 420);
     }
+  }
+
+  function containerName(c) {
+    const names = { modal: 'um modal', sheet: 'um sheet', popover: 'um popover', menu: 'um menu', overlay: 'uma camada flutuante' };
+    let n = names[c.kind] || 'um modal';
+    if (c.title) n += ` (“${PN.escapeHtml(c.title)}”)`;
+    return n;
   }
 
   // ------------------------------------------------------------------ toolbar
@@ -872,17 +1058,22 @@
       }
       return;
     }
-    const open = siteOpen();
-    const html = `
-      <div class="brand">${PN.icons.bubble(20)}<span class="dot"></span><span>Anotando</span></div>
-      <span class="hint">Clique em um elemento · <kbd class="dark">↑</kbd> seleciona o pai</span>
-      <span class="sep"></span>
-      <button type="button" data-act="panel" title="Comentários e histórico (${MOD} ⇧ ')">${PN.icons.list}<span>Comentários</span><span class="count">${S.openAnns.length}</span></button>
-      <button type="button" class="primary" data-act="copy" title="Copia todos os comentários em aberto deste site (${PN.escapeHtml(PN.originOf(location.href))}) em Markdown">${PN.icons.copy}<span>Copiar abertos</span><span class="count">${open.length}</span></button>
-      <span class="sep"></span>
-      <button type="button" data-act="exit" title="Sair do modo anotação">${PN.icons.close}<span>Sair</span><kbd class="dark">Esc</kbd></button>`;
     if (!toolbarEl) {
-      toolbarEl = h('div.toolbar', { role: 'toolbar', 'aria-label': 'Browser Annotation' });
+      const tip = (text) => ({ 'data-tip': text, 'aria-label': text });
+      toolbarEl = h(
+        'div.toolbar',
+        { role: 'toolbar', 'aria-label': 'Browser Annotation' },
+        h('div.brand', tip('Modo anotação ativo — clique em um elemento para comentar'), svg(PN.icons.bubble(20)), h('span.dot')),
+        h('span.sep'),
+        h('span.tb.info', Object.assign({ role: 'img', html: PN.icons.arrowUp }, tip('↑ seleciona o elemento pai · ↓ volta ao filho · Enter comenta'))),
+        h('span.tb.info.hand', Object.assign({ role: 'img', html: PN.icons.hand }, tip(`Segure ${MOD} para interagir com a página sem comentar`))),
+        h('span.sep'),
+        h('button.tb', Object.assign({ type: 'button', 'data-act': 'panel', html: PN.icons.list }, tip(`Comentários (${MOD} ⇧ ')`)), h('span.badge')),
+        h('button.tb.primary', Object.assign({ type: 'button', 'data-act': 'copy', html: PN.icons.copy }, tip('Copiar comentários em aberto deste site')), h('span.badge')),
+        h('span.sep'),
+        h('button.tb', Object.assign({ type: 'button', 'data-act': 'exit', html: PN.icons.close }, tip('Sair (Esc)'))),
+        h('span.mode-chip', { text: 'Interagindo com a página' })
+      );
       toolbarEl.addEventListener('click', (e) => {
         const btn = e.target.closest('button[data-act]');
         if (!btn) return;
@@ -893,7 +1084,16 @@
       });
       toolbarWrap.append(toolbarEl);
     }
-    toolbarEl.innerHTML = html;
+    toolbarEl.classList.toggle('passthrough', S.passthrough);
+    const setBadge = (sel, n) => {
+      const b = toolbarEl.querySelector(sel + ' .badge');
+      b.textContent = n > 99 ? '99+' : String(n);
+      b.classList.toggle('zero', !n);
+    };
+    setBadge('[data-act=panel]', S.openAnns.length);
+    const open = siteOpen().length;
+    setBadge('[data-act=copy]', open);
+    toolbarEl.querySelector('[data-act=copy]').classList.toggle('empty', !open);
   }
 
   // ------------------------------------------------------------------ painel (histórico)
@@ -1078,8 +1278,12 @@
 
     let where = null;
     if (here && !resolved) {
-      const info = anchorRect(a);
-      if (!info || info.orphan) where = h('div.where.warn', { title: 'O elemento mudou ou foi removido. O comentário continua salvo e o ícone fica na posição original.', html: `${PN.icons.warn}<span>Elemento não encontrado na página</span>` });
+      const info = anchorInfo(a);
+      if (info.state === 'closed') {
+        const kinds = { modal: 'Modal', sheet: 'Sheet', popover: 'Popover', menu: 'Menu', overlay: 'Camada' };
+        const label = `${kinds[t.container.kind] || 'Modal'} fechado${t.container.title ? ` · ${t.container.title}` : ''}`;
+        where = h('div.where', { title: 'O ícone aparece quando o modal/sheet for aberto de novo', html: `${PN.icons.hidden}<span>${PN.escapeHtml(label)}</span>` });
+      } else if (info.state === 'orphan' || info.state === 'missing') where = h('div.where.warn', { title: 'O elemento mudou ou foi removido. O comentário continua salvo e o ícone fica na posição original.', html: `${PN.icons.warn}<span>Elemento não encontrado na página</span>` });
     }
     if (!where && fw.source) where = h('div.where', { text: fw.source, title: fw.source });
     if (!where) where = h('div.where', { text: t.domPath || '', title: t.selector || '' });
@@ -1129,10 +1333,16 @@
   }
 
   let mutTimer = null;
-  const observer = new MutationObserver(() => {
-    if (!S.openAnns.length) return;
+  const observer = new MutationObserver((records) => {
+    // <dialog> modal abrindo/fechando: a UI precisa acompanhar a top layer
+    if (records.some((r) => r.target.nodeName === 'DIALOG' || [...r.addedNodes, ...r.removedNodes].some((n) => n.nodeName === 'DIALOG'))) {
+      ensureHostPlacement();
+    }
+    if (!S.openAnns.length && !S.composer) return;
+    // modais/sheets abrindo e fechando: reposiciona/oculta os pins rapidamente
+    scheduleLayout();
     clearTimeout(mutTimer);
-    mutTimer = setTimeout(reanchorMissing, 250);
+    mutTimer = setTimeout(reanchorMissing, 200);
   });
 
   async function checkPendingFocus() {
@@ -1197,7 +1407,11 @@
 
   // ------------------------------------------------------------------ inicialização
   async function init() {
+    for (const type of GUARDED_EVENTS) on(window, type, guard, true);
     on(window, 'keydown', onKeyDown, true);
+    on(window, 'keyup', onKeyUp, true);
+    on(window, 'blur', () => setPassthrough(false));
+    on(document, 'visibilitychange', () => setPassthrough(false));
     on(window, 'mousemove', onMouseMove, { capture: true, passive: true });
     for (const type of ['pointerdown', 'pointerup', 'mousedown', 'mouseup', 'click', 'dblclick', 'auxclick', 'contextmenu']) {
       on(window, type, blocker, true);
@@ -1222,12 +1436,17 @@
       return teardown();
     }
 
-    observer.observe(document.documentElement, { childList: true, subtree: true });
+    observer.observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class', 'style', 'open', 'hidden', 'data-state', 'aria-hidden', 'aria-expanded', 'inert'],
+    });
     S.cleanups.push(() => observer.disconnect());
 
     const tick = setInterval(() => {
       if (!alive()) return teardown();
-      if (!host.isConnected) document.documentElement.append(host);
+      ensureHostPlacement();
       onUrlMaybeChanged();
       if (S.pinEls.size || S.composer || S.thread) layout();
     }, 500);

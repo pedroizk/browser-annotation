@@ -10,6 +10,8 @@ Extensão do Chrome (Manifest V3) inspirada no *Orca annotation* para devs anota
   - Ao passar o mouse, o elemento é destacado com o rótulo `tag.classe`, o **componente** (React, Vue, Svelte, Angular) e o tamanho.
   - <kbd>↑</kbd> seleciona o elemento pai, <kbd>↓</kbd> volta para o filho, <kbd>Enter</kbd> seleciona.
   - Os cliques na página ficam bloqueados enquanto o modo está ativo (você não dispara botões ou links sem querer).
+  - **Segure <kbd>Ctrl</kbd> (ou <kbd>⌘</kbd>) para interagir com a página** sem comentar: abrir um modal, um menu, navegar, preencher um campo… Soltou, volta a anotar. O clique é entregue como um clique normal (Ctrl + clique não abre o link em nova aba).
+  - Barra de ações minimalista, só com ícones (com tooltip): logo + indicador piscando, dicas de <kbd>↑</kbd> e <kbd>Ctrl</kbd>, comentários, copiar abertos e sair. Os números aparecem como badges.
 - **Comentários**: clique no elemento, escreva e salve com <kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>Enter</kbd>.
   - Animação de criação: onda em volta do elemento, explosão de pixels laranja e um pin em pixel-art que “cai” no canto do componente.
   - O pin numerado fica preso ao elemento (acompanha scroll, resize e re-renderizações) até você resolver.
@@ -38,6 +40,7 @@ Para testar rápido, abra `examples/demo.html` (por exemplo com `python3 -m http
 | Salvar comentário | <kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>Enter</kbd> |
 | Fechar popover / sair do modo | <kbd>Esc</kbd> |
 | Selecionar pai / filho | <kbd>↑</kbd> / <kbd>↓</kbd> |
+| Interagir com a página sem comentar | segure <kbd>Ctrl</kbd> (ou <kbd>⌘</kbd>) |
 | Atalho global alternativo | <kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>⇧</kbd> + <kbd>.</kbd> (configurável em `chrome://extensions/shortcuts`) |
 
 > O Chrome não permite registrar <kbd>'</kbd> como atalho de extensão (`chrome.commands`), então <kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>'</kbd> é capturado pelo content script quando o foco está na página. O atalho alternativo funciona mesmo com o foco na barra de endereço. Layouts ABNT2 e US-International (tecla morta) também são reconhecidos.
@@ -53,6 +56,17 @@ Cada comentário guarda uma “impressão digital” do elemento e da página:
 - **Componente** (via script no contexto da página): nome e hierarquia do componente e, em desenvolvimento, arquivo e linha (`_debugSource` do React ≤ 18, pista de stack no React 19, `__file` do Vue, `__svelte_meta` do Svelte, `ng.getComponent` do Angular).
 
 Ao abrir a página, cada comentário é reencontrado pontuando os candidatos (test id, id, seletor, XPath) contra a impressão digital; se não achar, procura elementos da mesma tag com o mesmo texto perto da posição original. Em SPAs, mudanças de rota e re-renderizações são observadas e os pins são reancorados automaticamente. Se o elemento sumir, o pin fica semitransparente com um “?” na posição original e o comentário continua no painel.
+
+## Modais, sheets e popovers
+
+Comentar elementos dentro de modais, sheets laterais, drawers e popovers funciona sem fechá-los:
+
+- Interações com a UI da extensão (popover de comentário, pins, barra, painel) são interrompidas antes de chegar ao `document` da página. Assim, as lógicas de “clique fora fecha”, “foco fora fecha”, “Esc fecha” e focus traps (Radix, Headless UI, MUI, focus-trap…) não percebem nada.
+- `<dialog>` aberto com `showModal()` fica na *top layer* e deixa o resto da página inerte; nesse caso a UI da extensão passa a morar dentro do diálogo aberto e volta ao lugar quando ele fecha.
+- O comentário guarda em qual contêiner o elemento estava (modal, sheet, popover, menu ou camada `position: fixed`, com o título quando houver). Quando o modal/sheet fecha, o ícone **some** em vez de ficar flutuando; quando abre de novo, o elemento é reencontrado e o ícone volta. No painel, o comentário aparece como “Modal fechado · Editar perfil”.
+- Pins de elementos cobertos por outra camada (ex.: o backdrop de um modal) ficam ocultos enquanto estiverem cobertos.
+
+A página `examples/demo.html` tem um modal (portal, fecha com clique/foco fora e Esc, com focus trap), um sheet lateral e um `<dialog>` nativo para testar.
 
 ## Exemplo do texto copiado
 
