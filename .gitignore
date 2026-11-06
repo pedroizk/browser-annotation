@@ -1,3 +1,11 @@
 node_modules/
 *.zip
 .DS_Store
+# arquivos temporários do gerador de vídeo
+scripts/video/clips-*/
+scripts/video/frames-*/
+scripts/video/preview-*/
+scripts/video/profiles/
+scripts/video/audio-*.json
+scripts/video/audio-*.wav
+scripts/video/__pycache__/

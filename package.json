@@ -2,12 +2,12 @@
   "name": "browser-annotation",
   "version": "0.1.0",
   "private": true,
-  "description": "Extensão do Chrome para anotar componentes da interface e copiar os comentários para o Claude ou outra LLM.",
+  "description": "Chrome extension to annotate UI components and copy the comments to Claude or another LLM.",
   "type": "module",
   "scripts": {
-    "test": "node tests/smoke.mjs",
+    "test": "node tests/smoke.mjs && PN_LANG=pt-BR node tests/smoke.mjs",
     "icons": "python3 scripts/generate-icons.py",
-    "zip": "rm -f browser-annotation.zip && zip -r browser-annotation.zip manifest.json icons src -x '*.DS_Store'"
+    "zip": "rm -f browser-annotation.zip && zip -r browser-annotation.zip manifest.json _locales icons src -x '*.DS_Store'"
   },
   "devDependencies": {
     "playwright": "^1.49.0"

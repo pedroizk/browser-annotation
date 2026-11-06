@@ -1,6 +1,7 @@
 /* Browser Annotation — geração do texto para colar no Claude (ou outra LLM). */
 (function (g) {
   const PN = (g.BrowserAnnotation = g.BrowserAnnotation || {});
+  const T = (...args) => PN.t(...args);
 
   function code(s) {
     s = String(s == null ? '' : s);
@@ -34,34 +35,34 @@
     const fw = t.framework;
     const lines = [];
     if (fw && fw.component) {
-      let l = `- Componente: ${code(fw.component)}`;
+      let l = `- ${T('mdComponent')}: ${code(fw.component)}`;
       if (fw.source) l += ` — ${code(fw.source)}`;
       if (fw.framework) l += ` (${fw.framework})`;
       lines.push(l);
-      if (fw.path && fw.path.length > 1) lines.push(`- Hierarquia: ${code(fw.path.join(' › '))}`);
-      if (fw.stackHint && !fw.source) lines.push(`- Pista de origem (bundle): ${code(fw.stackHint)}`);
+      if (fw.path && fw.path.length > 1) lines.push(`- ${T('mdHierarchy')}: ${code(fw.path.join(' › '))}`);
+      if (fw.stackHint && !fw.source) lines.push(`- ${T('mdSourceHint')}: ${code(fw.stackHint)}`);
     } else if (fw && fw.source) {
-      lines.push(`- Arquivo de origem: ${code(fw.source)}` + (fw.framework ? ` (${fw.framework})` : ""));
+      lines.push(`- ${T('mdSourceFile')}: ${code(fw.source)}` + (fw.framework ? ` (${fw.framework})` : ""));
     }
     if (t.container) {
-      const kinds = { modal: 'modal', sheet: 'sheet/drawer', popover: 'popover', menu: 'menu', overlay: 'camada flutuante (position: fixed)' };
-      let l = `- Dentro de ${kinds[t.container.kind] || 'contêiner'}`;
+      const kind = ['modal', 'sheet', 'popover', 'menu', 'overlay'].includes(t.container.kind) ? t.container.kind : 'other';
+      let l = `- ${T('mdInside', T(`mdKind_${kind}`))}`;
       if (t.container.title) l += ` "${t.container.title}"`;
       l += `: ${code(t.container.label)}`;
       lines.push(l);
     }
-    lines.push(`- Elemento: ${code(openingTag(t))}`);
-    if (t.text) lines.push(`- Texto visível: "${PN.truncate(t.text, 140)}"`);
+    lines.push(`- ${T('mdElement')}: ${code(openingTag(t))}`);
+    if (t.text) lines.push(`- ${T('mdVisibleText')}: "${PN.truncate(t.text, 140)}"`);
     const orig = ann.originalTarget;
     if (orig && orig.text && orig.text !== t.text) {
-      lines.push(`- Texto quando o comentário foi feito: "${PN.truncate(orig.text, 140)}"`);
+      lines.push(`- ${T('mdOriginalText')}: "${PN.truncate(orig.text, 140)}"`);
     }
     if (t.testId) lines.push(`- Test id: ${code(`${t.testId.attr}="${t.testId.value}"`)}`);
-    if (t.selector) lines.push(`- Seletor CSS: ${code(t.selector)}`);
-    if (t.domPath) lines.push(`- Caminho no DOM: ${code(t.domPath)}`);
+    if (t.selector) lines.push(`- ${T('mdSelector')}: ${code(t.selector)}`);
+    if (t.domPath) lines.push(`- ${T('mdDomPath')}: ${code(t.domPath)}`);
     if (t.rect) {
       const r = t.rect;
-      let l = `- Tamanho/posição: ${Math.round(r.width)}×${Math.round(r.height)}px em (${Math.round(r.x)}, ${Math.round(r.y)})`;
+      let l = `- ${T('mdSizePosition', Math.round(r.width), Math.round(r.height), Math.round(r.x), Math.round(r.y))}`;
       if (t.viewport) l += ` — viewport ${t.viewport.width}×${t.viewport.height}`;
       lines.push(l);
     }
@@ -107,19 +108,15 @@
     const out = [];
 
     if (options.intro !== false) {
-      out.push('# Ajustes de interface solicitados');
+      out.push(`# ${T('mdTitle')}`);
       out.push('');
       out.push(
-        `Abaixo ${list.length === 1 ? 'está 1 comentário feito' : `estão ${list.length} comentários feitos`}` +
-          (open.length !== list.length ? ` (${open.length} em aberto)` : '') +
-          ' diretamente sobre elementos da interface (extensão Browser Annotation).'
+        PN.tn(list.length, 'mdIntroCount') +
+          (open.length !== list.length ? ` (${T('mdOpenCount', open.length)})` : '') +
+          ` ${T('mdIntroRest')}`
       );
-      out.push(
-        'Cada item traz o pedido de mudança e informações para localizar o elemento no código: componente e arquivo de origem (quando detectados), seletor CSS, texto visível e trecho do HTML renderizado.'
-      );
-      out.push(
-        'Implemente as mudanças pedidas em cada item. Se algum pedido for ambíguo, explique a interpretação que você adotou.'
-      );
+      out.push(T('mdIntroDetails'));
+      out.push(T('mdIntroTask'));
       out.push('');
     }
 
@@ -127,17 +124,17 @@
     for (const grp of groups) {
       out.push('---');
       out.push('');
-      out.push(`## Página: ${grp.title ? grp.title + ' — ' : ''}${grp.url}`);
+      out.push(`## ${T('mdPage')}: ${grp.title ? grp.title + ' — ' : ''}${grp.url}`);
       out.push('');
       for (const ann of grp.items) {
         n += 1;
-        const status = ann.status === 'resolved' ? ' ✅ (resolvido)' : '';
+        const status = ann.status === 'resolved' ? ` ✅ (${T('mdResolvedMark')})` : '';
         out.push(`### ${n}. ${PN.firstLine(ann.comment, 90)}${status}`);
         out.push('');
-        out.push('**Comentário:**');
+        out.push(`**${T('mdComment')}:**`);
         out.push(quote(ann.comment));
         out.push('');
-        out.push('**Onde:**');
+        out.push(`**${T('mdWhere')}:**`);
         out.push(PN.describeTargetMarkdown(ann));
         out.push('');
       }

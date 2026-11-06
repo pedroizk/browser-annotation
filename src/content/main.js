@@ -17,6 +17,7 @@
   const store = PN.store;
   const IS_MAC = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
   const MOD = IS_MAC ? '⌘' : 'Ctrl';
+  const T = PN.t;
 
   // ------------------------------------------------------------------ estado
   const S = {
@@ -332,7 +333,7 @@
         S.pinEls.set(a.id, pin);
       }
       pin.querySelector('.num').textContent = S.index.get(a.id);
-      const label = `Comentário ${S.index.get(a.id)}: ${PN.firstLine(a.comment, 120)}`;
+      const label = T('pinLabel', S.index.get(a.id), PN.firstLine(a.comment, 120));
       pin.title = label;
       pin.setAttribute('aria-label', label);
       pin.classList.toggle('active', !!(S.thread && S.thread.id === a.id));
@@ -704,9 +705,9 @@
 
   function howToActivateHtml() {
     const ways = [];
-    if (shortcutLabel('toggle')) ways.push(`com ${PN.shortcutHtml(shortcutLabel('toggle'))}`);
-    if (holdKeyName()) ways.push(`segurando <kbd>${holdKeyLabel()}</kbd>`);
-    return ways.length ? ways.join(' ou ') : 'pelo ícone da extensão';
+    if (shortcutLabel('toggle')) ways.push(T('activateWithShortcut', PN.shortcutHtml(shortcutLabel('toggle'))));
+    if (holdKeyName()) ways.push(T('activateByHolding', `<kbd>${holdKeyLabel()}</kbd>`));
+    return ways.length ? ways.join(` ${T('or')} `) : T('activateByIcon');
   }
 
   function isEditable(el) {
@@ -854,19 +855,19 @@
   }
 
   function openComposer(el) {
-    const ta = h('textarea', { placeholder: 'O que precisa mudar aqui?', rows: '4', 'aria-label': 'Comentário' });
-    const save = h('button.btn.primary', { type: 'button', disabled: true, html: `${PN.icons.check} Comentar` });
-    const HINT = `<kbd>${MOD}</kbd><kbd>↵</kbd> para salvar · <kbd>Esc</kbd> fecha`;
+    const ta = h('textarea', { placeholder: T('composerPlaceholder'), rows: '4', 'aria-label': T('comment') });
+    const save = h('button.btn.primary', { type: 'button', disabled: true, html: `${PN.icons.check} ${T('commentButton')}` });
+    const HINT = T('composerHint', `<kbd>${MOD}</kbd><kbd>↵</kbd>`, '<kbd>Esc</kbd>');
     const hint = h('div.hint', { html: HINT });
     const root = h(
       'div.pop',
-      { role: 'dialog', 'aria-label': 'Novo comentário' },
+      { role: 'dialog', 'aria-label': T('newComment') },
       h(
         'div.pop-head',
         null,
         svg(PN.icons.bubble(20)),
         targetHead(el),
-        h('button.icon-btn', { type: 'button', title: 'Fechar', html: PN.icons.close, onclick: () => cancelComposer(true) })
+        h('button.icon-btn', { type: 'button', title: T('close'), html: PN.icons.close, onclick: () => cancelComposer(true) })
       ),
       h('div.pop-body', null, ta),
       h('div.pop-foot', null, hint, save)
@@ -919,7 +920,7 @@
     if (!force && c.ta.value.trim() && !c.escArmed) {
       c.escArmed = true;
       c.hint.classList.add('warn');
-      c.hint.innerHTML = 'Pressione <kbd>Esc</kbd> de novo para descartar';
+      c.hint.innerHTML = T('pressEscAgain', '<kbd>Esc</kbd>');
       shake(c.root);
       return;
     }
@@ -976,9 +977,9 @@
     }
     try {
       await store.put(ann);
-      toast(`<span class="ok">●</span> Comentário salvo · ${S.openAnns.length} em aberto nesta página`);
+      toast(`<span class="ok">●</span> ${T('toastSaved', S.openAnns.length)}`);
     } catch (err) {
-      toast('Não foi possível salvar o comentário: ' + PN.escapeHtml(err.message || err));
+      toast(T('toastSaveFailed', PN.escapeHtml(err.message || err)));
     }
   }
 
@@ -986,7 +987,7 @@
   function openThread(id) {
     closeComposer();
     closeThread();
-    const root = h('div.pop', { role: 'dialog', 'aria-label': 'Comentário' });
+    const root = h('div.pop', { role: 'dialog', 'aria-label': T('comment') });
     popWrap.append(root);
     S.thread = { id, root, editing: false };
     renderThread();
@@ -1039,13 +1040,13 @@
       null,
       idx ? h('span.badge-n', { text: idx }) : svg(PN.icons.bubble(20)),
       targetHead(null, a.target),
-      h('span.status.' + (resolved ? 'resolved' : 'open'), { text: resolved ? 'Resolvido' : 'Aberto' }),
-      h('button.icon-btn', { type: 'button', title: 'Fechar', html: PN.icons.close, onclick: closeThread })
+      h('span.status.' + (resolved ? 'resolved' : 'open'), { text: resolved ? T('statusResolved') : T('statusOpen') }),
+      h('button.icon-btn', { type: 'button', title: T('close'), html: PN.icons.close, onclick: closeThread })
     );
     root.append(head);
 
     if (t.editing) {
-      const ta = h('textarea', { 'aria-label': 'Editar comentário' });
+      const ta = h('textarea', { 'aria-label': T('editComment') });
       ta.value = a.comment;
       const saveEdit = async () => {
         const v = ta.value.trim();
@@ -1067,9 +1068,9 @@
         h(
           'div.pop-foot',
           null,
-          h('div.hint', { html: `<kbd>${MOD}</kbd><kbd>↵</kbd> salvar` }),
-          h('button.btn.ghost', { type: 'button', text: 'Cancelar', onclick: () => ((t.editing = false), renderThread()) }),
-          h('button.btn.primary', { type: 'button', html: `${PN.icons.check} Salvar`, onclick: saveEdit })
+          h('div.hint', { html: T('editHint', `<kbd>${MOD}</kbd><kbd>↵</kbd>`) }),
+          h('button.btn.ghost', { type: 'button', text: T('cancel'), onclick: () => ((t.editing = false), renderThread()) }),
+          h('button.btn.primary', { type: 'button', html: `${PN.icons.check} ${T('save')}`, onclick: saveEdit })
         )
       );
       setTimeout(() => {
@@ -1077,32 +1078,32 @@
         ta.setSelectionRange(ta.value.length, ta.value.length);
       }, 10);
     } else {
-      const meta = h('div.meta-row', null, h('span', { text: `Criado ${PN.relativeTime(a.createdAt)}`, title: PN.formatDate(a.createdAt) }));
-      if (a.editedAt) meta.append(h('span', { text: '· editado' }));
-      if (resolved && a.resolvedAt) meta.append(h('span', { text: `· resolvido ${PN.relativeTime(a.resolvedAt)}` }));
+      const meta = h('div.meta-row', null, h('span', { text: T('createdAgo', PN.relativeTime(a.createdAt)), title: PN.formatDate(a.createdAt) }));
+      if (a.editedAt) meta.append(h('span', { text: `· ${T('edited')}` }));
+      if (resolved && a.resolvedAt) meta.append(h('span', { text: `· ${T('resolvedAgo', PN.relativeTime(a.resolvedAt))}` }));
       const info = anchorRect(a);
       if (!resolved && info && info.orphan) {
         meta.append(
-          h('span', { text: '· elemento não encontrado', style: { color: '#B4690E' } }),
-          h('button.link-btn', { type: 'button', text: 'Escolher elemento', onclick: () => startRelink(a.id) })
+          h('span', { text: `· ${T('elementNotFound')}`, style: { color: '#B4690E' } }),
+          h('button.link-btn', { type: 'button', text: T('pickElement'), onclick: () => startRelink(a.id) })
         );
       }
       root.append(h('div.pop-body', null, h('div.comment-text', { text: a.comment }), meta));
 
-      const del = confirmButton(h('button.icon-btn.danger', { type: 'button', title: 'Excluir', html: PN.icons.trash }), null, () => removeAnnotation(a.id));
+      const del = confirmButton(h('button.icon-btn.danger', { type: 'button', title: T('delete'), html: PN.icons.trash }), null, () => removeAnnotation(a.id));
       const foot = h(
         'div.pop-foot',
         null,
-        h('button.icon-btn', { type: 'button', title: 'Editar', html: PN.icons.edit, onclick: () => ((t.editing = true), renderThread()) }),
+        h('button.icon-btn', { type: 'button', title: T('edit'), html: PN.icons.edit, onclick: () => ((t.editing = true), renderThread()) }),
         del,
-        h('button.icon-btn', { type: 'button', title: 'Copiar para LLM', html: PN.icons.copy, onclick: () => copyAnnotations([a], 'Comentário copiado') }),
+        h('button.icon-btn', { type: 'button', title: T('copyForLlm'), html: PN.icons.copy, onclick: () => copyAnnotations([a], T('commentCopied')) }),
         !resolved && isHere(a)
-          ? h('button.icon-btn', { type: 'button', title: 'Vincular a outro elemento', html: PN.icons.link, onclick: () => startRelink(a.id) })
+          ? h('button.icon-btn', { type: 'button', title: T('relink'), html: PN.icons.link, onclick: () => startRelink(a.id) })
           : null,
         h('div', { style: { flex: '1' } }),
         resolved
-          ? h('button.btn', { type: 'button', html: `${PN.icons.undo} Reabrir`, onclick: () => setStatus(a.id, 'open') })
-          : h('button.btn.primary', { type: 'button', html: `${PN.icons.check} Resolver`, onclick: () => setStatus(a.id, 'resolved') })
+          ? h('button.btn', { type: 'button', html: `${PN.icons.undo} ${T('reopen')}`, onclick: () => setStatus(a.id, 'open') })
+          : h('button.btn.primary', { type: 'button', html: `${PN.icons.check} ${T('resolve')}`, onclick: () => setStatus(a.id, 'resolved') })
       );
       root.append(foot);
     }
@@ -1144,9 +1145,9 @@
       'div.relink-banner',
       { role: 'status' },
       svg(PN.icons.link),
-      h('span', { text: `Clique no novo elemento do comentário${idx ? ' ' + idx : ''}` }),
+      h('span', { text: idx ? T('relinkBannerN', idx) : T('relinkBanner') }),
       h('kbd', { text: 'Esc' }),
-      h('button', { type: 'button', text: 'Cancelar', onclick: () => endRelink() })
+      h('button', { type: 'button', text: T('cancel'), onclick: () => endRelink() })
     );
     const wasActive = S.active && !S.momentary;
     S.momentary = false;
@@ -1186,7 +1187,7 @@
       setTimeout(() => pin.classList.remove('dropping'), 700);
     }
     await store.update(a.id, patch);
-    toast('<span class="ok">●</span> Comentário vinculado ao novo elemento');
+    toast(`<span class="ok">●</span> ${T('toastRelinked')}`);
   }
 
   // ------------------------------------------------------------------ ações
@@ -1208,8 +1209,8 @@
     a.resolvedAt = status === 'resolved' ? Date.now() : null;
     recompute();
     await store.setStatus(id, status);
-    if (status === 'resolved') toast('<span class="ok">✓</span> Comentário resolvido');
-    else toast('Comentário reaberto');
+    if (status === 'resolved') toast(`<span class="ok">✓</span> ${T('toastResolved')}`);
+    else toast(T('toastReopened'));
   }
 
   async function removeAnnotation(id) {
@@ -1223,18 +1224,18 @@
     S.all = S.all.filter((a) => a.id !== id);
     recompute();
     await store.remove(id);
-    toast('Comentário excluído');
+    toast(T('toastDeleted'));
   }
 
   async function copyAnnotations(list, okMessage) {
     if (!list.length) {
-      toast('Nenhum comentário em aberto para copiar');
+      toast(T('nothingToCopy'));
       return;
     }
     const md = PN.buildExportMarkdown(list, { settings: S.settings });
     const ok = await PN.ui.copyText(md, shadow);
     if (ok) {
-      toast(`<span class="ok">●</span> ${okMessage || `${list.length} comentário${list.length === 1 ? '' : 's'} copiado${list.length === 1 ? '' : 's'}`} — cole no Claude`);
+      toast(`<span class="ok">●</span> ${T('toastCopied', okMessage || PN.tn(list.length, 'commentsCopied'))}`);
     } else {
       showManualCopy(md);
     }
@@ -1249,9 +1250,9 @@
       h(
         'div.box',
         null,
-        h('strong', { text: 'Copie o texto abaixo (Ctrl/⌘ + C)' }),
+        h('strong', { text: T('manualCopy') }),
         ta,
-        h('div', { style: { display: 'flex', justifyContent: 'flex-end' } }, h('button.btn', { type: 'button', text: 'Fechar', onclick: () => wrap.remove() }))
+        h('div', { style: { display: 'flex', justifyContent: 'flex-end' } }, h('button.btn', { type: 'button', text: T('close'), onclick: () => wrap.remove() }))
       )
     );
     toastWrap.append(wrap);
@@ -1270,7 +1271,7 @@
     if (!el || !el.isConnected) el = L.resolve(a.target);
     if (el && a.target && a.target.container && !isRendered(el)) el = null;
     if (!el && a.target && a.target.container) {
-      toast(`Este comentário está dentro de ${containerName(a.target.container)} que está fechado. Abra-o para ver o ícone.`, 3600);
+      toast(T('toastInsideClosed', containerName(a.target.container)), 3600);
       return;
     }
     if (el) {
@@ -1284,14 +1285,14 @@
       }, 420);
     } else {
       if (a.target && a.target.rect) window.scrollTo({ top: Math.max(0, a.target.rect.y - window.innerHeight / 3), behavior: 'smooth' });
-      toast('Elemento não encontrado — a página pode ter mudado. Mostrando a posição original.', 3200);
+      toast(T('toastElementMissing'), 3200);
       setTimeout(() => openThread(a.id), 420);
     }
   }
 
   function containerName(c) {
-    const names = { modal: 'um modal', sheet: 'um sheet', popover: 'um popover', menu: 'um menu', overlay: 'uma camada flutuante' };
-    let n = names[c.kind] || 'um modal';
+    const kind = ['modal', 'sheet', 'popover', 'menu', 'overlay'].includes(c.kind) ? c.kind : 'modal';
+    let n = T(`inContainer_${kind}`);
     if (c.title) n += ` (“${PN.escapeHtml(c.title)}”)`;
     return n;
   }
@@ -1320,16 +1321,16 @@
       toolbarEl = h(
         'div.tb-bar',
         { role: 'toolbar', 'aria-label': 'Browser Annotation' },
-        h('div.tb-brand', tip('Modo anotação ativo — clique em um elemento'), svg(PN.icons.bubble(18)), h('span.tb-dot')),
+        h('div.tb-brand', tip(T('tipBrand')), svg(PN.icons.bubble(18)), h('span.tb-dot')),
         h('span.tb-sep'),
-        h('span.tb-btn.tb-hint', Object.assign({ role: 'img', html: PN.icons.arrowUp }, tip('↑ seleciona o pai · ↓ volta · Enter comenta'))),
-        h('span.tb-btn.tb-hint.tb-hand', Object.assign({ role: 'img', html: PN.icons.hand }, tip(`Segure ${MOD} para usar a página`))),
+        h('span.tb-btn.tb-hint', Object.assign({ role: 'img', html: PN.icons.arrowUp }, tip(T('tipParent')))),
+        h('span.tb-btn.tb-hint.tb-hand', Object.assign({ role: 'img', html: PN.icons.hand }, tip(T('tipHold', MOD)))),
         h('span.tb-sep'),
-        btn('', 'panel', PN.icons.list, 'Comentários', true),
-        btn('.tb-primary', 'copy', PN.icons.copy, 'Copiar abertos do site', false),
+        btn('', 'panel', PN.icons.list, T('comments'), true),
+        btn('.tb-primary', 'copy', PN.icons.copy, T('copySiteOpen'), false),
         h('span.tb-sep'),
-        btn('', 'exit', PN.icons.close, 'Sair  Esc', false),
-        h('span.tb-chip', { html: `${PN.icons.hand}<span>Usando a página</span>` })
+        btn('', 'exit', PN.icons.close, `${T('exit')}  Esc`, false),
+        h('span.tb-chip', { html: `${PN.icons.hand}<span>${T('usingPage')}</span>` })
       );
       toolbarEl.addEventListener('click', (e) => {
         const b = e.target.closest('button[data-act]');
@@ -1344,8 +1345,8 @@
     toolbarEl.classList.toggle('is-passthrough', S.passthrough);
     const panelBtn = toolbarEl.querySelector('[data-act=panel]');
     const withKey = (text, key) => (key ? `${text}  ${key}` : text);
-    panelBtn.dataset.tip = withKey('Comentários', shortcutLabel('panel'));
-    toolbarEl.querySelector('[data-act=exit]').dataset.tip = withKey('Sair', [shortcutLabel('toggle'), 'Esc'].filter(Boolean).join(' ou '));
+    panelBtn.dataset.tip = withKey(T('comments'), shortcutLabel('panel'));
+    toolbarEl.querySelector('[data-act=exit]').dataset.tip = withKey(T('exit'), [shortcutLabel('toggle'), 'Esc'].filter(Boolean).join(` ${T('or')} `));
     const size = S.settings.toolbarSize;
     toolbarEl.classList.toggle('tb-size-m', size === 'medium');
     toolbarEl.classList.toggle('tb-size-l', size === 'large');
@@ -1357,7 +1358,7 @@
     setBadge('panel', S.openAnns.length);
     const open = siteOpen().length;
     const copyBtn = toolbarEl.querySelector('[data-act=copy]');
-    const copyTip = open ? `Copiar ${open} ${open === 1 ? 'comentário aberto' : 'comentários abertos'} do site` : 'Nenhum comentário aberto no site';
+    const copyTip = open ? PN.tn(open, 'copySiteN') : T('copySiteNone');
     copyBtn.dataset.tip = copyTip;
     copyBtn.setAttribute('aria-label', copyTip);
     copyBtn.classList.toggle('is-empty', !open);
@@ -1372,7 +1373,7 @@
     if (S.panel) return;
     const tabs = h('div.tabs', { role: 'tablist' });
     const seg = h('div.seg');
-    const searchInput = h('input', { type: 'search', placeholder: 'Buscar comentários…', 'aria-label': 'Buscar' });
+    const searchInput = h('input', { type: 'search', placeholder: T('searchComments'), 'aria-label': T('search') });
     searchInput.value = S.search;
     searchInput.addEventListener('input', () => {
       S.search = searchInput.value;
@@ -1386,14 +1387,14 @@
 
     const root = h(
       'div.panel',
-      { role: 'complementary', 'aria-label': 'Comentários Browser Annotation' },
+      { role: 'complementary', 'aria-label': T('panelLabel') },
       h(
         'div.panel-head',
         null,
         svg(PN.icons.bubble(26)),
         h('div.title', null, h('div.t1', { text: 'Browser Annotation' }), h('div.t2', { text: PN.prettyUrl(location.href) })),
         modeBtn,
-        h('button.icon-btn', { type: 'button', title: 'Fechar painel', html: PN.icons.close, onclick: closePanel })
+        h('button.icon-btn', { type: 'button', title: T('closePanel'), html: PN.icons.close, onclick: closePanel })
       ),
       tabs,
       h('div.filters', null, seg, h('div.search', null, svg(PN.icons.search), searchInput)),
@@ -1404,8 +1405,8 @@
         copyBtn,
         h('button.btn', {
           type: 'button',
-          title: 'Abrir o histórico completo em uma nova aba',
-          html: `${PN.icons.external} Histórico`,
+          title: T('openHistoryTitle'),
+          html: `${PN.icons.external} ${T('history')}`,
           onclick: () => send({ type: 'pn:open-history' }),
         })
       )
@@ -1452,13 +1453,13 @@
 
     P.t2.textContent = PN.prettyUrl(location.href);
     P.modeBtn.className = 'btn sm' + (S.active ? ' primary' : '');
-    P.modeBtn.innerHTML = `${PN.icons.cursor} ${S.active ? 'Anotando' : 'Anotar'}`;
-    P.modeBtn.title = `${S.active ? 'Desativar' : 'Ativar'} modo anotação` + (shortcutLabel('toggle') ? ` (${shortcutLabel('toggle')})` : '');
+    P.modeBtn.innerHTML = `${PN.icons.cursor} ${S.active ? T('annotating') : T('annotate')}`;
+    P.modeBtn.title = T(S.active ? 'turnOffMode' : 'turnOnMode') + (shortcutLabel('toggle') ? ` (${shortcutLabel('toggle')})` : '');
 
     const tabDefs = [
-      ['open', 'Abertos', openCount],
-      ['resolved', 'Resolvidos', resolvedCount],
-      ['all', 'Todos', scoped.length],
+      ['open', T('tabOpen'), openCount],
+      ['resolved', T('tabResolved'), resolvedCount],
+      ['all', T('tabAll'), scoped.length],
     ];
     P.tabs.innerHTML = '';
     for (const [id, label, n] of tabDefs) {
@@ -1472,9 +1473,9 @@
 
     P.seg.innerHTML = '';
     for (const [id, label] of [
-      ['page', 'Esta página'],
-      ['site', 'Este site'],
-      ['all', 'Tudo'],
+      ['page', T('scopePage')],
+      ['site', T('scopeSite')],
+      ['all', T('scopeAll')],
     ]) {
       const b = h('button' + (S.panelScope === id ? '.on' : ''), { type: 'button', text: label });
       b.addEventListener('click', () => {
@@ -1484,9 +1485,8 @@
       P.seg.append(b);
     }
 
-    const scopeLabel = { page: 'desta página', site: 'deste site', all: 'de todos os sites' }[S.panelScope];
-    P.copyBtn.innerHTML = `${PN.icons.copy} Copiar ${openCount} em aberto`;
-    P.copyBtn.title = `Copia os comentários em aberto ${scopeLabel} em Markdown, prontos para colar no Claude`;
+    P.copyBtn.innerHTML = `${PN.icons.copy} ${T('copyNOpen', openCount)}`;
+    P.copyBtn.title = T(`copyTitle_${S.panelScope}`);
     P.copyBtn.disabled = openCount === 0;
 
     let items = scoped.filter((a) => (S.panelTab === 'all' ? true : S.panelTab === 'open' ? a.status !== 'resolved' : a.status === 'resolved'));
@@ -1501,10 +1501,10 @@
     P.list.innerHTML = '';
     if (!items.length) {
       const msg = S.search
-        ? 'Nada encontrado para essa busca.'
+        ? T('noSearchResults')
         : S.panelTab === 'resolved'
-          ? 'Nenhum comentário resolvido ainda.'
-          : `Nenhum comentário em aberto ${scopeLabel}.`;
+          ? T('noResolved')
+          : T(`emptyOpen_${S.panelScope}`);
       P.list.append(
         h(
           'div.empty',
@@ -1512,7 +1512,7 @@
           svg(PN.icons.bubble(40, 'big')),
           h('div', null, msg),
           S.panelTab !== 'resolved' && !S.search
-            ? h('div', { html: `Ative o modo anotação ${howToActivateHtml()} e clique em um elemento.` })
+            ? h('div', { html: T('emptyActivateHint', howToActivateHtml()) })
             : null
         )
       );
@@ -1528,7 +1528,7 @@
     for (const grp of groups) {
       if (S.panelScope !== 'page') {
         const here = grp.key === currentKey();
-        P.list.append(h('div.group-title', { text: (here ? '● Esta página — ' : '') + PN.prettyUrl(grp.url), title: grp.url }));
+        P.list.append(h('div.group-title', { text: (here ? `● ${T('scopePage')} — ` : '') + PN.prettyUrl(grp.url), title: grp.url }));
       }
       for (const a of grp.items) P.list.append(card(a));
     }
@@ -1541,35 +1541,35 @@
     const idx = here ? S.index.get(a.id) : null;
     const t = a.target || {};
     const fw = t.framework || {};
-    const label = (t.label || t.tag || 'elemento') + (fw.component ? ` · <${fw.component}>` : '');
+    const label = (t.label || t.tag || T('element')) + (fw.component ? ` · <${fw.component}>` : '');
 
     let where = null;
     if (here && !resolved) {
       const info = anchorInfo(a);
       if (info.state === 'closed') {
-        const kinds = { modal: 'Modal', sheet: 'Sheet', popover: 'Popover', menu: 'Menu', overlay: 'Camada' };
-        const label = `${kinds[t.container.kind] || 'Modal'} fechado${t.container.title ? ` · ${t.container.title}` : ''}`;
-        where = h('div.where', { title: 'O ícone aparece quando o modal/sheet for aberto de novo', html: `${PN.icons.hidden}<span>${PN.escapeHtml(label)}</span>` });
-      } else if (info.state === 'orphan' || info.state === 'missing') where = h('div.where.warn', { title: 'O elemento mudou ou foi removido. O comentário continua salvo e o ícone fica na posição original.', html: `${PN.icons.warn}<span>Elemento não encontrado na página</span>` });
+        const kind = ['modal', 'sheet', 'popover', 'menu', 'overlay'].includes(t.container.kind) ? t.container.kind : 'modal';
+        const label = T(`containerClosed_${kind}`) + (t.container.title ? ` · ${t.container.title}` : '');
+        where = h('div.where', { title: T('closedHint'), html: `${PN.icons.hidden}<span>${PN.escapeHtml(label)}</span>` });
+      } else if (info.state === 'orphan' || info.state === 'missing') where = h('div.where.warn', { title: T('orphanHint'), html: `${PN.icons.warn}<span>${T('elementNotFoundOnPage')}</span>` });
     }
     if (!where && fw.source) where = h('div.where', { text: fw.source, title: fw.source });
     if (!where) where = h('div.where', { text: t.domPath || '', title: t.selector || '' });
 
     const resolveBtn = resolved
-      ? h('button.icon-btn', { type: 'button', title: 'Reabrir', html: PN.icons.undo, onclick: (e) => (e.stopPropagation(), setStatus(a.id, 'open')) })
-      : h('button.icon-btn', { type: 'button', title: 'Resolver', html: PN.icons.check, onclick: (e) => (e.stopPropagation(), setStatus(a.id, 'resolved')) });
+      ? h('button.icon-btn', { type: 'button', title: T('reopen'), html: PN.icons.undo, onclick: (e) => (e.stopPropagation(), setStatus(a.id, 'open')) })
+      : h('button.icon-btn', { type: 'button', title: T('resolve'), html: PN.icons.check, onclick: (e) => (e.stopPropagation(), setStatus(a.id, 'resolved')) });
     const copyBtn = h('button.icon-btn', {
       type: 'button',
-      title: 'Copiar para LLM',
+      title: T('copyForLlm'),
       html: PN.icons.copy,
-      onclick: (e) => (e.stopPropagation(), copyAnnotations([a], 'Comentário copiado')),
+      onclick: (e) => (e.stopPropagation(), copyAnnotations([a], T('commentCopied'))),
     });
-    const delBtn = confirmButton(h('button.icon-btn.danger', { type: 'button', title: 'Excluir (clique duas vezes)', html: PN.icons.trash }), null, () => removeAnnotation(a.id));
+    const delBtn = confirmButton(h('button.icon-btn.danger', { type: 'button', title: T('deleteTwice'), html: PN.icons.trash }), null, () => removeAnnotation(a.id));
     const lost = here && !resolved && ['orphan', 'missing'].includes(anchorInfo(a).state);
     const relinkBtn = lost
       ? h('button.icon-btn', {
           type: 'button',
-          title: 'Vincular a outro elemento',
+          title: T('relink'),
           html: PN.icons.link,
           onclick: (e) => (e.stopPropagation(), startRelink(a.id)),
         })
@@ -1577,7 +1577,7 @@
 
     const el = h(
       'div.card' + (resolved ? '.resolved' : ''),
-      { tabindex: '0', title: here ? 'Mostrar na página' : 'Abrir a página deste comentário' },
+      { tabindex: '0', title: here ? T('showOnPage') : T('openCommentPage') },
       h(
         'div.card-head',
         null,

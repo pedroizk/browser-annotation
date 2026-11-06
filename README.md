@@ -1,168 +1,171 @@
 <div align="center">
 
+**English** · [Português](README.pt-BR.md)
+
 <img src="icons/icon128.png" width="64" alt="" />
 
 # Browser Annotation
 
-**Comente direto na interface. Copie para a IA. Pronto.**
+**Comment right on the UI. Copy it to the AI. Done.**
 
 ![Chrome 111+](https://img.shields.io/badge/Chrome-111%2B-D97757?logo=googlechrome&logoColor=white)
 ![Manifest V3](https://img.shields.io/badge/Manifest-V3-1F1E1D)
-![100% local](https://img.shields.io/badge/dados-100%25%20local-5B8C5A)
-![Sem build](https://img.shields.io/badge/build-nenhum-73726C)
+![100% local](https://img.shields.io/badge/data-100%25%20local-5B8C5A)
+![No build](https://img.shields.io/badge/build-none-73726C)
 
-Extensão do Chrome para devs: clique em qualquer componente da página, deixe um comentário<br />
-e copie todos os pedidos em aberto, com o contexto do código, para colar no Claude, ChatGPT ou Cursor.
+A Chrome extension for developers: click any component on the page, leave a comment<br />
+and copy every open request, with its code context, to paste into Claude, ChatGPT or Cursor.
 
-<a href="docs/media/browser-annotation.mp4"><img src="docs/media/browser-annotation.webp" width="820" alt="Tour de 30 segundos: ativar o modo anotação, comentar componentes, usar modais, ver o painel e copiar tudo para a IA" /></a>
+<a href="docs/media/en/browser-annotation.mp4"><img src="docs/media/en/browser-annotation.webp" width="820" alt="30-second tour: turn on annotation mode, comment on components, work with modals, open the panel and copy everything to the AI" /></a>
 
-<sub>🔊 <a href="docs/media/browser-annotation.mp4"><b>Clique para ver com som</b></a></sub>
+<sub>🔊 <a href="docs/media/en/browser-annotation.mp4"><b>Click to watch with sound</b></a></sub>
 
 </div>
 
-## Por que usar
+## Why use it
 
-- **Sem prints, setas ou "o botão azul lá em cima".** Você aponta o elemento exato.
-- **Contexto que a IA entende.** Cada pedido vai com componente, arquivo:linha, seletor CSS e HTML.
-- **Comentários que não se perdem.** Ficam presos ao componente entre reloads, trocas de página e mudanças no código.
-- **Grátis, open source e 100% local.** Sem conta, sem servidor, sem telemetria.
+- **No screenshots, arrows or "the blue button up top".** You point at the exact element.
+- **Context the AI understands.** Every request carries the component, file:line, CSS selector and HTML.
+- **Comments that don't get lost.** They stay attached to the component across reloads, page changes and code changes.
+- **Free, open source and 100% local.** No account, no server, no telemetry.
 
-## Como usar
+## How to use
 
-| Passo | Como |
+| Step | How |
 | --- | --- |
-| **1. Ative** | <kbd>⌘</kbd>/<kbd>Alt</kbd> + <kbd>⇧</kbd> + <kbd>E</kbd> ou clique no ícone da extensão |
-| **2. Comente** | Passe o mouse, clique no elemento, escreva e salve com <kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>Enter</kbd> |
-| **3. Copie** | Clique no botão laranja da barra e cole na sua IA |
+| **1. Turn it on** | <kbd>⌘</kbd>/<kbd>Alt</kbd> + <kbd>⇧</kbd> + <kbd>E</kbd> or click the extension icon |
+| **2. Comment** | Hover, click the element, write and save with <kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>Enter</kbd> |
+| **3. Copy** | Click the orange button on the bar and paste into your AI |
 
-O comentário fica preso ao componente até você clicar em **Resolver**.
+The comment stays attached to the component until you click **Resolve**.
 
-## Instalação
+## Installation
 
-1. Baixe ou clone este repositório.
-2. Abra `chrome://extensions` e ative o **Modo do desenvolvedor**.
-3. Clique em **Carregar sem compactação** e escolha a pasta do projeto.
+1. Download or clone this repository.
+2. Open `chrome://extensions` and turn on **Developer mode**.
+3. Click **Load unpacked** and pick the project folder.
 
-Funciona no Chrome 111+ e deve funcionar em navegadores baseados em Chromium (Edge, Brave, Arc).
-Para testar rápido, abra a página [`examples/demo.html`](examples/demo.html) por um servidor local (ex.: `python3 -m http.server`).
+Works on Chrome 111+ and should work on Chromium-based browsers (Edge, Brave, Arc).
+The interface follows Chrome's language: Portuguese when Chrome is in Portuguese, English otherwise. The text copied to the AI uses the same language.
+To try it quickly, open [`examples/demo.html`](examples/demo.html) through a local server (e.g. `python3 -m http.server`).
 
-## Atalhos
+## Shortcuts
 
-| Ação | Atalho |
+| Action | Shortcut |
 | --- | --- |
-| Ligar/desligar o modo anotação | <kbd>⌘</kbd>/<kbd>Alt</kbd> + <kbd>⇧</kbd> + <kbd>E</kbd> |
-| Anotar só enquanto segura a tecla | segure <kbd>Alt</kbd> (<kbd>⌥</kbd> no Mac) |
-| Usar a página sem comentar (abrir menus, modais, links) | segure <kbd>Ctrl</kbd> (<kbd>⌘</kbd> no Mac) |
-| Selecionar o elemento pai / voltar ao filho | <kbd>↑</kbd> / <kbd>↓</kbd> |
-| Salvar comentário | <kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>Enter</kbd> |
-| Abrir a lista de comentários | <kbd>⌘</kbd>/<kbd>Alt</kbd> + <kbd>⇧</kbd> + <kbd>K</kbd> |
-| Fechar / sair | <kbd>Esc</kbd> |
+| Turn annotation mode on/off | <kbd>⌘</kbd>/<kbd>Alt</kbd> + <kbd>⇧</kbd> + <kbd>E</kbd> |
+| Annotate only while holding the key | hold <kbd>Alt</kbd> (<kbd>⌥</kbd> on Mac) |
+| Use the page without commenting (open menus, modals, links) | hold <kbd>Ctrl</kbd> (<kbd>⌘</kbd> on Mac) |
+| Select the parent element / back to the child | <kbd>↑</kbd> / <kbd>↓</kbd> |
+| Save comment | <kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>Enter</kbd> |
+| Open the comment list | <kbd>⌘</kbd>/<kbd>Alt</kbd> + <kbd>⇧</kbd> + <kbd>K</kbd> |
+| Close / exit | <kbd>Esc</kbd> |
 
-Nos dois atalhos principais, a primeira tecla é a que fica ao lado da barra de espaço: <kbd>⌘</kbd> no Mac e <kbd>Alt</kbd> no Windows, Linux e ChromeOS. Eles usam letras, então não dependem de teclas de pontuação que mudam de lugar entre layouts (como no ABNT2). <kbd>E</kbd> e <kbd>K</kbd> estão entre as poucas letras livres nessas combinações no Chrome e nos sistemas (macOS, Windows, Linux e ChromeOS). Para trocá-los, abra `chrome://extensions/shortcuts`: a interface da extensão passa a mostrar o atalho que você escolher.
+In both main shortcuts, the first key is the one next to the space bar: <kbd>⌘</kbd> on Mac and <kbd>Alt</kbd> on Windows, Linux and ChromeOS. They use letters, so they don't depend on punctuation keys that move between keyboard layouts (such as Brazilian ABNT2). <kbd>E</kbd> and <kbd>K</kbd> are among the few letters free in these combinations in Chrome and in the operating systems (macOS, Windows, Linux and ChromeOS). To change them, open `chrome://extensions/shortcuts`: the extension's interface then shows the shortcut you picked.
 
-> - No Windows, <kbd>Alt</kbd> + <kbd>⇧</kbd> sozinhos trocam o idioma do teclado quando há mais de um instalado. Pressionando a letra junto isso normalmente não acontece.
-> - Se algum programa seu já usa a combinação (por exemplo, i3 ou sway com <kbd>Alt</kbd> como tecla principal), troque o atalho em `chrome://extensions/shortcuts`.
-> - Já tinha uma versão anterior instalada? O Chrome pode manter o atalho antigo; confira em `chrome://extensions/shortcuts`.
+> - On Windows, <kbd>Alt</kbd> + <kbd>⇧</kbd> alone switches the keyboard language when more than one is installed. Pressing the letter together usually doesn't trigger it.
+> - If one of your programs already uses the combination (for example, i3 or sway with <kbd>Alt</kbd> as the main key), change the shortcut in `chrome://extensions/shortcuts`.
+> - Had an earlier version installed? Chrome may keep the old shortcut; check `chrome://extensions/shortcuts`.
 
-## Recursos
+## Features
 
-### Barra de ações
+### Action bar
 
-<img src="docs/images/toolbar.png" width="293" alt="Barra de ações com ícones e tooltip" />
+<img src="docs/images/en/toolbar.png" width="293" alt="Action bar with icons and tooltip" />
 
-Aparece com o modo anotação ligado: indicador do modo, dicas de atalho, **lista de comentários**, **copiar abertos** e sair. Passe o mouse sobre um ícone para ver o que ele faz. Tem três tamanhos (pequena, média e grande), escolhidos nas configurações do histórico.
+Shows up while annotation mode is on: mode indicator, shortcut hints, **comment list**, **copy open comments** and exit. Hover an icon to see what it does. It comes in three sizes (small, medium and large), chosen in the history settings.
 
-### Lista de comentários e histórico
+### Comment list and history
 
 <table>
 <tr>
-<td width="320"><img src="docs/images/panel.png" width="300" alt="Painel lateral com os comentários da página" /></td>
+<td width="320"><img src="docs/images/en/panel.png" width="300" alt="Side panel with the page's comments" /></td>
 <td>
 
-- Comentários **abertos** e **resolvidos**, da página, do site ou de tudo.
-- Busca por texto, componente ou URL.
-- Clique num comentário para ir até o elemento, mesmo em outra página.
-- Resolver, reabrir, copiar um só ou excluir.
-- O botão **Histórico** abre uma página com todos os sites, exportar/importar JSON e configurações.
+- **Open** and **resolved** comments, for the page, the site or everything.
+- Search by text, component or URL.
+- Click a comment to go to the element, even on another page.
+- Resolve, reopen, copy just one or delete.
+- The **History** button opens a page with every site, JSON export/import and settings.
 
 </td>
 </tr>
 </table>
 
-### Modais, sheets e popovers
+### Modals, sheets and popovers
 
 <table>
 <tr>
-<td width="360"><img src="docs/images/modal.png" width="340" alt="Comentando um campo dentro de um modal aberto" /></td>
+<td width="360"><img src="docs/images/en/modal.png" width="340" alt="Commenting on a field inside an open modal" /></td>
 <td>
 
-- Comente elementos dentro de modais, sheets e popovers **sem que eles fechem**.
-- Quando o modal fecha, o ícone do comentário some; quando abre de novo, ele volta.
-- Segure <kbd>Ctrl</kbd> para abrir o modal sem criar um comentário.
+- Comment on elements inside modals, sheets and popovers **without them closing**.
+- When the modal closes, the comment icon hides; when it opens again, the icon comes back.
+- Hold <kbd>Ctrl</kbd> to open the modal without creating a comment.
 
 </td>
 </tr>
 </table>
 
-### O comentário acompanha o código
+### The comment follows your code
 
-Se você mudar o componente (texto, classes, posição), a extensão reencontra o elemento e atualiza o vínculo. Se ele sumir de vez, o ícone fica com um **?** na posição original: clique em **Escolher elemento** para vincular o comentário ao elemento novo.
+If you change the component (text, classes, position), the extension finds the element again and updates the link. If it disappears for good, the icon shows a **?** at the original position: click **Pick element** to link the comment to the new element.
 
-> **Dica:** componentes com `data-testid` são reencontrados praticamente sempre.
+> **Tip:** components with a `data-testid` are found again almost every time.
 
-## O que é copiado
+## What gets copied
 
-Um Markdown pronto para colar, com o pedido e as pistas para achar o elemento no código. Componente e arquivo:linha aparecem em builds de desenvolvimento de **React, Vue, Svelte e Angular**.
+Ready-to-paste Markdown with the request and the clues to find the element in the code. Component and file:line show up in development builds of **React, Vue, Svelte and Angular**.
 
 <details>
-<summary>Ver exemplo</summary>
+<summary>See an example</summary>
 
 ````markdown
-## Página: Acme — http://localhost:3000/dashboard
+## Page: Acme — http://localhost:3000/dashboard
 
-### 1. Aumentar o padding e usar a cor da marca
+### 1. Increase the padding and use the brand color
 
-**Comentário:**
-> Aumentar o padding e usar a cor da marca
+**Comment:**
+> Increase the padding and use the brand color
 
-**Onde:**
-- Componente: `SaveButton` — `src/components/SaveButton.tsx:8:5` (React)
-- Hierarquia: `App › Hero › SaveButton`
-- Elemento: `<button class="btn">`
-- Texto visível: "Criar relatório"
+**Where:**
+- Component: `SaveButton` — `src/components/SaveButton.tsx:8:5` (React)
+- Hierarchy: `App › Hero › SaveButton`
+- Element: `<button class="btn">`
+- Visible text: "Create report"
 - Test id: `data-testid="cta-primary"`
-- Seletor CSS: `[data-testid="cta-primary"]`
-- Caminho no DOM: `body > main > section.hero > button.btn`
+- CSS selector: `[data-testid="cta-primary"]`
+- DOM path: `body > main > section.hero > button.btn`
 - HTML:
   ```html
-  <button class="btn" data-testid="cta-primary">Criar relatório</button>
+  <button class="btn" data-testid="cta-primary">Create report</button>
   ```
 ````
 
 </details>
 
 <details>
-<summary>Como o comentário fica vinculado ao elemento</summary>
+<summary>How a comment stays linked to its element</summary>
 
-Cada comentário guarda a página (endereço sem query string e sem parâmetros de rastreamento; rotas em hash `#/rota` contam) e uma "impressão digital" do elemento: `data-testid`, `id` estável, seletor CSS, XPath, tag, classes, texto, componente, posição e, se houver, o modal/sheet onde ele estava.
+Each comment stores the page (address without the query string or tracking parameters; hash routes like `#/route` count) and a "fingerprint" of the element: `data-testid`, stable `id`, CSS selector, XPath, tag, classes, text, component, position and, if any, the modal/sheet it was in.
 
-Ao abrir a página, os candidatos recebem uma pontuação contra essa impressão digital e o melhor é escolhido. Se nenhum servir, a extensão procura um elemento da mesma tag com o mesmo texto perto da posição original. Quando o elemento é reencontrado sem ambiguidade, as pistas salvas são atualizadas, então mudanças graduais no componente não quebram o vínculo.
+When the page opens, candidates are scored against that fingerprint and the best one wins. If none fits, the extension looks for an element with the same tag and text near the original position. When the element is found again without ambiguity, the saved clues are updated, so gradual changes to the component don't break the link.
 
-A query string pode passar a contar no vínculo com uma opção na página de histórico.
+An option on the history page makes the query string count for the link.
 
 </details>
 
-## Privacidade
+## Privacy
 
-- **Nada sai do navegador:** sem servidores, sem telemetria, sem requisições de rede. Os comentários ficam no `chrome.storage.local`.
-- **Permissões:** `storage` (salvar), `scripting` (abas abertas antes da instalação), `contextMenus` (menu do ícone) e acesso às páginas (mostrar os comentários).
-- A interface fica isolada num Shadow DOM, e textos da página ou de arquivos importados nunca são tratados como HTML.
+- **Nothing leaves the browser:** no servers, no telemetry, no network requests. Comments live in `chrome.storage.local`.
+- **Permissions:** `storage` (saving), `scripting` (tabs opened before installation), `contextMenus` (icon menu) and page access (showing the comments).
+- The interface is isolated in a Shadow DOM, and text from the page or from imported files is never treated as HTML.
 
-Encontrou um problema de segurança? Abra uma issue sem detalhes sensíveis pedindo um contato privado.
+Found a security issue? Open an issue without sensitive details asking for a private contact.
 
-## Contribuindo
+## Contributing
 
-Ideias, bugs e pull requests são bem-vindos. O projeto é JavaScript puro, sem etapa de build: edite e clique em **Recarregar** em `chrome://extensions`.
+Ideas, bugs and pull requests are welcome. The project is plain JavaScript with no build step: edit and click **Reload** in `chrome://extensions`.
 
 ```bash
 npm install
@@ -172,29 +175,43 @@ npm install
 npm test
 ```
 
-O teste carrega a extensão num Chromium real e cobre o fluxo principal (`HEADED=1 npm test` mostra o navegador).
+The test loads the extension in a real Chromium and covers the main flow, in English and in Portuguese (`HEADED=1 npm test` shows the browser).
+
+Interface texts live in [`_locales/en`](_locales/en/messages.json) and [`_locales/pt_BR`](_locales/pt_BR/messages.json): when you change or add a text, update both. The images and the video in this README are generated with the real extension, in both languages:
+
+```bash
+node scripts/screenshots.mjs
+```
+
+```bash
+scripts/video/build.sh
+```
+
+Video details in [`scripts/video/README.md`](scripts/video/README.md).
 
 <details>
-<summary>Estrutura do projeto</summary>
+<summary>Project structure</summary>
 
 ```
 src/
-  background/service-worker.js  clique no ícone, atalho, badge, menu
-  content/main.js               modo anotação, pins, popovers, painel
-  content/locator.js            impressão digital e reencontro do elemento
-  content/page-bridge.js        detecção de componentes (React, Vue, Svelte, Angular)
-  content/ui.js, styles.js      helpers de interface e CSS (Shadow DOM)
-  shared/                       storage, URLs, exportação Markdown, ícones
-  history/                      página de histórico
-examples/demo.html              página para testar
-tests/smoke.mjs                 teste end-to-end (Playwright)
+  background/service-worker.js  icon click, shortcuts, badge, menu
+  content/main.js               annotation mode, pins, popovers, panel
+  content/locator.js            element fingerprint and re-finding
+  content/page-bridge.js        component detection (React, Vue, Svelte, Angular)
+  content/ui.js, styles.js      UI helpers and CSS (Shadow DOM)
+  shared/                       storage, URLs, Markdown export, icons, translations helper
+  history/                      history page
+_locales/                       interface texts (en, pt_BR)
+examples/                       test pages (demo.html in English, demo.pt-BR.html)
+scripts/                        README images and video
+tests/smoke.mjs                 end-to-end test (Playwright)
 ```
 
 </details>
 
-## Limitações
+## Limitations
 
-- Funciona no frame principal: o conteúdo de um `<iframe>` é anotado como o iframe inteiro.
-- Elementos dentro de Shadow DOM de web components são anotados pelo componente que os contém.
-- Páginas internas do navegador (`chrome://`, Chrome Web Store) não aceitam extensões.
-- Arquivos locais (`file://`) exigem ativar "Permitir acesso a URLs de arquivo" nos detalhes da extensão.
+- Works in the main frame: the content of an `<iframe>` is annotated as the whole iframe.
+- Elements inside web components' Shadow DOM are annotated through the component that contains them.
+- Internal browser pages (`chrome://`, Chrome Web Store) don't accept extensions.
+- Local files (`file://`) require turning on "Allow access to file URLs" in the extension details.
