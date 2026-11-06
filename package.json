@@ -1,0 +1,15 @@
+{
+  "name": "pixel-notes",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Extensão do Chrome para anotar componentes da interface e copiar os comentários para o Claude ou outra LLM.",
+  "type": "module",
+  "scripts": {
+    "test": "node tests/smoke.mjs",
+    "icons": "python3 scripts/generate-icons.py",
+    "zip": "rm -f pixel-notes.zip && zip -r pixel-notes.zip manifest.json icons src -x '*.DS_Store'"
+  },
+  "devDependencies": {
+    "playwright": "^1.49.0"
+  }
+}

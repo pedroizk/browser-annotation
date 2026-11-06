@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pixel Notes — Histórico</title>
+  <link rel="icon" href="../../icons/icon32.png" />
+  <link rel="stylesheet" href="history.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span id="logo"></span>
+      <div>
+        <h1>Pixel Notes</h1>
+        <p>Histórico de comentários</p>
+      </div>
+    </div>
+    <div class="top-actions">
+      <span class="stats" id="stats"></span>
+      <button class="btn" id="btn-import" type="button" title="Importar comentários de um arquivo JSON">Importar</button>
+      <button class="btn" id="btn-export" type="button" title="Exportar os comentários filtrados como JSON">Exportar JSON</button>
+      <button class="btn primary" id="btn-copy" type="button">Copiar abertos</button>
+      <input type="file" id="file-import" accept="application/json,.json" hidden />
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <section>
+        <h2>Status</h2>
+        <nav class="filter-list" id="status-filter"></nav>
+      </section>
+      <section>
+        <h2>Sites</h2>
+        <nav class="filter-list" id="site-filter"></nav>
+      </section>
+      <section>
+        <h2>Configurações</h2>
+        <label class="switch">
+          <input type="checkbox" id="opt-pins" />
+          <span class="track"></span>
+          <span class="txt">Mostrar ícones com o modo anotação desligado</span>
+        </label>
+        <label class="switch">
+          <input type="checkbox" id="opt-query" />
+          <span class="track"></span>
+          <span class="txt">Considerar a query string (<code>?tab=…</code>) ao vincular comentários à página</span>
+        </label>
+        <p class="help">
+          Atalhos: <kbd id="kbd-mod">Ctrl</kbd> <kbd>'</kbd> ativa o modo anotação ·
+          <kbd id="kbd-mod2">Ctrl</kbd> <kbd>⇧</kbd> <kbd>'</kbd> abre a lista na página.
+          <a href="#" id="link-shortcuts">Configurar atalho alternativo</a>
+        </p>
+      </section>
+      <section>
+        <button class="btn danger full" id="btn-clear-resolved" type="button">Excluir todos os resolvidos</button>
+      </section>
+    </aside>
+
+    <main>
+      <div class="toolbar">
+        <div class="search">
+          <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg>
+          <input id="search" type="search" placeholder="Buscar por comentário, componente, URL…" autocomplete="off" />
+        </div>
+        <select id="sort" aria-label="Ordenar">
+          <option value="new">Mais recentes primeiro</option>
+          <option value="old">Mais antigos primeiro</option>
+        </select>
+      </div>
+      <div id="content"></div>
+    </main>
+  </div>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <script src="../shared/constants.js"></script>
+  <script src="../shared/url.js"></script>
+  <script src="../shared/storage.js"></script>
+  <script src="../shared/export.js"></script>
+  <script src="../shared/icons.js"></script>
+  <script src="history.js"></script>
+</body>
+</html>
