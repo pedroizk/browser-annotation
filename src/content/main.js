@@ -1311,6 +1311,9 @@
       toolbarWrap.append(toolbarEl);
     }
     toolbarEl.classList.toggle('is-passthrough', S.passthrough);
+    const size = S.settings.toolbarSize;
+    toolbarEl.classList.toggle('tb-size-m', size === 'medium');
+    toolbarEl.classList.toggle('tb-size-l', size === 'large');
     const setBadge = (act, n) => {
       const b = toolbarEl.querySelector(`[data-act=${act}] .tb-badge`);
       b.textContent = n > 99 ? '99+' : String(n);

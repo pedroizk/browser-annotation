@@ -13,6 +13,8 @@
     showPinsWhenInactive: true,
     // Tecla para "segurar para comentar": 'Alt' (⌥ no Mac), 'Shift' ou 'off'.
     holdKey: 'Alt',
+    // Tamanho da barra de ações: 'small' | 'medium' | 'large'.
+    toolbarSize: 'small',
   };
 
   PN.uid = function () {

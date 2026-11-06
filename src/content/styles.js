@@ -200,9 +200,19 @@ kbd {
   --tb-press: rgba(31, 30, 29, 0.12);
   --tb-line: rgba(31, 30, 29, 0.12);
   --tb-ring: rgba(255, 255, 255, 0.6);
+  /* medidas — tamanho "pequeno" (padrão); .tb-size-m e .tb-size-l sobrescrevem */
+  --tb-h: 40px;
+  --tb-pad: 5px;
+  --tb-btn: 30px;
+  --tb-icon: 16px;
+  --tb-logo: 18px;
+  --tb-dot: 5px;
+  --tb-sep: 16px;
+  --tb-badge: 15px;
+  --tb-badge-font: 9.5px;
   position: fixed; left: 50%; bottom: 18px;
   display: flex; align-items: center; gap: 1px;
-  height: 40px; padding: 0 5px; box-sizing: border-box;
+  height: var(--tb-h); padding: 0 var(--tb-pad); box-sizing: border-box;
   border-radius: 999px; pointer-events: auto;
   background: var(--tb-bg); color: var(--tb-fg);
   -webkit-backdrop-filter: saturate(180%) blur(22px); backdrop-filter: saturate(180%) blur(22px);
@@ -226,24 +236,32 @@ kbd {
     --tb-ring: rgba(255, 255, 255, 0.08);
   }
 }
+.tb-bar.tb-size-m {
+  --tb-h: 48px; --tb-pad: 6px; --tb-btn: 37px; --tb-icon: 19px; --tb-logo: 22px;
+  --tb-dot: 6px; --tb-sep: 20px; --tb-badge: 17px; --tb-badge-font: 10.5px;
+}
+.tb-bar.tb-size-l {
+  --tb-h: 58px; --tb-pad: 7px; --tb-btn: 45px; --tb-icon: 22px; --tb-logo: 26px;
+  --tb-dot: 7px; --tb-sep: 24px; --tb-badge: 19px; --tb-badge-font: 11.5px;
+}
 @keyframes tb-in { from { opacity: 0; transform: translate(-50%, 14px) scale(.94); } }
 .tb-bar.is-out { animation: tb-out .18s ease-in forwards; }
 @keyframes tb-out { to { opacity: 0; transform: translate(-50%, 10px) scale(.96); } }
 
-.tb-brand { position: relative; display: flex; align-items: center; gap: 6px; height: 30px; padding: 0 8px 0 7px; cursor: default; }
-.tb-brand svg { width: 18px; height: 18px; }
-.tb-dot { width: 5px; height: 5px; background: var(--pn-orange); animation: tb-blink 1.4s steps(2, jump-none) infinite; }
+.tb-brand { position: relative; display: flex; align-items: center; gap: calc(var(--tb-dot) + 1px); height: var(--tb-btn); padding: 0 calc(var(--tb-pad) + 3px) 0 calc(var(--tb-pad) + 2px); cursor: default; }
+.tb-brand svg { width: var(--tb-logo); height: var(--tb-logo); }
+.tb-dot { width: var(--tb-dot); height: var(--tb-dot); background: var(--pn-orange); animation: tb-blink 1.4s steps(2, jump-none) infinite; }
 @keyframes tb-blink { 50% { opacity: .25; } }
 .tb-bar.is-passthrough .tb-dot { animation: none; background: var(--tb-muted); }
-.tb-sep { width: 1px; height: 16px; margin: 0 5px; background: var(--tb-line); }
+.tb-sep { width: 1px; height: var(--tb-sep); margin: 0 var(--tb-pad); background: var(--tb-line); }
 
 .tb-btn {
   position: relative; display: inline-flex; align-items: center; justify-content: center; flex: none;
-  width: 30px; height: 30px; padding: 0; margin: 0; border: 0; border-radius: 50%;
+  width: var(--tb-btn); height: var(--tb-btn); padding: 0; margin: 0; border: 0; border-radius: 50%;
   background: transparent; color: var(--tb-fg); cursor: pointer;
   transition: background-color .15s ease, color .15s ease, transform .2s cubic-bezier(.3, 1.6, .5, 1);
 }
-.tb-btn svg { width: 16px; height: 16px; }
+.tb-btn svg { width: var(--tb-icon); height: var(--tb-icon); }
 button.tb-btn:hover { background: var(--tb-hover); }
 button.tb-btn:active { background: var(--tb-press); transform: scale(.9); }
 .tb-btn:focus-visible { outline: 2px solid var(--pn-orange); outline-offset: 1px; }
@@ -257,9 +275,9 @@ button.tb-primary:active { background: var(--pn-orange-dark); }
 button.tb-primary.is-empty:hover { background: var(--tb-hover); }
 
 .tb-badge {
-  position: absolute; top: -3px; right: -4px; min-width: 15px; height: 15px; padding: 0 4px; box-sizing: border-box;
+  position: absolute; top: -3px; right: -4px; min-width: var(--tb-badge); height: var(--tb-badge); padding: 0 4px; box-sizing: border-box;
   border-radius: 999px; background: var(--pn-orange); color: #fff; pointer-events: none;
-  font: 600 9.5px/15px -apple-system, BlinkMacSystemFont, "SF Pro Text", var(--pn-font); text-align: center;
+  font: 600 var(--tb-badge-font)/var(--tb-badge) -apple-system, BlinkMacSystemFont, "SF Pro Text", var(--pn-font); text-align: center;
   font-variant-numeric: tabular-nums; box-shadow: 0 0 0 1.5px var(--tb-bg);
 }
 .tb-badge.is-zero { display: none; }
