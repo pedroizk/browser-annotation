@@ -66,6 +66,31 @@ try {
   await page.evaluate(() => document.querySelector('browser-annotation-root').shadowRoot.querySelector('.panel .card [title="Resolver"]').click());
   await page.waitForTimeout(600);
   assert.equal(await count('.pin'), 0, 'pin some ao resolver');
+
+  // Segurar Alt: ativa só enquanto pressionado
+  await page.keyboard.press('Escape'); // fecha o painel
+  await page.keyboard.press('Escape'); // sai do modo anotação
+  await page.waitForTimeout(300);
+  const cursorStyle = () => page.evaluate(() => !!document.getElementById('browser-annotation-cursor-style'));
+  assert.equal(await cursorStyle(), false, 'modo desligado');
+  await page.keyboard.press('Alt'); // toque rápido não ativa
+  await page.waitForTimeout(250);
+  assert.equal(await cursorStyle(), false, 'toque rápido no Alt não ativa');
+  await page.mouse.move(250, 250);
+  await page.keyboard.down('Alt');
+  await page.waitForTimeout(300);
+  assert.equal(await cursorStyle(), true, 'segurar Alt ativa o modo');
+  assert.equal(await count('.tb-bar'), 0, 'sem barra no modo momentâneo');
+  await page.click('.subtitle');
+  await page.waitForTimeout(250);
+  await page.keyboard.up('Alt');
+  await page.waitForTimeout(200);
+  assert.equal(await count('.pop textarea'), 1, 'popover continua aberto depois de soltar o Alt');
+  await page.keyboard.type('Comentário segurando Alt');
+  await page.keyboard.press('Control+Enter');
+  await page.waitForTimeout(700);
+  assert.equal(await count('.pin'), 1, 'comentário salvo no modo momentâneo');
+  assert.equal(await cursorStyle(), false, 'modo desliga depois de salvar');
   console.log('✓ smoke test ok');
 } catch (err) {
   failed = true;

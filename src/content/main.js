@@ -22,6 +22,12 @@
   const S = {
     alive: true,
     active: false,
+    momentary: false, // ativo só enquanto a tecla de "segurar para comentar" está pressionada
+    endMomentaryAfterComposer: false,
+    holdPending: false,
+    holdTimer: null,
+    mouseX: -1,
+    mouseY: -1,
     passthrough: false,
     settings: Object.assign({}, PN.DEFAULT_SETTINGS),
     all: [], // todos os comentários (todas as páginas)
@@ -463,6 +469,58 @@
     }
   }
 
+  // ------------------------------------------------------------------ segurar para comentar
+  // Segurando a tecla configurada (Alt/⌥ por padrão), o modo anotação fica ativo só enquanto
+  // ela estiver pressionada. Se soltar com o popover aberto, ele fica até salvar/cancelar.
+  const HOLD_DELAY = 160; // ms — evita disparar em atalhos como Alt+Tab ou ⌥+letra
+
+  function holdKeyName() {
+    const k = S.settings.holdKey;
+    return k === 'Shift' ? 'Shift' : k === 'off' ? null : 'Alt';
+  }
+
+  function isHoldKeyAlone(e) {
+    const key = holdKeyName();
+    if (!key || e.key !== key || e.repeat) return false;
+    if (key === 'Alt') return !e.ctrlKey && !e.metaKey && !e.shiftKey;
+    // Shift é usado para digitar: não vale dentro de campos editáveis
+    return !e.ctrlKey && !e.metaKey && !e.altKey && !isEditable(e.composedPath()[0]);
+  }
+
+  function cancelHold() {
+    clearTimeout(S.holdTimer);
+    S.holdPending = false;
+  }
+
+  function startMomentary() {
+    S.holdPending = false;
+    if (S.active) return;
+    S.momentary = true;
+    S.endMomentaryAfterComposer = false;
+    activate();
+    // destaca na hora o elemento que já está sob o mouse
+    const el = S.mouseX >= 0 ? document.elementFromPoint(S.mouseX, S.mouseY) : null;
+    if (eligible(el)) {
+      S.hoverBase = S.hoverEl = el;
+      S.hoverStack = [];
+      scheduleLayout();
+    }
+  }
+
+  function endMomentary() {
+    if (!S.momentary) return;
+    S.momentary = false;
+    S.endMomentaryAfterComposer = false;
+    deactivate();
+  }
+
+  function releaseHold() {
+    cancelHold();
+    if (!S.momentary) return;
+    if (S.composer) S.endMomentaryAfterComposer = true;
+    else endMomentary();
+  }
+
   function activate() {
     if (S.active) return;
     S.active = true;
@@ -488,6 +546,8 @@
 
   function deactivate() {
     if (!S.active) return;
+    S.momentary = false;
+    S.endMomentaryAfterComposer = false;
     setPassthrough(false);
     S.active = false;
     S.hoverEl = S.hoverBase = null;
@@ -501,6 +561,13 @@
   }
 
   function toggle() {
+    if (S.momentary) {
+      // atalho de alternar durante um "segurar": vira o modo fixo
+      S.momentary = false;
+      S.endMomentaryAfterComposer = false;
+      renderToolbar();
+      return;
+    }
     S.active ? deactivate() : activate();
   }
 
@@ -509,6 +576,8 @@
   }
 
   function onMouseMove(e) {
+    S.mouseX = e.clientX;
+    S.mouseY = e.clientY;
     if (!S.active) return;
     setPassthrough(e.ctrlKey || e.metaKey);
     if (isOwn(e)) {
@@ -564,6 +633,12 @@
     }
   }
 
+  function holdKeyLabel() {
+    const k = holdKeyName();
+    if (k === 'Alt') return IS_MAC ? '⌥ Option' : 'Alt';
+    return k === 'Shift' ? '⇧ Shift' : '';
+  }
+
   function isEditable(el) {
     if (!el) return false;
     return el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName);
@@ -578,9 +653,23 @@
 
   function onKeyUp(e) {
     if (e.key === 'Control' || e.key === 'Meta' || (!e.ctrlKey && !e.metaKey)) setPassthrough(e.ctrlKey || e.metaKey);
+    if (e.key === holdKeyName()) {
+      // no Windows, soltar o Alt sozinho focaria o menu do navegador
+      if (S.momentary && e.key === 'Alt') e.preventDefault();
+      releaseHold();
+    }
   }
 
   function onKeyDown(e) {
+    if (isHoldKeyAlone(e)) {
+      if (!S.active && !S.holdPending) {
+        S.holdPending = true;
+        S.holdTimer = setTimeout(startMomentary, HOLD_DELAY);
+      }
+      if (S.momentary) e.preventDefault();
+    } else if (S.holdPending && e.key !== holdKeyName()) {
+      cancelHold(); // outra tecla junto: é um atalho, não um "segurar"
+    }
     if (e.key === 'Control' || e.key === 'Meta') setPassthrough(true);
     const shortcut = isToggleShortcut(e);
     if (shortcut) {
@@ -743,6 +832,7 @@
     S.composer.root.remove();
     S.composer = null;
     layout();
+    if (S.momentary && S.endMomentaryAfterComposer) endMomentary();
   }
 
   async function saveComposer() {
@@ -1050,7 +1140,7 @@
 
   let toolbarEl = null;
   function renderToolbar() {
-    if (!S.active) {
+    if (!S.active || S.momentary) {
       if (toolbarEl) {
         const el = toolbarEl;
         toolbarEl = null;
@@ -1251,7 +1341,7 @@
           svg(PN.icons.bubble(40, 'big')),
           h('div', null, msg),
           S.panelTab !== 'resolved' && !S.search
-            ? h('div', { html: `Ative o modo anotação com <kbd>${MOD}</kbd> <kbd>'</kbd> e clique em um elemento.` })
+            ? h('div', { html: `Ative o modo anotação com <kbd>${MOD}</kbd> <kbd>'</kbd>${holdKeyName() ? ` ou segure <kbd>${holdKeyLabel()}</kbd>` : ''} e clique em um elemento.` })
             : null
         )
       );
@@ -1416,7 +1506,11 @@
     for (const type of GUARDED_EVENTS) on(window, type, guard, true);
     on(window, 'keydown', onKeyDown, true);
     on(window, 'keyup', onKeyUp, true);
-    on(window, 'blur', () => setPassthrough(false));
+    on(window, 'blur', () => {
+      setPassthrough(false);
+      cancelHold();
+      if (S.momentary && !S.composer) endMomentary();
+    });
     on(document, 'visibilitychange', () => setPassthrough(false));
     on(window, 'mousemove', onMouseMove, { capture: true, passive: true });
     for (const type of ['pointerdown', 'pointerup', 'mousedown', 'mouseup', 'click', 'dblclick', 'auxclick', 'contextmenu']) {

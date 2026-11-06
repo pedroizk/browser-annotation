@@ -7,6 +7,7 @@ Extensão do Chrome (Manifest V3) inspirada no *Orca annotation* para devs anota
 ## Funcionalidades
 
 - **Modo anotação**: clique no ícone da extensão ou use <kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>'</kbd>.
+- **Segurar para comentar**: segure <kbd>Alt</kbd> (<kbd>⌥ Option</kbd> no Mac) e o modo anotação fica ativo só enquanto a tecla estiver pressionada. Clique no elemento, solte a tecla e escreva: o popover continua aberto até você salvar ou cancelar, e aí o modo desliga sozinho. Toques rápidos e atalhos com Alt (Alt+Tab, ⌥+letra) são ignorados. A tecla pode ser trocada para <kbd>Shift</kbd> ou desativada no histórico.
   - Ao passar o mouse, o elemento é destacado com o rótulo `tag.classe`, o **componente** (React, Vue, Svelte, Angular) e o tamanho.
   - <kbd>↑</kbd> seleciona o elemento pai, <kbd>↓</kbd> volta para o filho, <kbd>Enter</kbd> seleciona.
   - Os cliques na página ficam bloqueados enquanto o modo está ativo (você não dispara botões ou links sem querer).
@@ -41,6 +42,7 @@ Para testar rápido, abra `examples/demo.html` (por exemplo com `python3 -m http
 | Fechar popover / sair do modo | <kbd>Esc</kbd> |
 | Selecionar pai / filho | <kbd>↑</kbd> / <kbd>↓</kbd> |
 | Interagir com a página sem comentar | segure <kbd>Ctrl</kbd> (ou <kbd>⌘</kbd>) |
+| Anotar só enquanto segura a tecla | segure <kbd>Alt</kbd> / <kbd>⌥</kbd> (configurável) |
 | Atalho global alternativo | <kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>⇧</kbd> + <kbd>.</kbd> (configurável em `chrome://extensions/shortcuts`) |
 
 > O Chrome não permite registrar <kbd>'</kbd> como atalho de extensão (`chrome.commands`), então <kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>'</kbd> é capturado pelo content script quando o foco está na página. O atalho alternativo funciona mesmo com o foco na barra de endereço. Layouts ABNT2 e US-International (tecla morta) também são reconhecidos.

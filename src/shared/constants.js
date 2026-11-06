@@ -11,6 +11,8 @@
     matchQuery: false,
     // Mostra os ícones de comentário mesmo com o modo anotação desligado.
     showPinsWhenInactive: true,
+    // Tecla para "segurar para comentar": 'Alt' (⌥ no Mac), 'Shift' ou 'off'.
+    holdKey: 'Alt',
   };
 
   PN.uid = function () {
