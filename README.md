@@ -14,9 +14,9 @@
 Extensão do Chrome para devs: clique em qualquer componente da página, deixe um comentário<br />
 e copie todos os pedidos em aberto, com o contexto do código, para colar no Claude, ChatGPT ou Cursor.
 
-<a href="docs/media/browser-annotation.mp4"><img src="docs/images/video-poster.png" width="720" alt="Assistir ao vídeo de 1 minuto sobre o Browser Annotation" /></a>
+<a href="docs/media/browser-annotation.mp4"><img src="docs/images/video-poster.png" width="720" alt="Assistir ao vídeo de 30 segundos sobre o Browser Annotation" /></a>
 
-<sub>▶ <a href="docs/media/browser-annotation.mp4"><b>Assista ao tour de 1 minuto</b></a> (com som)</sub>
+<sub>▶ <a href="docs/media/browser-annotation.mp4"><b>Assista ao tour de 30 segundos</b></a> (com som)</sub>
 
 </div>
 
