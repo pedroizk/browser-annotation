@@ -14,9 +14,9 @@
 Extensão do Chrome para devs: clique em qualquer componente da página, deixe um comentário<br />
 e copie todos os pedidos em aberto, com o contexto do código, para colar no Claude, ChatGPT ou Cursor.
 
-<a href="docs/media/browser-annotation.mp4"><img src="docs/images/video-poster.png" width="720" alt="Assistir ao vídeo de 30 segundos sobre o Browser Annotation" /></a>
+<a href="docs/media/browser-annotation.mp4"><img src="docs/media/browser-annotation.webp" width="820" alt="Tour de 30 segundos: ativar o modo anotação, comentar componentes, usar modais, ver o painel e copiar tudo para a IA" /></a>
 
-<sub>▶ <a href="docs/media/browser-annotation.mp4"><b>Assista ao tour de 30 segundos</b></a> (com som)</sub>
+<sub>🔊 <a href="docs/media/browser-annotation.mp4"><b>Clique para ver com som</b></a></sub>
 
 </div>
 
@@ -34,10 +34,6 @@ e copie todos os pedidos em aberto, com o contexto do código, para colar no Cla
 | **1. Ative** | <kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>'</kbd> ou clique no ícone da extensão |
 | **2. Comente** | Passe o mouse, clique no elemento, escreva e salve com <kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>Enter</kbd> |
 | **3. Copie** | Clique no botão laranja da barra e cole na sua IA |
-
-<p align="center">
-  <img src="docs/images/demo.gif" width="820" alt="Demonstração: ativar o modo anotação, comentar dois elementos da página e copiar os comentários" />
-</p>
 
 O comentário fica preso ao componente até você clicar em **Resolver**.
 
