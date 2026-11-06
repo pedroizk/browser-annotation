@@ -103,9 +103,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     case 'pn:open-history':
       chrome.tabs.create({ url: HISTORY_URL, index: sender.tab ? sender.tab.index + 1 : undefined });
       break;
-    case 'pn:open-tab':
-      if (msg.url) chrome.tabs.create({ url: msg.url });
-      break;
     default:
       return;
   }

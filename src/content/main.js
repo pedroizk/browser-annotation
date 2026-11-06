@@ -22,6 +22,13 @@
   const S = {
     alive: true,
     active: false,
+    relink: null, // { id, wasActive, banner } enquanto escolhe um novo elemento para um comentário
+    momentary: false, // ativo só enquanto a tecla de "segurar para comentar" está pressionada
+    endMomentaryAfterComposer: false,
+    holdPending: false,
+    holdTimer: null,
+    mouseX: -1,
+    mouseY: -1,
     passthrough: false,
     settings: Object.assign({}, PN.DEFAULT_SETTINGS),
     all: [], // todos os comentários (todas as páginas)
@@ -212,7 +219,7 @@
     for (const id of [...S.anchors.keys()]) if (!ids.has(id)) S.anchors.delete(id);
     for (const a of S.openAnns) {
       const el = S.anchors.get(a.id);
-      if (!el || !el.isConnected) S.anchors.set(a.id, L.resolve(a.target));
+      if (!el || !el.isConnected) S.anchors.set(a.id, findAnchor(a));
     }
     if (S.thread && !S.all.some((a) => a.id === S.thread.id)) closeThread();
     renderPins();
@@ -228,7 +235,7 @@
     for (const a of S.openAnns) {
       const el = S.anchors.get(a.id);
       if (!el || !el.isConnected) {
-        const found = L.resolve(a.target);
+        const found = findAnchor(a);
         if (found !== el) {
           S.anchors.set(a.id, found);
           changed = true;
@@ -238,6 +245,61 @@
     if (changed) {
       layout();
       renderPanel();
+    }
+  }
+
+  // ------------------------------------------------------------------ impressão digital viva
+  // Quando o elemento é reencontrado com certeza (ou é o mesmo nó do DOM que já estava
+  // ancorado), as pistas salvas são atualizadas. Assim, mudanças graduais no componente
+  // (texto hoje, classes amanhã) não fazem o comentário se perder. A primeira versão fica
+  // guardada em `originalTarget` para o contexto exportado.
+  const refreshQueue = new Map();
+  let refreshTimer = null;
+
+  function findAnchor(a) {
+    const r = L.locate(a.target);
+    if (!r) return null;
+    if (r.confident) queueRefresh(a.id, r.el);
+    return r.el;
+  }
+
+  function queueRefresh(id, el) {
+    refreshQueue.set(id, el);
+    clearTimeout(refreshTimer);
+    refreshTimer = setTimeout(flushRefresh, 800); // espera a página terminar de renderizar
+  }
+
+  function refreshAnchoredFingerprints() {
+    for (const a of S.openAnns) {
+      const el = S.anchors.get(a.id);
+      if (el && el.isConnected && L.stillMatches(el, a.target)) queueRefresh(a.id, el);
+    }
+  }
+
+  async function flushRefresh() {
+    const items = [...refreshQueue];
+    refreshQueue.clear();
+    for (const [id, el] of items) {
+      const a = S.all.find((x) => x.id === id);
+      if (!a || a.status === 'resolved' || S.anchors.get(id) !== el) continue;
+      if (!el.isConnected || !isRendered(el)) continue;
+      const r = el.getBoundingClientRect();
+      if (!r.width && !r.height) continue;
+      let fresh;
+      try {
+        fresh = L.describe(el);
+      } catch (_) {
+        continue;
+      }
+      if (!L.hasDrifted(a.target, fresh)) continue;
+      const patch = { target: fresh, refreshedAt: Date.now() };
+      if (!a.originalTarget) patch.originalTarget = a.target;
+      Object.assign(a, patch);
+      try {
+        await store.update(id, patch);
+      } catch (_) {
+        /* extensão recarregada no meio do caminho */
+      }
     }
   }
 
@@ -463,6 +525,58 @@
     }
   }
 
+  // ------------------------------------------------------------------ segurar para comentar
+  // Segurando a tecla configurada (Alt/⌥ por padrão), o modo anotação fica ativo só enquanto
+  // ela estiver pressionada. Se soltar com o popover aberto, ele fica até salvar/cancelar.
+  const HOLD_DELAY = 160; // ms — evita disparar em atalhos como Alt+Tab ou ⌥+letra
+
+  function holdKeyName() {
+    const k = S.settings.holdKey;
+    return k === 'Shift' ? 'Shift' : k === 'off' ? null : 'Alt';
+  }
+
+  function isHoldKeyAlone(e) {
+    const key = holdKeyName();
+    if (!key || e.key !== key || e.repeat) return false;
+    if (key === 'Alt') return !e.ctrlKey && !e.metaKey && !e.shiftKey;
+    // Shift é usado para digitar: não vale dentro de campos editáveis
+    return !e.ctrlKey && !e.metaKey && !e.altKey && !isEditable(e.composedPath()[0]);
+  }
+
+  function cancelHold() {
+    clearTimeout(S.holdTimer);
+    S.holdPending = false;
+  }
+
+  function startMomentary() {
+    S.holdPending = false;
+    if (S.active) return;
+    S.momentary = true;
+    S.endMomentaryAfterComposer = false;
+    activate();
+    // destaca na hora o elemento que já está sob o mouse
+    const el = S.mouseX >= 0 ? document.elementFromPoint(S.mouseX, S.mouseY) : null;
+    if (eligible(el)) {
+      S.hoverBase = S.hoverEl = el;
+      S.hoverStack = [];
+      scheduleLayout();
+    }
+  }
+
+  function endMomentary() {
+    if (!S.momentary) return;
+    S.momentary = false;
+    S.endMomentaryAfterComposer = false;
+    deactivate();
+  }
+
+  function releaseHold() {
+    cancelHold();
+    if (!S.momentary) return;
+    if (S.composer) S.endMomentaryAfterComposer = true;
+    else endMomentary();
+  }
+
   function activate() {
     if (S.active) return;
     S.active = true;
@@ -482,12 +596,18 @@
     if (S.passthrough === on) return;
     S.passthrough = on;
     setCursorStyle(S.active && !on);
-    if (toolbarEl) toolbarEl.classList.toggle('passthrough', on);
+    if (toolbarEl) toolbarEl.classList.toggle('is-passthrough', on);
     scheduleLayout();
   }
 
   function deactivate() {
     if (!S.active) return;
+    if (S.relink) {
+      S.relink.banner.remove();
+      S.relink = null;
+    }
+    S.momentary = false;
+    S.endMomentaryAfterComposer = false;
     setPassthrough(false);
     S.active = false;
     S.hoverEl = S.hoverBase = null;
@@ -501,6 +621,13 @@
   }
 
   function toggle() {
+    if (S.momentary) {
+      // atalho de alternar durante um "segurar": vira o modo fixo
+      S.momentary = false;
+      S.endMomentaryAfterComposer = false;
+      renderToolbar();
+      return;
+    }
     S.active ? deactivate() : activate();
   }
 
@@ -509,6 +636,8 @@
   }
 
   function onMouseMove(e) {
+    S.mouseX = e.clientX;
+    S.mouseY = e.clientY;
     if (!S.active) return;
     setPassthrough(e.ctrlKey || e.metaKey);
     if (isOwn(e)) {
@@ -560,8 +689,16 @@
     e.stopImmediatePropagation();
     if (e.type === 'click' && e.button === 0) {
       const el = e.target === S.hoverBase && S.hoverEl ? S.hoverEl : e.target;
-      if (eligible(el)) selectElement(el);
+      if (!eligible(el)) return;
+      if (S.relink) relinkTo(el);
+      else selectElement(el);
     }
+  }
+
+  function holdKeyLabel() {
+    const k = holdKeyName();
+    if (k === 'Alt') return IS_MAC ? '⌥ Option' : 'Alt';
+    return k === 'Shift' ? '⇧ Shift' : '';
   }
 
   function isEditable(el) {
@@ -578,9 +715,23 @@
 
   function onKeyUp(e) {
     if (e.key === 'Control' || e.key === 'Meta' || (!e.ctrlKey && !e.metaKey)) setPassthrough(e.ctrlKey || e.metaKey);
+    if (e.key === holdKeyName()) {
+      // no Windows, soltar o Alt sozinho focaria o menu do navegador
+      if (S.momentary && e.key === 'Alt') e.preventDefault();
+      releaseHold();
+    }
   }
 
   function onKeyDown(e) {
+    if (isHoldKeyAlone(e)) {
+      if (!S.active && !S.holdPending) {
+        S.holdPending = true;
+        S.holdTimer = setTimeout(startMomentary, HOLD_DELAY);
+      }
+      if (S.momentary) e.preventDefault();
+    } else if (S.holdPending && e.key !== holdKeyName()) {
+      cancelHold(); // outra tecla junto: é um atalho, não um "segurar"
+    }
     if (e.key === 'Control' || e.key === 'Meta') setPassthrough(true);
     const shortcut = isToggleShortcut(e);
     if (shortcut) {
@@ -591,6 +742,12 @@
       return;
     }
     if (e.key === 'Escape') {
+      if (S.relink) {
+        e.preventDefault();
+        e.stopPropagation();
+        endRelink();
+        return;
+      }
       if (S.composer) {
         e.preventDefault();
         e.stopPropagation();
@@ -743,6 +900,7 @@
     S.composer.root.remove();
     S.composer = null;
     layout();
+    if (S.momentary && S.endMomentaryAfterComposer) endMomentary();
   }
 
   async function saveComposer() {
@@ -892,7 +1050,12 @@
       if (a.editedAt) meta.append(h('span', { text: '· editado' }));
       if (resolved && a.resolvedAt) meta.append(h('span', { text: `· resolvido ${PN.relativeTime(a.resolvedAt)}` }));
       const info = anchorRect(a);
-      if (!resolved && info && info.orphan) meta.append(h('span', { text: '· elemento não encontrado', style: { color: '#B4690E' } }));
+      if (!resolved && info && info.orphan) {
+        meta.append(
+          h('span', { text: '· elemento não encontrado', style: { color: '#B4690E' } }),
+          h('button.link-btn', { type: 'button', text: 'Escolher elemento', onclick: () => startRelink(a.id) })
+        );
+      }
       root.append(h('div.pop-body', null, h('div.comment-text', { text: a.comment }), meta));
 
       const del = confirmButton(h('button.icon-btn.danger', { type: 'button', title: 'Excluir', html: PN.icons.trash }), null, () => removeAnnotation(a.id));
@@ -902,6 +1065,9 @@
         h('button.icon-btn', { type: 'button', title: 'Editar', html: PN.icons.edit, onclick: () => ((t.editing = true), renderThread()) }),
         del,
         h('button.icon-btn', { type: 'button', title: 'Copiar para LLM', html: PN.icons.copy, onclick: () => copyAnnotations([a], 'Comentário copiado') }),
+        !resolved && isHere(a)
+          ? h('button.icon-btn', { type: 'button', title: 'Vincular a outro elemento', html: PN.icons.link, onclick: () => startRelink(a.id) })
+          : null,
         h('div', { style: { flex: '1' } }),
         resolved
           ? h('button.btn', { type: 'button', html: `${PN.icons.undo} Reabrir`, onclick: () => setStatus(a.id, 'open') })
@@ -933,6 +1099,63 @@
     t.root.style.left = p.x + 'px';
     t.root.style.top = p.y + 'px';
     t.root.style.setProperty('--pn-origin', p.origin);
+  }
+
+  // ------------------------------------------------------------------ vincular a outro elemento
+  function startRelink(id) {
+    const a = S.all.find((x) => x.id === id);
+    if (!a || !isHere(a)) return;
+    closeThread();
+    closeComposer();
+    if (S.relink) endRelink();
+    const idx = S.index.get(id);
+    const banner = h(
+      'div.relink-banner',
+      { role: 'status' },
+      svg(PN.icons.link),
+      h('span', { text: `Clique no novo elemento do comentário${idx ? ' ' + idx : ''}` }),
+      h('kbd', { text: 'Esc' }),
+      h('button', { type: 'button', text: 'Cancelar', onclick: () => endRelink() })
+    );
+    const wasActive = S.active && !S.momentary;
+    S.momentary = false;
+    S.relink = { id, wasActive, banner };
+    if (!S.active) activate();
+    renderToolbar();
+    toastWrap.append(banner);
+  }
+
+  function endRelink() {
+    if (!S.relink) return;
+    const { banner, wasActive } = S.relink;
+    S.relink = null;
+    banner.remove();
+    if (!wasActive) deactivate();
+  }
+
+  async function relinkTo(el) {
+    const a = S.all.find((x) => x.id === S.relink.id);
+    if (!a) return endRelink();
+    let fresh;
+    try {
+      fresh = L.describe(el);
+    } catch (_) {
+      return;
+    }
+    const patch = { target: fresh, relinkedAt: Date.now() };
+    if (!a.originalTarget) patch.originalTarget = a.target;
+    Object.assign(a, patch);
+    S.anchors.set(a.id, el);
+    endRelink();
+    recompute();
+    flashElement(el);
+    const pin = S.pinEls.get(a.id);
+    if (pin) {
+      pin.classList.add('dropping');
+      setTimeout(() => pin.classList.remove('dropping'), 700);
+    }
+    await store.update(a.id, patch);
+    toast('<span class="ok">●</span> Comentário vinculado ao novo elemento');
   }
 
   // ------------------------------------------------------------------ ações
@@ -1007,6 +1230,7 @@
 
   async function focusAnnotation(a) {
     if (!isHere(a)) {
+      if (!PN.isSafePageUrl(a.page.url)) return;
       await store.setPendingFocus(a.id, a.page.url);
       location.href = a.page.url;
       return;
@@ -1049,51 +1273,56 @@
 
   let toolbarEl = null;
   function renderToolbar() {
-    if (!S.active) {
+    if (!S.active || S.momentary || (S.relink && !S.relink.wasActive)) {
       if (toolbarEl) {
         const el = toolbarEl;
         toolbarEl = null;
-        el.classList.add('out');
-        setTimeout(() => el.remove(), 180);
+        el.classList.add('is-out');
+        setTimeout(() => el.remove(), 200);
       }
       return;
     }
     if (!toolbarEl) {
       const tip = (text) => ({ 'data-tip': text, 'aria-label': text });
+      const btn = (cls, act, icon, label, badge) =>
+        h('button.tb-btn' + cls, Object.assign({ type: 'button', 'data-act': act, html: icon }, tip(label)), badge ? h('span.tb-badge') : null);
       toolbarEl = h(
-        'div.toolbar',
+        'div.tb-bar',
         { role: 'toolbar', 'aria-label': 'Browser Annotation' },
-        h('div.brand', tip('Modo anotação ativo — clique em um elemento para comentar'), svg(PN.icons.bubble(20)), h('span.dot')),
-        h('span.sep'),
-        h('span.tb.info', Object.assign({ role: 'img', html: PN.icons.arrowUp }, tip('↑ seleciona o elemento pai · ↓ volta ao filho · Enter comenta'))),
-        h('span.tb.info.hand', Object.assign({ role: 'img', html: PN.icons.hand }, tip(`Segure ${MOD} para interagir com a página sem comentar`))),
-        h('span.sep'),
-        h('button.tb', Object.assign({ type: 'button', 'data-act': 'panel', html: PN.icons.list }, tip(`Comentários (${MOD} ⇧ ')`)), h('span.badge')),
-        h('button.tb.primary', Object.assign({ type: 'button', 'data-act': 'copy', html: PN.icons.copy }, tip('Copiar comentários em aberto deste site')), h('span.badge')),
-        h('span.sep'),
-        h('button.tb', Object.assign({ type: 'button', 'data-act': 'exit', html: PN.icons.close }, tip('Sair (Esc)'))),
-        h('span.mode-chip', { text: 'Interagindo com a página' })
+        h('div.tb-brand', tip('Modo anotação ativo — clique em um elemento'), svg(PN.icons.bubble(18)), h('span.tb-dot')),
+        h('span.tb-sep'),
+        h('span.tb-btn.tb-hint', Object.assign({ role: 'img', html: PN.icons.arrowUp }, tip('↑ seleciona o pai · ↓ volta · Enter comenta'))),
+        h('span.tb-btn.tb-hint.tb-hand', Object.assign({ role: 'img', html: PN.icons.hand }, tip(`Segure ${MOD} para usar a página`))),
+        h('span.tb-sep'),
+        btn('', 'panel', PN.icons.list, `Comentários  ${MOD}⇧'`, true),
+        btn('.tb-primary', 'copy', PN.icons.copy, 'Copiar abertos do site', false),
+        h('span.tb-sep'),
+        btn('', 'exit', PN.icons.close, 'Sair  Esc', false),
+        h('span.tb-chip', { html: `${PN.icons.hand}<span>Usando a página</span>` })
       );
       toolbarEl.addEventListener('click', (e) => {
-        const btn = e.target.closest('button[data-act]');
-        if (!btn) return;
-        const act = btn.dataset.act;
+        const b = e.target.closest('button[data-act]');
+        if (!b) return;
+        const act = b.dataset.act;
         if (act === 'panel') togglePanel();
         else if (act === 'copy') copyAnnotations(siteOpen());
         else if (act === 'exit') deactivate();
       });
       toolbarWrap.append(toolbarEl);
     }
-    toolbarEl.classList.toggle('passthrough', S.passthrough);
-    const setBadge = (sel, n) => {
-      const b = toolbarEl.querySelector(sel + ' .badge');
+    toolbarEl.classList.toggle('is-passthrough', S.passthrough);
+    const setBadge = (act, n) => {
+      const b = toolbarEl.querySelector(`[data-act=${act}] .tb-badge`);
       b.textContent = n > 99 ? '99+' : String(n);
-      b.classList.toggle('zero', !n);
+      b.classList.toggle('is-zero', !n);
     };
-    setBadge('[data-act=panel]', S.openAnns.length);
+    setBadge('panel', S.openAnns.length);
     const open = siteOpen().length;
-    setBadge('[data-act=copy]', open);
-    toolbarEl.querySelector('[data-act=copy]').classList.toggle('empty', !open);
+    const copyBtn = toolbarEl.querySelector('[data-act=copy]');
+    const copyTip = open ? `Copiar ${open} ${open === 1 ? 'comentário aberto' : 'comentários abertos'} do site` : 'Nenhum comentário aberto no site';
+    copyBtn.dataset.tip = copyTip;
+    copyBtn.setAttribute('aria-label', copyTip);
+    copyBtn.classList.toggle('is-empty', !open);
   }
 
   // ------------------------------------------------------------------ painel (histórico)
@@ -1245,7 +1474,7 @@
           svg(PN.icons.bubble(40, 'big')),
           h('div', null, msg),
           S.panelTab !== 'resolved' && !S.search
-            ? h('div', { html: `Ative o modo anotação com <kbd>${MOD}</kbd> <kbd>'</kbd> e clique em um elemento.` })
+            ? h('div', { html: `Ative o modo anotação com <kbd>${MOD}</kbd> <kbd>'</kbd>${holdKeyName() ? ` ou segure <kbd>${holdKeyLabel()}</kbd>` : ''} e clique em um elemento.` })
             : null
         )
       );
@@ -1298,6 +1527,15 @@
       onclick: (e) => (e.stopPropagation(), copyAnnotations([a], 'Comentário copiado')),
     });
     const delBtn = confirmButton(h('button.icon-btn.danger', { type: 'button', title: 'Excluir (clique duas vezes)', html: PN.icons.trash }), null, () => removeAnnotation(a.id));
+    const lost = here && !resolved && ['orphan', 'missing'].includes(anchorInfo(a).state);
+    const relinkBtn = lost
+      ? h('button.icon-btn', {
+          type: 'button',
+          title: 'Vincular a outro elemento',
+          html: PN.icons.link,
+          onclick: (e) => (e.stopPropagation(), startRelink(a.id)),
+        })
+      : null;
 
     const el = h(
       'div.card' + (resolved ? '.resolved' : ''),
@@ -1310,7 +1548,7 @@
         h('span.time', { text: PN.relativeTime(resolved ? a.resolvedAt || a.updatedAt : a.createdAt), title: PN.formatDate(a.createdAt) })
       ),
       h('div.card-body', { text: a.comment }),
-      h('div.card-foot', null, where, resolveBtn, copyBtn, delBtn)
+      h('div.card-foot', null, where, relinkBtn, resolveBtn, copyBtn, delBtn)
     );
     el.addEventListener('click', () => focusAnnotation(a));
     el.addEventListener('keydown', (e) => e.key === 'Enter' && focusAnnotation(a));
@@ -1410,7 +1648,11 @@
     for (const type of GUARDED_EVENTS) on(window, type, guard, true);
     on(window, 'keydown', onKeyDown, true);
     on(window, 'keyup', onKeyUp, true);
-    on(window, 'blur', () => setPassthrough(false));
+    on(window, 'blur', () => {
+      setPassthrough(false);
+      cancelHold();
+      if (S.momentary && !S.composer) endMomentary();
+    });
     on(document, 'visibilitychange', () => setPassthrough(false));
     on(window, 'mousemove', onMouseMove, { capture: true, passive: true });
     for (const type of ['pointerdown', 'pointerup', 'mousedown', 'mouseup', 'click', 'dblclick', 'auxclick', 'contextmenu']) {
@@ -1444,11 +1686,13 @@
     });
     S.cleanups.push(() => observer.disconnect());
 
+    let ticks = 0;
     const tick = setInterval(() => {
       if (!alive()) return teardown();
       ensureHostPlacement();
       onUrlMaybeChanged();
       if (S.pinEls.size || S.composer || S.thread) layout();
+      if (++ticks % 8 === 0) refreshAnchoredFingerprints(); // a cada ~4 s
     }, 500);
     S.cleanups.push(() => clearInterval(tick));
 

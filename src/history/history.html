@@ -47,6 +47,15 @@
           <span class="track"></span>
           <span class="txt">Considerar a query string (<code>?tab=…</code>) ao vincular comentários à página</span>
         </label>
+        <label class="field">
+          <span class="txt">Segurar para comentar</span>
+          <select id="opt-hold" aria-describedby="opt-hold-help">
+            <option value="Alt" id="opt-hold-alt">Alt</option>
+            <option value="Shift">Shift</option>
+            <option value="off">Desativado</option>
+          </select>
+        </label>
+        <p class="help" id="opt-hold-help">Enquanto a tecla estiver pressionada, o modo anotação fica ativo; ao soltar, ele desliga.</p>
         <p class="help">
           Atalhos: <kbd id="kbd-mod">Ctrl</kbd> <kbd>'</kbd> ativa o modo anotação ·
           <kbd id="kbd-mod2">Ctrl</kbd> <kbd>⇧</kbd> <kbd>'</kbd> abre a lista na página.

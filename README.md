@@ -7,11 +7,12 @@ Extensão do Chrome (Manifest V3) inspirada no *Orca annotation* para devs anota
 ## Funcionalidades
 
 - **Modo anotação**: clique no ícone da extensão ou use <kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>'</kbd>.
+- **Segurar para comentar**: segure <kbd>Alt</kbd> (<kbd>⌥ Option</kbd> no Mac) e o modo anotação fica ativo só enquanto a tecla estiver pressionada. Clique no elemento, solte a tecla e escreva: o popover continua aberto até você salvar ou cancelar, e aí o modo desliga sozinho. Toques rápidos e atalhos com Alt (Alt+Tab, ⌥+letra) são ignorados. A tecla pode ser trocada para <kbd>Shift</kbd> ou desativada no histórico.
   - Ao passar o mouse, o elemento é destacado com o rótulo `tag.classe`, o **componente** (React, Vue, Svelte, Angular) e o tamanho.
   - <kbd>↑</kbd> seleciona o elemento pai, <kbd>↓</kbd> volta para o filho, <kbd>Enter</kbd> seleciona.
   - Os cliques na página ficam bloqueados enquanto o modo está ativo (você não dispara botões ou links sem querer).
   - **Segure <kbd>Ctrl</kbd> (ou <kbd>⌘</kbd>) para interagir com a página** sem comentar: abrir um modal, um menu, navegar, preencher um campo… Soltou, volta a anotar. O clique é entregue como um clique normal (Ctrl + clique não abre o link em nova aba).
-  - Barra de ações minimalista, só com ícones (com tooltip): logo + indicador piscando, dicas de <kbd>↑</kbd> e <kbd>Ctrl</kbd>, comentários, copiar abertos e sair. Os números aparecem como badges.
+  - Barra de ações compacta no estilo Apple (cápsula translúcida com blur, tema claro/escuro), só com ícones e tooltips: logo + indicador piscando, dicas de <kbd>↑</kbd> e <kbd>Ctrl</kbd>, comentários (com badge de contagem), copiar abertos e sair.
 - **Comentários**: clique no elemento, escreva e salve com <kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>Enter</kbd>.
   - Animação de criação: onda em volta do elemento, explosão de pixels laranja e um pin em pixel-art que “cai” no canto do componente.
   - O pin numerado fica preso ao elemento (acompanha scroll, resize e re-renderizações) até você resolver.
@@ -41,6 +42,7 @@ Para testar rápido, abra `examples/demo.html` (por exemplo com `python3 -m http
 | Fechar popover / sair do modo | <kbd>Esc</kbd> |
 | Selecionar pai / filho | <kbd>↑</kbd> / <kbd>↓</kbd> |
 | Interagir com a página sem comentar | segure <kbd>Ctrl</kbd> (ou <kbd>⌘</kbd>) |
+| Anotar só enquanto segura a tecla | segure <kbd>Alt</kbd> / <kbd>⌥</kbd> (configurável) |
 | Atalho global alternativo | <kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>⇧</kbd> + <kbd>.</kbd> (configurável em `chrome://extensions/shortcuts`) |
 
 > O Chrome não permite registrar <kbd>'</kbd> como atalho de extensão (`chrome.commands`), então <kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>'</kbd> é capturado pelo content script quando o foco está na página. O atalho alternativo funciona mesmo com o foco na barra de endereço. Layouts ABNT2 e US-International (tecla morta) também são reconhecidos.
@@ -55,7 +57,13 @@ Cada comentário guarda uma “impressão digital” do elemento e da página:
 - **Elemento**: `data-testid`/`data-test`/`data-cy`…, `id` estável, seletor CSS único (ignorando classes geradas como `css-1x2y3`, `sc-…`, CSS Modules, variantes Tailwind), XPath, tag, classes, texto, atributos, posição e tamanho.
 - **Componente** (via script no contexto da página): nome e hierarquia do componente e, em desenvolvimento, arquivo e linha (`_debugSource` do React ≤ 18, pista de stack no React 19, `__file` do Vue, `__svelte_meta` do Svelte, `ng.getComponent` do Angular).
 
-Ao abrir a página, cada comentário é reencontrado pontuando os candidatos (test id, id, seletor, XPath) contra a impressão digital; se não achar, procura elementos da mesma tag com o mesmo texto perto da posição original. Em SPAs, mudanças de rota e re-renderizações são observadas e os pins são reancorados automaticamente. Se o elemento sumir, o pin fica semitransparente com um “?” na posição original e o comentário continua no painel.
+Ao abrir a página, cada comentário é reencontrado pontuando os candidatos (test id, id, seletor, XPath) contra a impressão digital (mesma tag, mesmo texto, classes em comum, mesmo componente…); se nenhum passar, procura elementos da mesma tag com o mesmo texto perto da posição original. Em SPAs, mudanças de rota e re-renderizações são observadas e os pins são reancorados automaticamente.
+
+**O vínculo acompanha as mudanças do componente.** Quando o elemento é reencontrado sem ambiguidade (ou continua sendo o mesmo nó do DOM, como num hot reload), as pistas salvas são atualizadas. Assim, mudanças graduais — o texto hoje, as classes amanhã — não fazem o comentário se perder. A versão de quando o comentário foi feito fica guardada, e o texto exportado mostra o texto original quando ele mudou.
+
+**Reancorar manualmente.** Se o elemento não for encontrado, o pin fica semitransparente com um “?” na posição original e o comentário continua no painel. Clique em **Escolher elemento** (ou no ícone de link no pin/painel) e depois no novo elemento para vincular o comentário a ele.
+
+> Dica: componentes com `data-testid` são reencontrados praticamente sempre, mesmo depois de grandes refatorações.
 
 ## Modais, sheets e popovers
 
@@ -131,6 +139,16 @@ npm test
 O teste carrega a extensão num Chromium real, cria um comentário, recarrega a página, confere a re-ancoragem, copia o Markdown e resolve o comentário. Use `HEADED=1 npm test` para ver o navegador.
 
 Para regenerar os ícones (requer Pillow): `npm run icons`. Para gerar um `.zip` para a Chrome Web Store: `npm run zip`.
+
+## Privacidade e segurança
+
+- **Nada sai do navegador.** A extensão não faz requisições de rede, não tem telemetria e não usa servidores: os comentários ficam apenas no `chrome.storage.local` do seu perfil do Chrome.
+- **Permissões** (`manifest.json`): `storage`/`unlimitedStorage` para salvar os comentários, `scripting` para injetar o script em abas que já estavam abertas antes da instalação, `contextMenus` para o menu do ícone e acesso a `<all_urls>` para mostrar os ícones de comentário em qualquer página.
+- O script que roda no contexto da página (`page-bridge.js`) só **lê** metadados de componentes (nome, arquivo, linha) e não expõe nenhuma API da extensão para a página.
+- A UI fica num Shadow DOM isolado; textos vindos da página ou de arquivos importados são sempre inseridos como texto (sem HTML).
+- Arquivos JSON importados são validados campo a campo; só são aceitas URLs `http(s)` e `file`.
+
+Encontrou um problema de segurança? Abra uma issue sem detalhes sensíveis pedindo um contato privado.
 
 ## Limitações conhecidas
 
