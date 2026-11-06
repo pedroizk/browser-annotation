@@ -23,6 +23,12 @@ e depois copie todos os pedidos em aberto, com o contexto do código, para colar
 
 O comentário fica preso ao componente, mesmo depois de recarregar ou trocar de página, até você clicar em **Resolver**.
 
+<p align="center">
+  <a href="docs/media/browser-annotation.mp4"><img src="docs/images/video-poster.png" width="560" alt="Vídeo de 1 minuto mostrando como usar o Browser Annotation" /></a>
+  <br />
+  <sub>Prefere ver em vídeo? <a href="docs/media/browser-annotation.mp4">Assista ao tour de 1 minuto</a> (com som).</sub>
+</p>
+
 ## Instalação
 
 1. Baixe ou clone este repositório.
