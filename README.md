@@ -4,14 +4,28 @@
 
 # Browser Annotation
 
-**Comente direto na interface. Copie para o Claude. Pronto.**
+**Comente direto na interface. Copie para a IA. Pronto.**
+
+![Chrome 111+](https://img.shields.io/badge/Chrome-111%2B-D97757?logo=googlechrome&logoColor=white)
+![Manifest V3](https://img.shields.io/badge/Manifest-V3-1F1E1D)
+![100% local](https://img.shields.io/badge/dados-100%25%20local-5B8C5A)
+![Sem build](https://img.shields.io/badge/build-nenhum-73726C)
 
 Extensão do Chrome para devs: clique em qualquer componente da página, deixe um comentário<br />
-e depois copie todos os pedidos em aberto, com o contexto do código, para colar numa LLM.
+e copie todos os pedidos em aberto, com o contexto do código, para colar no Claude, ChatGPT ou Cursor.
 
-<img src="docs/images/demo.gif" width="820" alt="Demonstração: ativar o modo anotação, comentar dois elementos da página e copiar os comentários" />
+<a href="docs/media/browser-annotation.mp4"><img src="docs/images/video-poster.png" width="720" alt="Assistir ao vídeo de 1 minuto sobre o Browser Annotation" /></a>
+
+<sub>▶ <a href="docs/media/browser-annotation.mp4"><b>Assista ao tour de 1 minuto</b></a> (com som)</sub>
 
 </div>
+
+## Por que usar
+
+- **Sem prints, setas ou "o botão azul lá em cima".** Você aponta o elemento exato.
+- **Contexto que a IA entende.** Cada pedido vai com componente, arquivo:linha, seletor CSS e HTML.
+- **Comentários que não se perdem.** Ficam presos ao componente entre reloads, trocas de página e mudanças no código.
+- **Grátis, open source e 100% local.** Sem conta, sem servidor, sem telemetria.
 
 ## Como usar
 
@@ -19,15 +33,13 @@ e depois copie todos os pedidos em aberto, com o contexto do código, para colar
 | --- | --- |
 | **1. Ative** | <kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>'</kbd> ou clique no ícone da extensão |
 | **2. Comente** | Passe o mouse, clique no elemento, escreva e salve com <kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>Enter</kbd> |
-| **3. Copie** | Clique no botão laranja da barra e cole no Claude (ou outra LLM) |
-
-O comentário fica preso ao componente, mesmo depois de recarregar ou trocar de página, até você clicar em **Resolver**.
+| **3. Copie** | Clique no botão laranja da barra e cole na sua IA |
 
 <p align="center">
-  <a href="docs/media/browser-annotation.mp4"><img src="docs/images/video-poster.png" width="560" alt="Vídeo de 1 minuto mostrando como usar o Browser Annotation" /></a>
-  <br />
-  <sub>Prefere ver em vídeo? <a href="docs/media/browser-annotation.mp4">Assista ao tour de 1 minuto</a> (com som).</sub>
+  <img src="docs/images/demo.gif" width="820" alt="Demonstração: ativar o modo anotação, comentar dois elementos da página e copiar os comentários" />
 </p>
+
+O comentário fica preso ao componente até você clicar em **Resolver**.
 
 ## Instalação
 
@@ -35,7 +47,7 @@ O comentário fica preso ao componente, mesmo depois de recarregar ou trocar de 
 2. Abra `chrome://extensions` e ative o **Modo do desenvolvedor**.
 3. Clique em **Carregar sem compactação** e escolha a pasta do projeto.
 
-Feita para o Chrome 111+; deve funcionar também em navegadores baseados em Chromium (Edge, Brave, Arc).
+Funciona no Chrome 111+ e deve funcionar em navegadores baseados em Chromium (Edge, Brave, Arc).
 Para testar rápido, abra a página [`examples/demo.html`](examples/demo.html) por um servidor local (ex.: `python3 -m http.server`).
 
 ## Atalhos
@@ -56,7 +68,7 @@ Para testar rápido, abra a página [`examples/demo.html`](examples/demo.html) p
 
 <img src="docs/images/toolbar.png" width="293" alt="Barra de ações com ícones e tooltip" />
 
-Aparece com o modo anotação ligado. Da esquerda para a direita: indicador do modo, dicas de atalho, **lista de comentários** (com contador), **copiar abertos** e sair. Passe o mouse sobre um ícone para ver o que ele faz. O tamanho (pequena, média ou grande) pode ser ajustado nas configurações da página de histórico.
+Aparece com o modo anotação ligado: indicador do modo, dicas de atalho, **lista de comentários**, **copiar abertos** e sair. Passe o mouse sobre um ícone para ver o que ele faz. Tem três tamanhos (pequena, média e grande), escolhidos nas configurações do histórico.
 
 ### Lista de comentários e histórico
 
@@ -92,13 +104,13 @@ Aparece com o modo anotação ligado. Da esquerda para a direita: indicador do m
 
 ### O comentário acompanha o código
 
-Se você mudar o componente (texto, classes, posição), a extensão reencontra o elemento e atualiza o vínculo. Se ele sumir de vez, o ícone fica com um **?** na posição original. Clique em **Escolher elemento** para vincular o comentário ao elemento novo.
+Se você mudar o componente (texto, classes, posição), a extensão reencontra o elemento e atualiza o vínculo. Se ele sumir de vez, o ícone fica com um **?** na posição original: clique em **Escolher elemento** para vincular o comentário ao elemento novo.
 
 > **Dica:** componentes com `data-testid` são reencontrados praticamente sempre.
 
 ## O que é copiado
 
-Um Markdown pronto para colar, com o pedido e as pistas para achar o elemento no código:
+Um Markdown pronto para colar, com o pedido e as pistas para achar o elemento no código. Componente e arquivo:linha aparecem em builds de desenvolvimento de **React, Vue, Svelte e Angular**.
 
 <details>
 <summary>Ver exemplo</summary>
@@ -127,8 +139,6 @@ Um Markdown pronto para colar, com o pedido e as pistas para achar o elemento no
 
 </details>
 
-O componente e o arquivo/linha aparecem em builds de desenvolvimento de **React, Vue, Svelte e Angular**.
-
 <details>
 <summary>Como o comentário fica vinculado ao elemento</summary>
 
@@ -143,14 +153,14 @@ A query string pode passar a contar no vínculo com uma opção na página de hi
 ## Privacidade
 
 - **Nada sai do navegador:** sem servidores, sem telemetria, sem requisições de rede. Os comentários ficam no `chrome.storage.local`.
-- Permissões: `storage` (salvar), `scripting` (abas abertas antes da instalação), `contextMenus` (menu do ícone) e acesso às páginas (mostrar os comentários).
+- **Permissões:** `storage` (salvar), `scripting` (abas abertas antes da instalação), `contextMenus` (menu do ícone) e acesso às páginas (mostrar os comentários).
 - A interface fica isolada num Shadow DOM, e textos da página ou de arquivos importados nunca são tratados como HTML.
 
 Encontrou um problema de segurança? Abra uma issue sem detalhes sensíveis pedindo um contato privado.
 
-## Desenvolvimento
+## Contribuindo
 
-JavaScript puro, sem etapa de build: edite e clique em **Recarregar** em `chrome://extensions`.
+Ideias, bugs e pull requests são bem-vindos. O projeto é JavaScript puro, sem etapa de build: edite e clique em **Recarregar** em `chrome://extensions`.
 
 ```bash
 npm install
