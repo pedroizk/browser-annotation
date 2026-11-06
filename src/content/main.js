@@ -22,7 +22,7 @@
   const S = {
     alive: true,
     active: false,
-    shortcuts: null, // { toggle, panel } configurados no Chrome ('' = sem atalho)
+    shortcuts: null, // { toggle, panel, fallback } configurados no Chrome ('' = sem atalho)
     relink: null, // { id, wasActive, banner } enquanto escolhe um novo elemento para um comentário
     momentary: false, // ativo só enquanto a tecla de "segurar para comentar" está pressionada
     endMomentaryAfterComposer: false,
@@ -114,7 +114,7 @@
     if (isOwn(e)) {
       e.stopPropagation();
       if (e.type === 'focus' || e.type === 'blur' || e.type.startsWith('touch')) return;
-      // atalhos (Alt+Shift+E sem comando registrado, Esc…) continuam sendo tratados pelos nossos listeners do window
+      // atalhos (padrão sem comando registrado, Esc…) continuam sendo tratados pelos nossos listeners do window
       cloneInsideShadow(e, e.composedPath()[0]);
       return;
     }
@@ -702,6 +702,13 @@
     return k === 'Shift' ? '⇧ Shift' : '';
   }
 
+  function howToActivateHtml() {
+    const ways = [];
+    if (shortcutLabel('toggle')) ways.push(`com ${PN.shortcutHtml(shortcutLabel('toggle'))}`);
+    if (holdKeyName()) ways.push(`segurando <kbd>${holdKeyLabel()}</kbd>`);
+    return ways.length ? ways.join(' ou ') : 'pelo ícone da extensão';
+  }
+
   function isEditable(el) {
     if (!el) return false;
     return el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName);
@@ -711,11 +718,7 @@
   // Os atalhos principais são comandos do Chrome (manifest → commands), tratados pelo service
   // worker. Aqui só mostramos o atalho configurado e, se o Chrome não tiver conseguido
   // registrá-lo (ex.: outra extensão já usa a combinação), tratamos o padrão na própria página.
-  function shortcutLabel(kind) {
-    const sc = S.shortcuts && S.shortcuts[kind];
-    if (sc) return sc;
-    return IS_MAC ? PN.SHORTCUTS[kind].mac : PN.SHORTCUTS[kind].other;
-  }
+  const shortcutLabel = (kind) => PN.shortcutLabel(S.shortcuts, kind);
 
   async function loadShortcuts() {
     try {
@@ -731,9 +734,10 @@
   }
 
   function isToggleShortcut(e) {
-    if (!S.shortcuts || !e.altKey || !e.shiftKey || e.ctrlKey || e.metaKey) return null;
-    if (!S.shortcuts.toggle && e.code === PN.SHORTCUTS.toggle.code) return 'mode';
-    if (!S.shortcuts.panel && e.code === PN.SHORTCUTS.panel.code) return 'panel';
+    const fb = S.shortcuts && S.shortcuts.fallback;
+    if (!fb) return null;
+    if (fb.toggle && PN.isDefaultShortcut(e, 'toggle')) return 'mode';
+    if (fb.panel && PN.isDefaultShortcut(e, 'panel')) return 'panel';
     return null;
   }
 
@@ -753,8 +757,11 @@
         S.holdTimer = setTimeout(startMomentary, HOLD_DELAY);
       }
       if (S.momentary) e.preventDefault();
-    } else if (S.holdPending && e.key !== holdKeyName()) {
-      cancelHold(); // outra tecla junto: é um atalho, não um "segurar"
+    } else if (e.key !== holdKeyName()) {
+      if (S.holdPending) cancelHold(); // outra tecla junto: é um atalho, não um "segurar"
+      // Alt + Shift depois de já ter ativado o "segurar": é o começo de um atalho (ex.: Alt+Shift+K),
+      // então desliga o modo temporário em vez de deixá-lo piscar na tela.
+      else if (S.momentary && !S.composer && (e.key === 'Alt' || e.key === 'Shift')) endMomentary();
     }
     if (e.key === 'Control' || e.key === 'Meta') setPassthrough(true);
     const shortcut = isToggleShortcut(e);
@@ -1336,8 +1343,9 @@
     }
     toolbarEl.classList.toggle('is-passthrough', S.passthrough);
     const panelBtn = toolbarEl.querySelector('[data-act=panel]');
-    panelBtn.dataset.tip = `Comentários  ${shortcutLabel('panel')}`;
-    toolbarEl.querySelector('[data-act=exit]').dataset.tip = `Sair  ${shortcutLabel('toggle')} ou Esc`;
+    const withKey = (text, key) => (key ? `${text}  ${key}` : text);
+    panelBtn.dataset.tip = withKey('Comentários', shortcutLabel('panel'));
+    toolbarEl.querySelector('[data-act=exit]').dataset.tip = withKey('Sair', [shortcutLabel('toggle'), 'Esc'].filter(Boolean).join(' ou '));
     const size = S.settings.toolbarSize;
     toolbarEl.classList.toggle('tb-size-m', size === 'medium');
     toolbarEl.classList.toggle('tb-size-l', size === 'large');
@@ -1445,7 +1453,7 @@
     P.t2.textContent = PN.prettyUrl(location.href);
     P.modeBtn.className = 'btn sm' + (S.active ? ' primary' : '');
     P.modeBtn.innerHTML = `${PN.icons.cursor} ${S.active ? 'Anotando' : 'Anotar'}`;
-    P.modeBtn.title = `${S.active ? 'Desativar' : 'Ativar'} modo anotação (${shortcutLabel('toggle')})`;
+    P.modeBtn.title = `${S.active ? 'Desativar' : 'Ativar'} modo anotação` + (shortcutLabel('toggle') ? ` (${shortcutLabel('toggle')})` : '');
 
     const tabDefs = [
       ['open', 'Abertos', openCount],
@@ -1504,7 +1512,7 @@
           svg(PN.icons.bubble(40, 'big')),
           h('div', null, msg),
           S.panelTab !== 'resolved' && !S.search
-            ? h('div', { html: `Ative o modo anotação com ${PN.shortcutHtml(shortcutLabel('toggle'))}${holdKeyName() ? ` ou segure <kbd>${holdKeyLabel()}</kbd>` : ''} e clique em um elemento.` })
+            ? h('div', { html: `Ative o modo anotação ${howToActivateHtml()} e clique em um elemento.` })
             : null
         )
       );

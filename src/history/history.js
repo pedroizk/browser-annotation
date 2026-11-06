@@ -13,7 +13,7 @@
     search: '',
     sort: 'new',
     editing: null,
-    shortcuts: { toggle: '', panel: '' },
+    shortcuts: null, // { toggle, panel, fallback } — null enquanto carrega
   };
 
   function el(tag, props, ...children) {
@@ -247,8 +247,10 @@
     if (!list.length) {
       const msg = state.all.length
         ? 'Nenhum comentário corresponde aos filtros.'
-        : `Ainda não há comentários. Abra qualquer página e pressione ${state.shortcuts.toggle || 'o atalho do modo anotação'} para começar a anotar.`;
-      content.append(el('div', { class: 'empty', html: PN.icons.bubble(48) }, el('div', { text: msg })));
+        : PN.shortcutLabel(state.shortcuts, 'toggle')
+          ? `Ainda não há comentários. Abra qualquer página e pressione ${PN.shortcutHtml(PN.shortcutLabel(state.shortcuts, 'toggle'))} para começar a anotar.`
+          : 'Ainda não há comentários. Abra qualquer página e clique no ícone da extensão para começar a anotar.';
+      content.append(el('div', { class: 'empty', html: PN.icons.bubble(48) }, el('div', { html: msg })));
       return;
     }
 
@@ -344,17 +346,15 @@
 
   // ------------------------------------------------------------------ init
   async function loadShortcuts() {
-    const def = (k) => (IS_MAC ? PN.SHORTCUTS[k].mac : PN.SHORTCUTS[k].other);
     try {
-      for (const c of await chrome.commands.getAll()) {
-        if (c.name === 'toggle-annotation') state.shortcuts.toggle = c.shortcut || '';
-        if (c.name === 'toggle-panel') state.shortcuts.panel = c.shortcut || '';
-      }
+      state.shortcuts = await chrome.runtime.sendMessage({ type: 'pn:get-shortcuts' });
     } catch (_) {
-      /* ignora */
+      /* service worker indisponível: mostra os padrões */
     }
-    $('#sc-toggle').innerHTML = PN.shortcutHtml(state.shortcuts.toggle || def('toggle'));
-    $('#sc-panel').innerHTML = PN.shortcutHtml(state.shortcuts.panel || def('panel'));
+    const show = (kind) => PN.shortcutHtml(PN.shortcutLabel(state.shortcuts, kind)) || '<em>sem atalho</em>';
+    $('#sc-toggle').innerHTML = show('toggle');
+    $('#sc-panel').innerHTML = show('panel');
+    if (state.loaded) renderContent(); // a mensagem de "sem comentários" cita o atalho
   }
 
   async function load() {
@@ -364,6 +364,7 @@
     $('#opt-query').checked = !!state.settings.matchQuery;
     $('#opt-hold').value = state.settings.holdKey || 'Alt';
     $('#opt-toolbar-size').value = state.settings.toolbarSize || 'small';
+    state.loaded = true;
     render();
   }
 

@@ -35,14 +35,14 @@
     "toggle-annotation": {
       "suggested_key": {
         "default": "Alt+Shift+E",
-        "mac": "Alt+Shift+E"
+        "mac": "Command+Shift+E"
       },
       "description": "Ativar/desativar o modo anotação"
     },
     "toggle-panel": {
       "suggested_key": {
-        "default": "Alt+Shift+L",
-        "mac": "Alt+Shift+L"
+        "default": "Alt+Shift+K",
+        "mac": "Command+Shift+K"
       },
       "description": "Mostrar/esconder a lista de comentários"
     }

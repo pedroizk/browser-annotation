@@ -65,16 +65,29 @@ function flashBadge(tabId, text) {
 
 // Atalhos realmente configurados (o usuário pode trocar em chrome://extensions/shortcuts).
 async function getShortcuts() {
-  const out = { toggle: '', panel: '' };
+  const out = { toggle: '', panel: '', fallback: { toggle: false, panel: false } };
   try {
     for (const c of await chrome.commands.getAll()) {
       if (c.name === 'toggle-annotation') out.toggle = c.shortcut || '';
       if (c.name === 'toggle-panel') out.panel = c.shortcut || '';
     }
+    const saved = (await chrome.storage.local.get(PN.SHORTCUT_FALLBACK_KEY))[PN.SHORTCUT_FALLBACK_KEY];
+    if (saved) out.fallback = { toggle: !!saved.toggle && !out.toggle, panel: !!saved.panel && !out.panel };
   } catch (_) {
     /* sem suporte */
   }
   return out;
+}
+
+/*
+ * Na instalação/atualização, um atalho vazio significa que o Chrome não conseguiu registrá-lo
+ * (combinação já usada por outra extensão, ou atualização que não aplica o novo padrão).
+ * Guardamos isso para a página tratar o atalho padrão por conta própria. Se depois o usuário
+ * apagar o atalho de propósito, nada é tratado: respeitamos a escolha dele.
+ */
+async function rememberShortcutFallback() {
+  const sc = await getShortcuts();
+  await chrome.storage.local.set({ [PN.SHORTCUT_FALLBACK_KEY]: { toggle: !sc.toggle, panel: !sc.panel } });
 }
 
 const withShortcut = (text, sc) => (sc ? `${text} (${sc})` : text);
@@ -87,7 +100,7 @@ function setBadge(tabId, count, active) {
   getShortcuts().then((sc) => {
     chrome.action.setTitle({
       tabId,
-      title: withShortcut(`Browser Annotation — ${active ? 'modo anotação ATIVO' : 'clique para anotar'}`, sc.toggle) + (count ? ` · ${count} em aberto nesta página` : ''),
+      title: withShortcut(`Browser Annotation — ${active ? 'modo anotação ATIVO' : 'clique para anotar'}`, PN.shortcutLabel(sc, 'toggle')) + (count ? ` · ${count} em aberto nesta página` : ''),
     });
   });
 }
@@ -120,7 +133,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       if (tabId != null) setBadge(tabId, msg.count || 0, !!msg.active);
       break;
     case 'pn:get-shortcuts':
-      getShortcuts().then(sendResponse);
+      getShortcuts().then((sc) => {
+        updateMenuTitles(sc); // o usuário pode ter trocado o atalho desde a criação do menu
+        sendResponse(sc);
+      });
       return true; // resposta assíncrona
     case 'pn:open-history':
       chrome.tabs.create({ url: HISTORY_URL, index: sender.tab ? sender.tab.index + 1 : undefined });
@@ -131,14 +147,25 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   sendResponse({ ok: true });
 });
 
+const menuTitles = (sc) => ({
+  'pn-toggle': withShortcut('Ativar/desativar modo anotação', PN.shortcutLabel(sc, 'toggle')),
+  'pn-panel': withShortcut('Mostrar comentários desta página', PN.shortcutLabel(sc, 'panel')),
+});
+
 async function setupMenus() {
-  const sc = await getShortcuts();
+  const titles = menuTitles(await getShortcuts());
   chrome.contextMenus.removeAll(() => {
-    chrome.contextMenus.create({ id: 'pn-toggle', title: withShortcut('Ativar/desativar modo anotação', sc.toggle), contexts: ['action'] });
-    chrome.contextMenus.create({ id: 'pn-panel', title: withShortcut('Mostrar comentários desta página', sc.panel), contexts: ['action'] });
+    chrome.contextMenus.create({ id: 'pn-toggle', title: titles['pn-toggle'], contexts: ['action'] });
+    chrome.contextMenus.create({ id: 'pn-panel', title: titles['pn-panel'], contexts: ['action'] });
     chrome.contextMenus.create({ id: 'pn-copy', title: 'Copiar comentários em aberto desta página', contexts: ['action'] });
     chrome.contextMenus.create({ id: 'pn-history', title: 'Abrir histórico completo', contexts: ['action'] });
   });
+}
+
+function updateMenuTitles(sc) {
+  for (const [id, title] of Object.entries(menuTitles(sc))) {
+    chrome.contextMenus.update(id, { title }, () => void chrome.runtime.lastError); // menu ainda não criado: ignora
+  }
 }
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
@@ -161,6 +188,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 });
 
 chrome.runtime.onInstalled.addListener(async () => {
+  await rememberShortcutFallback();
   setupMenus();
   // Injeta nas abas já abertas para que os comentários existentes apareçam sem recarregar.
   const tabs = await chrome.tabs.query({});
