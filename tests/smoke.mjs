@@ -9,10 +9,11 @@ import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const demo = fs.readFileSync(path.join(ROOT, 'examples/demo.html'));
+const demo = fs.readFileSync(path.join(ROOT, 'examples/demo.html'), 'utf8');
+let html = demo; // trocado durante o teste para simular mudanças no código da página
 const server = http.createServer((req, res) => {
   res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
-  res.end(demo);
+  res.end(html);
 });
 await new Promise((r) => server.listen(0, r));
 const URL = `http://localhost:${server.address().port}/demo.html`;
@@ -91,6 +92,55 @@ try {
   await page.waitForTimeout(700);
   assert.equal(await count('.pin'), 1, 'comentário salvo no modo momentâneo');
   assert.equal(await cursorStyle(), false, 'modo desliga depois de salvar');
+
+  // Impressão digital viva: o componente muda entre um reload e outro
+  await page.keyboard.press("Control+'");
+  await page.click('.grid .card:nth-child(2) h3');
+  await page.waitForTimeout(250);
+  await page.keyboard.type('Trocar o título do card');
+  await page.keyboard.press('Control+Enter');
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(600);
+  const pinsBefore = await count('.pin');
+
+  html = demo.replace('<h3>Usuários</h3>', '<h3>Usuários ativos</h3>'); // 1ª mudança: texto
+  await page.reload();
+  await page.waitForTimeout(2000); // reancora e atualiza as pistas
+  assert.equal(await count('.pin.orphan'), 0, 'reencontra após trocar o texto');
+
+  html = demo.replace('<h3>Usuários</h3>', '<h3 class="card-title">Usuários ativos nos últimos 30 dias</h3>'); // 2ª mudança
+  await page.reload();
+  await page.waitForTimeout(1500);
+  assert.equal(await count('.pin.orphan'), 0, 'reencontra após a segunda mudança');
+
+  // Reancorar manualmente: o elemento some de vez
+  html = demo.replace('<h3>Usuários</h3>', '<h4>Clientes</h4>');
+  await page.reload();
+  await page.waitForTimeout(1200);
+  assert.equal(await count('.pin.orphan'), 1, 'elemento removido vira pin órfão');
+  await page.evaluate(() => document.querySelector('browser-annotation-root').shadowRoot.querySelector('.pin.orphan').click());
+  await page.waitForTimeout(300);
+  await page.evaluate(() => document.querySelector('browser-annotation-root').shadowRoot.querySelector('.pop .link-btn').click());
+  await page.waitForTimeout(300);
+  assert.equal(await count('.relink-banner'), 1, 'faixa de vincular aparece');
+  await page.click('.grid .card:nth-child(2) h4');
+  await page.waitForTimeout(800);
+  assert.equal(await count('.relink-banner'), 0, 'faixa some depois de escolher');
+  assert.equal(await count('.pin.orphan'), 0, 'pin volta a ficar ancorado');
+  assert.equal(await count('.pin'), pinsBefore, 'nenhum pin a mais');
+  await page.reload();
+  await page.waitForTimeout(1200);
+  assert.equal(await count('.pin.orphan'), 0, 'novo vínculo persiste após recarregar');
+
+  // o texto copiado inclui o texto original
+  await page.keyboard.press("Control+Shift+'");
+  await page.waitForTimeout(300);
+  await page.evaluate(() => document.querySelector('browser-annotation-root').shadowRoot.querySelector('.panel-foot .btn.primary').click());
+  await page.waitForTimeout(300);
+  const clip2 = await page.evaluate(() => navigator.clipboard.readText());
+  assert.match(clip2, /Texto quando o comentário foi feito: "Usuários"/);
+  assert.match(clip2, /Texto visível: "Clientes"/);
+
   console.log('✓ smoke test ok');
 } catch (err) {
   failed = true;

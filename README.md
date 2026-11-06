@@ -57,7 +57,13 @@ Cada comentário guarda uma “impressão digital” do elemento e da página:
 - **Elemento**: `data-testid`/`data-test`/`data-cy`…, `id` estável, seletor CSS único (ignorando classes geradas como `css-1x2y3`, `sc-…`, CSS Modules, variantes Tailwind), XPath, tag, classes, texto, atributos, posição e tamanho.
 - **Componente** (via script no contexto da página): nome e hierarquia do componente e, em desenvolvimento, arquivo e linha (`_debugSource` do React ≤ 18, pista de stack no React 19, `__file` do Vue, `__svelte_meta` do Svelte, `ng.getComponent` do Angular).
 
-Ao abrir a página, cada comentário é reencontrado pontuando os candidatos (test id, id, seletor, XPath) contra a impressão digital; se não achar, procura elementos da mesma tag com o mesmo texto perto da posição original. Em SPAs, mudanças de rota e re-renderizações são observadas e os pins são reancorados automaticamente. Se o elemento sumir, o pin fica semitransparente com um “?” na posição original e o comentário continua no painel.
+Ao abrir a página, cada comentário é reencontrado pontuando os candidatos (test id, id, seletor, XPath) contra a impressão digital (mesma tag, mesmo texto, classes em comum, mesmo componente…); se nenhum passar, procura elementos da mesma tag com o mesmo texto perto da posição original. Em SPAs, mudanças de rota e re-renderizações são observadas e os pins são reancorados automaticamente.
+
+**O vínculo acompanha as mudanças do componente.** Quando o elemento é reencontrado sem ambiguidade (ou continua sendo o mesmo nó do DOM, como num hot reload), as pistas salvas são atualizadas. Assim, mudanças graduais — o texto hoje, as classes amanhã — não fazem o comentário se perder. A versão de quando o comentário foi feito fica guardada, e o texto exportado mostra o texto original quando ele mudou.
+
+**Reancorar manualmente.** Se o elemento não for encontrado, o pin fica semitransparente com um “?” na posição original e o comentário continua no painel. Clique em **Escolher elemento** (ou no ícone de link no pin/painel) e depois no novo elemento para vincular o comentário a ele.
+
+> Dica: componentes com `data-testid` são reencontrados praticamente sempre, mesmo depois de grandes refatorações.
 
 ## Modais, sheets e popovers
 

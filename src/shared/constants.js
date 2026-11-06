@@ -99,6 +99,14 @@
       target,
     };
     if (num(a.editedAt)) out.editedAt = num(a.editedAt);
+    if (a.originalTarget && typeof a.originalTarget === 'object') {
+      try {
+        const json = JSON.stringify(a.originalTarget);
+        if (json.length <= 100000) out.originalTarget = JSON.parse(json);
+      } catch (_) {
+        /* ignora */
+      }
+    }
     return out;
   };
 

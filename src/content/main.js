@@ -22,6 +22,7 @@
   const S = {
     alive: true,
     active: false,
+    relink: null, // { id, wasActive, banner } enquanto escolhe um novo elemento para um comentário
     momentary: false, // ativo só enquanto a tecla de "segurar para comentar" está pressionada
     endMomentaryAfterComposer: false,
     holdPending: false,
@@ -218,7 +219,7 @@
     for (const id of [...S.anchors.keys()]) if (!ids.has(id)) S.anchors.delete(id);
     for (const a of S.openAnns) {
       const el = S.anchors.get(a.id);
-      if (!el || !el.isConnected) S.anchors.set(a.id, L.resolve(a.target));
+      if (!el || !el.isConnected) S.anchors.set(a.id, findAnchor(a));
     }
     if (S.thread && !S.all.some((a) => a.id === S.thread.id)) closeThread();
     renderPins();
@@ -234,7 +235,7 @@
     for (const a of S.openAnns) {
       const el = S.anchors.get(a.id);
       if (!el || !el.isConnected) {
-        const found = L.resolve(a.target);
+        const found = findAnchor(a);
         if (found !== el) {
           S.anchors.set(a.id, found);
           changed = true;
@@ -244,6 +245,61 @@
     if (changed) {
       layout();
       renderPanel();
+    }
+  }
+
+  // ------------------------------------------------------------------ impressão digital viva
+  // Quando o elemento é reencontrado com certeza (ou é o mesmo nó do DOM que já estava
+  // ancorado), as pistas salvas são atualizadas. Assim, mudanças graduais no componente
+  // (texto hoje, classes amanhã) não fazem o comentário se perder. A primeira versão fica
+  // guardada em `originalTarget` para o contexto exportado.
+  const refreshQueue = new Map();
+  let refreshTimer = null;
+
+  function findAnchor(a) {
+    const r = L.locate(a.target);
+    if (!r) return null;
+    if (r.confident) queueRefresh(a.id, r.el);
+    return r.el;
+  }
+
+  function queueRefresh(id, el) {
+    refreshQueue.set(id, el);
+    clearTimeout(refreshTimer);
+    refreshTimer = setTimeout(flushRefresh, 800); // espera a página terminar de renderizar
+  }
+
+  function refreshAnchoredFingerprints() {
+    for (const a of S.openAnns) {
+      const el = S.anchors.get(a.id);
+      if (el && el.isConnected && L.stillMatches(el, a.target)) queueRefresh(a.id, el);
+    }
+  }
+
+  async function flushRefresh() {
+    const items = [...refreshQueue];
+    refreshQueue.clear();
+    for (const [id, el] of items) {
+      const a = S.all.find((x) => x.id === id);
+      if (!a || a.status === 'resolved' || S.anchors.get(id) !== el) continue;
+      if (!el.isConnected || !isRendered(el)) continue;
+      const r = el.getBoundingClientRect();
+      if (!r.width && !r.height) continue;
+      let fresh;
+      try {
+        fresh = L.describe(el);
+      } catch (_) {
+        continue;
+      }
+      if (!L.hasDrifted(a.target, fresh)) continue;
+      const patch = { target: fresh, refreshedAt: Date.now() };
+      if (!a.originalTarget) patch.originalTarget = a.target;
+      Object.assign(a, patch);
+      try {
+        await store.update(id, patch);
+      } catch (_) {
+        /* extensão recarregada no meio do caminho */
+      }
     }
   }
 
@@ -546,6 +602,10 @@
 
   function deactivate() {
     if (!S.active) return;
+    if (S.relink) {
+      S.relink.banner.remove();
+      S.relink = null;
+    }
     S.momentary = false;
     S.endMomentaryAfterComposer = false;
     setPassthrough(false);
@@ -629,7 +689,9 @@
     e.stopImmediatePropagation();
     if (e.type === 'click' && e.button === 0) {
       const el = e.target === S.hoverBase && S.hoverEl ? S.hoverEl : e.target;
-      if (eligible(el)) selectElement(el);
+      if (!eligible(el)) return;
+      if (S.relink) relinkTo(el);
+      else selectElement(el);
     }
   }
 
@@ -680,6 +742,12 @@
       return;
     }
     if (e.key === 'Escape') {
+      if (S.relink) {
+        e.preventDefault();
+        e.stopPropagation();
+        endRelink();
+        return;
+      }
       if (S.composer) {
         e.preventDefault();
         e.stopPropagation();
@@ -982,7 +1050,12 @@
       if (a.editedAt) meta.append(h('span', { text: '· editado' }));
       if (resolved && a.resolvedAt) meta.append(h('span', { text: `· resolvido ${PN.relativeTime(a.resolvedAt)}` }));
       const info = anchorRect(a);
-      if (!resolved && info && info.orphan) meta.append(h('span', { text: '· elemento não encontrado', style: { color: '#B4690E' } }));
+      if (!resolved && info && info.orphan) {
+        meta.append(
+          h('span', { text: '· elemento não encontrado', style: { color: '#B4690E' } }),
+          h('button.link-btn', { type: 'button', text: 'Escolher elemento', onclick: () => startRelink(a.id) })
+        );
+      }
       root.append(h('div.pop-body', null, h('div.comment-text', { text: a.comment }), meta));
 
       const del = confirmButton(h('button.icon-btn.danger', { type: 'button', title: 'Excluir', html: PN.icons.trash }), null, () => removeAnnotation(a.id));
@@ -992,6 +1065,9 @@
         h('button.icon-btn', { type: 'button', title: 'Editar', html: PN.icons.edit, onclick: () => ((t.editing = true), renderThread()) }),
         del,
         h('button.icon-btn', { type: 'button', title: 'Copiar para LLM', html: PN.icons.copy, onclick: () => copyAnnotations([a], 'Comentário copiado') }),
+        !resolved && isHere(a)
+          ? h('button.icon-btn', { type: 'button', title: 'Vincular a outro elemento', html: PN.icons.link, onclick: () => startRelink(a.id) })
+          : null,
         h('div', { style: { flex: '1' } }),
         resolved
           ? h('button.btn', { type: 'button', html: `${PN.icons.undo} Reabrir`, onclick: () => setStatus(a.id, 'open') })
@@ -1023,6 +1099,63 @@
     t.root.style.left = p.x + 'px';
     t.root.style.top = p.y + 'px';
     t.root.style.setProperty('--pn-origin', p.origin);
+  }
+
+  // ------------------------------------------------------------------ vincular a outro elemento
+  function startRelink(id) {
+    const a = S.all.find((x) => x.id === id);
+    if (!a || !isHere(a)) return;
+    closeThread();
+    closeComposer();
+    if (S.relink) endRelink();
+    const idx = S.index.get(id);
+    const banner = h(
+      'div.relink-banner',
+      { role: 'status' },
+      svg(PN.icons.link),
+      h('span', { text: `Clique no novo elemento do comentário${idx ? ' ' + idx : ''}` }),
+      h('kbd', { text: 'Esc' }),
+      h('button', { type: 'button', text: 'Cancelar', onclick: () => endRelink() })
+    );
+    const wasActive = S.active && !S.momentary;
+    S.momentary = false;
+    S.relink = { id, wasActive, banner };
+    if (!S.active) activate();
+    renderToolbar();
+    toastWrap.append(banner);
+  }
+
+  function endRelink() {
+    if (!S.relink) return;
+    const { banner, wasActive } = S.relink;
+    S.relink = null;
+    banner.remove();
+    if (!wasActive) deactivate();
+  }
+
+  async function relinkTo(el) {
+    const a = S.all.find((x) => x.id === S.relink.id);
+    if (!a) return endRelink();
+    let fresh;
+    try {
+      fresh = L.describe(el);
+    } catch (_) {
+      return;
+    }
+    const patch = { target: fresh, relinkedAt: Date.now() };
+    if (!a.originalTarget) patch.originalTarget = a.target;
+    Object.assign(a, patch);
+    S.anchors.set(a.id, el);
+    endRelink();
+    recompute();
+    flashElement(el);
+    const pin = S.pinEls.get(a.id);
+    if (pin) {
+      pin.classList.add('dropping');
+      setTimeout(() => pin.classList.remove('dropping'), 700);
+    }
+    await store.update(a.id, patch);
+    toast('<span class="ok">●</span> Comentário vinculado ao novo elemento');
   }
 
   // ------------------------------------------------------------------ ações
@@ -1140,7 +1273,7 @@
 
   let toolbarEl = null;
   function renderToolbar() {
-    if (!S.active || S.momentary) {
+    if (!S.active || S.momentary || (S.relink && !S.relink.wasActive)) {
       if (toolbarEl) {
         const el = toolbarEl;
         toolbarEl = null;
@@ -1394,6 +1527,15 @@
       onclick: (e) => (e.stopPropagation(), copyAnnotations([a], 'Comentário copiado')),
     });
     const delBtn = confirmButton(h('button.icon-btn.danger', { type: 'button', title: 'Excluir (clique duas vezes)', html: PN.icons.trash }), null, () => removeAnnotation(a.id));
+    const lost = here && !resolved && ['orphan', 'missing'].includes(anchorInfo(a).state);
+    const relinkBtn = lost
+      ? h('button.icon-btn', {
+          type: 'button',
+          title: 'Vincular a outro elemento',
+          html: PN.icons.link,
+          onclick: (e) => (e.stopPropagation(), startRelink(a.id)),
+        })
+      : null;
 
     const el = h(
       'div.card' + (resolved ? '.resolved' : ''),
@@ -1406,7 +1548,7 @@
         h('span.time', { text: PN.relativeTime(resolved ? a.resolvedAt || a.updatedAt : a.createdAt), title: PN.formatDate(a.createdAt) })
       ),
       h('div.card-body', { text: a.comment }),
-      h('div.card-foot', null, where, resolveBtn, copyBtn, delBtn)
+      h('div.card-foot', null, where, relinkBtn, resolveBtn, copyBtn, delBtn)
     );
     el.addEventListener('click', () => focusAnnotation(a));
     el.addEventListener('keydown', (e) => e.key === 'Enter' && focusAnnotation(a));
@@ -1544,11 +1686,13 @@
     });
     S.cleanups.push(() => observer.disconnect());
 
+    let ticks = 0;
     const tick = setInterval(() => {
       if (!alive()) return teardown();
       ensureHostPlacement();
       onUrlMaybeChanged();
       if (S.pinEls.size || S.composer || S.thread) layout();
+      if (++ticks % 8 === 0) refreshAnchoredFingerprints(); // a cada ~4 s
     }, 500);
     S.cleanups.push(() => clearInterval(tick));
 

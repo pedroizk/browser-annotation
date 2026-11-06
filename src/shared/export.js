@@ -52,6 +52,10 @@
     }
     lines.push(`- Elemento: ${code(openingTag(t))}`);
     if (t.text) lines.push(`- Texto visível: "${PN.truncate(t.text, 140)}"`);
+    const orig = ann.originalTarget;
+    if (orig && orig.text && orig.text !== t.text) {
+      lines.push(`- Texto quando o comentário foi feito: "${PN.truncate(orig.text, 140)}"`);
+    }
     if (t.testId) lines.push(`- Test id: ${code(`${t.testId.attr}="${t.testId.value}"`)}`);
     if (t.selector) lines.push(`- Seletor CSS: ${code(t.selector)}`);
     if (t.domPath) lines.push(`- Caminho no DOM: ${code(t.domPath)}`);

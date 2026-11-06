@@ -181,7 +181,7 @@ kbd {
 .pop-foot .hint { flex: 1; min-width: 0; font-size: 11px; color: var(--pn-muted); display: flex; align-items: center; gap: 3px; white-space: nowrap; overflow: hidden; }
 .pop-foot .hint.warn { color: var(--pn-red); }
 .comment-text { white-space: pre-wrap; word-wrap: break-word; font-size: 13.5px; line-height: 1.5; max-height: 260px; overflow: auto; }
-.meta-row { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 11px; color: var(--pn-muted); }
+.meta-row { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; margin-top: 8px; font-size: 11px; color: var(--pn-muted); }
 .status { display: inline-flex; align-items: center; gap: 4px; padding: 1px 7px; border-radius: 99px; font-size: 10.5px; font-weight: 600; }
 .status.open { background: var(--pn-orange-soft); color: var(--pn-orange-dark); }
 .status.resolved { background: rgba(91,140,90,.15); color: var(--pn-green); }
@@ -353,6 +353,26 @@ button.tb-primary.is-empty:hover { background: var(--tb-hover); }
 .empty b { color: var(--pn-text); font-weight: 600; }
 .panel-foot { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-top: 1px solid var(--pn-border); background: var(--pn-bg); }
 .panel-foot .btn.primary { flex: 1; height: 34px; }
+
+/* ---------------------------------------------------------------- vincular a outro elemento */
+.relink-banner {
+  position: fixed; left: 50%; top: 16px; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 6px 0 14px;
+  border-radius: 999px; background: var(--pn-orange); color: #fff; pointer-events: auto;
+  font: 600 12.5px/1 -apple-system, BlinkMacSystemFont, "SF Pro Text", var(--pn-font); white-space: nowrap;
+  box-shadow: 0 8px 24px rgba(217, 119, 87, .35), 0 0 0 0.5px rgba(0, 0, 0, .08);
+  animation: relink-in .3s cubic-bezier(.32, 1.4, .5, 1) both;
+}
+@keyframes relink-in { from { opacity: 0; transform: translate(-50%, -10px) scale(.95); } }
+.relink-banner svg { width: 15px; height: 15px; }
+.relink-banner kbd { background: rgba(255, 255, 255, .18); border-color: rgba(255, 255, 255, .35); color: #fff; }
+.relink-banner button {
+  height: 28px; padding: 0 12px; border: 0; border-radius: 999px; cursor: pointer;
+  background: rgba(255, 255, 255, .2); color: #fff; font: inherit;
+}
+.relink-banner button:hover { background: rgba(255, 255, 255, .3); }
+.link-btn { padding: 0; border: 0; background: none; color: var(--pn-orange-dark); font: 600 11px/1 var(--pn-font); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+@media (prefers-color-scheme: dark) { .link-btn { color: var(--pn-orange); } }
 
 /* ---------------------------------------------------------------- toast */
 .toast {

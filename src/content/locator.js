@@ -379,7 +379,17 @@
     return s;
   }
 
-  function resolve(t) {
+  // Pontuação mínima para aceitar um candidato e para considerá-lo "certeza" (seguro para
+  // atualizar a impressão digital salva). A certeza também exige folga sobre o 2º colocado.
+  const MIN_SCORE = 4;
+  const CONFIDENT_SCORE = 6;
+  const CONFIDENT_MARGIN = 2;
+
+  /**
+   * Reencontra o elemento descrito por `t`.
+   * Retorna { el, confident } ou null. `confident` indica que não há ambiguidade.
+   */
+  function locate(t) {
     if (!t) return null;
     const cands = new Map();
     const add = (el, base) => {
@@ -387,7 +397,7 @@
       if (el.closest && el.closest('browser-annotation-root')) return;
       // comentário feito dentro de um modal/sheet só vale para elementos dentro de um modal/sheet
       if (t.container && !inAnyContainer(el)) return;
-      cands.set(el, Math.max(cands.get(el) || -Infinity, base));
+      cands.set(el, Math.max(cands.get(el) ?? -Infinity, base));
     };
 
     if (t.testId) qsaSafe(`[${t.testId.attr}="${CSS.escape(t.testId.value)}"]`).forEach((el, i) => i < 10 && add(el, 1));
@@ -403,15 +413,28 @@
     }
 
     let best = null;
+    let bestBase = 0;
     let bestScore = -Infinity;
+    let secondScore = -Infinity;
     for (const [el, base] of cands) {
       const sc = base + score(el, t);
       if (sc > bestScore) {
+        secondScore = bestScore;
         best = el;
+        bestBase = base;
         bestScore = sc;
+      } else if (sc > secondScore) {
+        secondScore = sc;
       }
     }
-    if (best && bestScore >= 4) return best;
+    if (best && bestScore >= MIN_SCORE) {
+      // Certeza: pontuação alta e sem empate, ou um único candidato achado por test id/id/seletor
+      // com a mesma tag (caso típico de "mudei o texto do componente").
+      const sameTag = best.tagName.toLowerCase() === t.tag;
+      const confident =
+        (bestScore >= CONFIDENT_SCORE && bestScore - secondScore >= CONFIDENT_MARGIN) || (cands.size === 1 && bestBase >= 1 && sameTag);
+      return { el: best, confident };
+    }
 
     // Plano B: varre elementos da mesma tag com o mesmo texto e escolhe o mais próximo da posição original.
     if (t.textKey && t.tag) {
@@ -419,12 +442,14 @@
       const limit = Math.min(list.length, 4000);
       let found = null;
       let foundDist = Infinity;
+      let matches = 0;
       for (let i = 0; i < limit; i++) {
         const el = list[i];
         if (textKeyOf(el) !== t.textKey) continue;
         if (el.closest('browser-annotation-root')) continue;
         if (t.container && !inAnyContainer(el)) continue;
         if (jaccard(classesOf(el), t.classes || []) < 0.3 && (t.classes || []).length) continue;
+        matches++;
         let dist = 0;
         if (t.rect) {
           const r = el.getBoundingClientRect();
@@ -435,10 +460,41 @@
           foundDist = dist;
         }
       }
-      if (found) return found;
+      // só é "certeza" se houver um único elemento com aquele texto
+      if (found) return { el: found, confident: matches === 1 };
     }
     return null;
   }
 
-  PN.locator = { describe, resolve, uniqueSelector, shortLabel, probeFramework, domPath };
+  function resolve(t) {
+    const r = locate(t);
+    return r ? r.el : null;
+  }
+
+  /** As pistas que usamos para reencontrar o elemento mudaram em relação ao que está salvo? */
+  function hasDrifted(saved, fresh) {
+    if (!saved || !fresh) return false;
+    const cls = (t) => (t.classes || []).slice().sort().join(' ');
+    const fw = (t) => (t.framework ? `${t.framework.component || ''}|${t.framework.source || ''}` : '');
+    const tid = (t) => (t.testId ? `${t.testId.attr}=${t.testId.value}` : '');
+    const box = (t) => (t.container ? t.container.kind : '');
+    return (
+      saved.tag !== fresh.tag ||
+      saved.selector !== fresh.selector ||
+      saved.xpath !== fresh.xpath ||
+      saved.textKey !== fresh.textKey ||
+      (saved.id || null) !== (fresh.id || null) ||
+      cls(saved) !== cls(fresh) ||
+      tid(saved) !== tid(fresh) ||
+      fw(saved) !== fw(fresh) ||
+      box(saved) !== box(fresh)
+    );
+  }
+
+  /** O elemento ainda corresponde razoavelmente à impressão digital salva? */
+  function stillMatches(el, t) {
+    return score(el, t) >= MIN_SCORE - 1;
+  }
+
+  PN.locator = { describe, locate, resolve, hasDrifted, stillMatches, uniqueSelector, shortLabel, probeFramework, domPath };
 })(globalThis);
