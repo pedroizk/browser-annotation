@@ -482,7 +482,7 @@
     if (S.passthrough === on) return;
     S.passthrough = on;
     setCursorStyle(S.active && !on);
-    if (toolbarEl) toolbarEl.classList.toggle('passthrough', on);
+    if (toolbarEl) toolbarEl.classList.toggle('is-passthrough', on);
     scheduleLayout();
   }
 
@@ -1054,47 +1054,52 @@
       if (toolbarEl) {
         const el = toolbarEl;
         toolbarEl = null;
-        el.classList.add('out');
-        setTimeout(() => el.remove(), 180);
+        el.classList.add('is-out');
+        setTimeout(() => el.remove(), 200);
       }
       return;
     }
     if (!toolbarEl) {
       const tip = (text) => ({ 'data-tip': text, 'aria-label': text });
+      const btn = (cls, act, icon, label, badge) =>
+        h('button.tb-btn' + cls, Object.assign({ type: 'button', 'data-act': act, html: icon }, tip(label)), badge ? h('span.tb-badge') : null);
       toolbarEl = h(
-        'div.toolbar',
+        'div.tb-bar',
         { role: 'toolbar', 'aria-label': 'Browser Annotation' },
-        h('div.brand', tip('Modo anotação ativo — clique em um elemento para comentar'), svg(PN.icons.bubble(20)), h('span.dot')),
-        h('span.sep'),
-        h('span.tb.info', Object.assign({ role: 'img', html: PN.icons.arrowUp }, tip('↑ seleciona o elemento pai · ↓ volta ao filho · Enter comenta'))),
-        h('span.tb.info.hand', Object.assign({ role: 'img', html: PN.icons.hand }, tip(`Segure ${MOD} para interagir com a página sem comentar`))),
-        h('span.sep'),
-        h('button.tb', Object.assign({ type: 'button', 'data-act': 'panel', html: PN.icons.list }, tip(`Comentários (${MOD} ⇧ ')`)), h('span.badge')),
-        h('button.tb.primary', Object.assign({ type: 'button', 'data-act': 'copy', html: PN.icons.copy }, tip('Copiar comentários em aberto deste site')), h('span.badge')),
-        h('span.sep'),
-        h('button.tb', Object.assign({ type: 'button', 'data-act': 'exit', html: PN.icons.close }, tip('Sair (Esc)'))),
-        h('span.mode-chip', { text: 'Interagindo com a página' })
+        h('div.tb-brand', tip('Modo anotação ativo — clique em um elemento'), svg(PN.icons.bubble(18)), h('span.tb-dot')),
+        h('span.tb-sep'),
+        h('span.tb-btn.tb-hint', Object.assign({ role: 'img', html: PN.icons.arrowUp }, tip('↑ seleciona o pai · ↓ volta · Enter comenta'))),
+        h('span.tb-btn.tb-hint.tb-hand', Object.assign({ role: 'img', html: PN.icons.hand }, tip(`Segure ${MOD} para usar a página`))),
+        h('span.tb-sep'),
+        btn('', 'panel', PN.icons.list, `Comentários  ${MOD}⇧'`, true),
+        btn('.tb-primary', 'copy', PN.icons.copy, 'Copiar abertos do site', false),
+        h('span.tb-sep'),
+        btn('', 'exit', PN.icons.close, 'Sair  Esc', false),
+        h('span.tb-chip', { html: `${PN.icons.hand}<span>Usando a página</span>` })
       );
       toolbarEl.addEventListener('click', (e) => {
-        const btn = e.target.closest('button[data-act]');
-        if (!btn) return;
-        const act = btn.dataset.act;
+        const b = e.target.closest('button[data-act]');
+        if (!b) return;
+        const act = b.dataset.act;
         if (act === 'panel') togglePanel();
         else if (act === 'copy') copyAnnotations(siteOpen());
         else if (act === 'exit') deactivate();
       });
       toolbarWrap.append(toolbarEl);
     }
-    toolbarEl.classList.toggle('passthrough', S.passthrough);
-    const setBadge = (sel, n) => {
-      const b = toolbarEl.querySelector(sel + ' .badge');
+    toolbarEl.classList.toggle('is-passthrough', S.passthrough);
+    const setBadge = (act, n) => {
+      const b = toolbarEl.querySelector(`[data-act=${act}] .tb-badge`);
       b.textContent = n > 99 ? '99+' : String(n);
-      b.classList.toggle('zero', !n);
+      b.classList.toggle('is-zero', !n);
     };
-    setBadge('[data-act=panel]', S.openAnns.length);
+    setBadge('panel', S.openAnns.length);
     const open = siteOpen().length;
-    setBadge('[data-act=copy]', open);
-    toolbarEl.querySelector('[data-act=copy]').classList.toggle('empty', !open);
+    const copyBtn = toolbarEl.querySelector('[data-act=copy]');
+    const copyTip = open ? `Copiar ${open} ${open === 1 ? 'comentário aberto' : 'comentários abertos'} do site` : 'Nenhum comentário aberto no site';
+    copyBtn.dataset.tip = copyTip;
+    copyBtn.setAttribute('aria-label', copyTip);
+    copyBtn.classList.toggle('is-empty', !open);
   }
 
   // ------------------------------------------------------------------ painel (histórico)

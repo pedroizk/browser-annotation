@@ -189,66 +189,109 @@ kbd {
 .badge-n { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 5px; background: var(--pn-orange); color: #fff; font: 700 11px/1 var(--pn-mono); }
 .badge-n.muted { background: var(--pn-surface-2); color: var(--pn-muted); }
 
-/* ---------------------------------------------------------------- toolbar flutuante (só ícones) */
-.toolbar {
-  position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%);
-  display: flex; align-items: center; gap: 2px; padding: 5px; pointer-events: auto;
-  background: var(--pn-ink); color: var(--pn-ink-text); border-radius: 14px;
-  box-shadow: 0 12px 32px rgba(0,0,0,.28), 0 2px 6px rgba(0,0,0,.18), 0 0 0 1px rgba(255,255,255,.07) inset;
-  font: 500 12.5px/1 var(--pn-font);
-  animation: tb-in .22s cubic-bezier(.2,.9,.3,1.15) both;
+/* ---------------------------------------------------------------- barra de ações (estilo Apple)
+ * Cápsula translúcida com blur, botões circulares de 30px, separadores hairline.
+ * Todas as classes usam o prefixo tb- para não colidir com o resto da UI. */
+.tb-bar {
+  --tb-bg: rgba(250, 249, 245, 0.78);
+  --tb-fg: rgba(31, 30, 29, 0.86);
+  --tb-muted: rgba(31, 30, 29, 0.42);
+  --tb-hover: rgba(31, 30, 29, 0.07);
+  --tb-press: rgba(31, 30, 29, 0.12);
+  --tb-line: rgba(31, 30, 29, 0.12);
+  --tb-ring: rgba(255, 255, 255, 0.6);
+  position: fixed; left: 50%; bottom: 18px;
+  display: flex; align-items: center; gap: 1px;
+  height: 40px; padding: 0 5px; box-sizing: border-box;
+  border-radius: 999px; pointer-events: auto;
+  background: var(--tb-bg); color: var(--tb-fg);
+  -webkit-backdrop-filter: saturate(180%) blur(22px); backdrop-filter: saturate(180%) blur(22px);
+  box-shadow:
+    0 0 0 0.5px var(--tb-line),
+    inset 0 0.5px 0 var(--tb-ring),
+    0 1px 2px rgba(0, 0, 0, 0.06),
+    0 10px 30px -6px rgba(0, 0, 0, 0.18);
+  font: 500 12px/1 -apple-system, BlinkMacSystemFont, "SF Pro Text", var(--pn-font);
+  transform: translateX(-50%);
+  animation: tb-in .42s cubic-bezier(.32, 1.4, .5, 1) both;
 }
-@keyframes tb-in { from { opacity: 0; transform: translate(-50%, 16px); } }
-.toolbar.out { animation: tb-out .16s ease-in forwards; }
-@keyframes tb-out { to { opacity: 0; transform: translate(-50%, 12px); } }
-.toolbar .brand { position: relative; display: flex; align-items: center; gap: 7px; height: 34px; padding: 0 9px 0 7px; border-radius: 9px; cursor: default; }
-.toolbar .dot { width: 6px; height: 6px; background: var(--pn-orange); animation: blink 1.6s infinite; }
-@keyframes blink { 0%,100% { box-shadow: 0 0 0 0 rgba(217,119,87,.6); opacity: 1; } 50% { opacity: .35; } 70% { box-shadow: 0 0 0 6px rgba(217,119,87,0); } }
-.toolbar.passthrough .dot { animation: none; background: #8F8C84; }
-.toolbar .sep { width: 1px; height: 18px; background: rgba(255,255,255,.1); margin: 0 4px; }
-.toolbar .tb {
-  position: relative; display: inline-flex; align-items: center; justify-content: center;
-  width: 34px; height: 34px; padding: 0; border: 0; border-radius: 9px;
-  background: transparent; color: #C9C6BC; cursor: pointer;
-  transition: background .12s, color .12s, transform .08s;
+@media (prefers-color-scheme: dark) {
+  .tb-bar {
+    --tb-bg: rgba(38, 38, 36, 0.8);
+    --tb-fg: rgba(245, 244, 238, 0.92);
+    --tb-muted: rgba(245, 244, 238, 0.45);
+    --tb-hover: rgba(255, 255, 255, 0.1);
+    --tb-press: rgba(255, 255, 255, 0.16);
+    --tb-line: rgba(255, 255, 255, 0.14);
+    --tb-ring: rgba(255, 255, 255, 0.08);
+  }
 }
-.toolbar .tb svg { width: 17px; height: 17px; }
-.toolbar button.tb:hover { background: rgba(255,255,255,.1); color: #fff; }
-.toolbar button.tb:active { transform: scale(.94); }
-.toolbar .tb.info { color: #7D7A72; cursor: help; }
-.toolbar .tb.info:hover { color: #C9C6BC; }
-.toolbar.passthrough .tb.hand { color: var(--pn-orange); background: rgba(217,119,87,.16); }
-.toolbar .tb.primary { background: var(--pn-orange); color: #fff; }
-.toolbar .tb.primary:hover { background: var(--pn-orange-hover); color: #fff; }
-.toolbar .tb.primary.empty { background: transparent; color: #C9C6BC; }
-.toolbar .tb.primary.empty:hover { background: rgba(255,255,255,.1); color: #fff; }
-.toolbar .badge {
-  position: absolute; top: 1px; right: 1px; min-width: 15px; height: 15px; padding: 0 3px;
-  border-radius: 5px; background: var(--pn-orange); color: #fff;
-  font: 700 9.5px/15px var(--pn-mono); text-align: center; letter-spacing: -.02em;
-  box-shadow: 0 0 0 2px var(--pn-ink); pointer-events: none;
+@keyframes tb-in { from { opacity: 0; transform: translate(-50%, 14px) scale(.94); } }
+.tb-bar.is-out { animation: tb-out .18s ease-in forwards; }
+@keyframes tb-out { to { opacity: 0; transform: translate(-50%, 10px) scale(.96); } }
+
+.tb-brand { position: relative; display: flex; align-items: center; gap: 6px; height: 30px; padding: 0 8px 0 7px; cursor: default; }
+.tb-brand svg { width: 18px; height: 18px; }
+.tb-dot { width: 5px; height: 5px; background: var(--pn-orange); animation: tb-blink 1.4s steps(2, jump-none) infinite; }
+@keyframes tb-blink { 50% { opacity: .25; } }
+.tb-bar.is-passthrough .tb-dot { animation: none; background: var(--tb-muted); }
+.tb-sep { width: 1px; height: 16px; margin: 0 5px; background: var(--tb-line); }
+
+.tb-btn {
+  position: relative; display: inline-flex; align-items: center; justify-content: center; flex: none;
+  width: 30px; height: 30px; padding: 0; margin: 0; border: 0; border-radius: 50%;
+  background: transparent; color: var(--tb-fg); cursor: pointer;
+  transition: background-color .15s ease, color .15s ease, transform .2s cubic-bezier(.3, 1.6, .5, 1);
 }
-.toolbar .tb.primary .badge { background: #FAF9F5; color: #AE5630; box-shadow: 0 0 0 2px var(--pn-orange); }
-.toolbar .tb.primary:hover .badge { box-shadow: 0 0 0 2px var(--pn-orange-hover); }
-.toolbar .badge.zero { display: none; }
-.toolbar [data-tip]::after {
-  content: attr(data-tip); position: absolute; left: 50%; bottom: calc(100% + 12px);
-  transform: translate(-50%, 4px); opacity: 0; pointer-events: none; white-space: nowrap;
-  padding: 6px 9px; border-radius: 7px; background: var(--pn-ink); color: var(--pn-ink-text);
-  font: 500 12px/1.2 var(--pn-font); letter-spacing: 0;
-  box-shadow: 0 6px 18px rgba(0,0,0,.25), 0 0 0 1px rgba(255,255,255,.08) inset;
-  transition: opacity .12s, transform .12s; z-index: 2;
+.tb-btn svg { width: 16px; height: 16px; }
+button.tb-btn:hover { background: var(--tb-hover); }
+button.tb-btn:active { background: var(--tb-press); transform: scale(.9); }
+.tb-btn:focus-visible { outline: 2px solid var(--pn-orange); outline-offset: 1px; }
+.tb-hint { color: var(--tb-muted); cursor: help; }
+.tb-hint:hover { color: var(--tb-fg); }
+.tb-bar.is-passthrough .tb-hand { color: var(--pn-orange); background: rgba(217, 119, 87, 0.14); }
+.tb-primary { background: var(--pn-orange); color: #fff; box-shadow: 0 1px 2px rgba(174, 86, 48, .35), inset 0 0.5px 0 rgba(255, 255, 255, .25); }
+button.tb-primary:hover { background: var(--pn-orange-hover); }
+button.tb-primary:active { background: var(--pn-orange-dark); }
+.tb-primary.is-empty { background: transparent; color: var(--tb-fg); box-shadow: none; }
+button.tb-primary.is-empty:hover { background: var(--tb-hover); }
+
+.tb-badge {
+  position: absolute; top: -3px; right: -4px; min-width: 15px; height: 15px; padding: 0 4px; box-sizing: border-box;
+  border-radius: 999px; background: var(--pn-orange); color: #fff; pointer-events: none;
+  font: 600 9.5px/15px -apple-system, BlinkMacSystemFont, "SF Pro Text", var(--pn-font); text-align: center;
+  font-variant-numeric: tabular-nums; box-shadow: 0 0 0 1.5px var(--tb-bg);
 }
-.toolbar [data-tip]:hover::after, .toolbar [data-tip]:focus-visible::after { opacity: 1; transform: translate(-50%, 0); transition-delay: .2s; }
-.toolbar .tb:focus-visible { outline: 2px solid var(--pn-orange); outline-offset: 2px; }
-.toolbar .mode-chip {
-  position: absolute; left: 50%; bottom: calc(100% + 10px); transform: translate(-50%, 6px);
-  padding: 5px 10px; border-radius: 99px; background: var(--pn-orange); color: #fff;
-  font: 600 11.5px/1.2 var(--pn-font); white-space: nowrap; pointer-events: none;
-  opacity: 0; transition: opacity .12s, transform .12s; box-shadow: 0 6px 16px rgba(217,119,87,.35);
+.tb-badge.is-zero { display: none; }
+
+/* tooltip estilo macOS: pequeno, com atraso, acima da barra */
+.tb-bar [data-tip]::after {
+  content: attr(data-tip); position: absolute; left: 50%; bottom: calc(100% + 12px); z-index: 2;
+  padding: 5px 8px; border-radius: 6px; white-space: nowrap; pointer-events: none;
+  background: rgba(30, 30, 29, 0.9); color: #fff;
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  font: 500 11.5px/1.2 -apple-system, BlinkMacSystemFont, "SF Pro Text", var(--pn-font); letter-spacing: .01em;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .18);
+  opacity: 0; transform: translate(-50%, 3px) scale(.97);
+  transition: opacity .14s ease, transform .14s ease;
 }
-.toolbar.passthrough .mode-chip { opacity: 1; transform: translate(-50%, 0); }
-.toolbar.passthrough [data-tip]::after { display: none; }
+.tb-bar [data-tip]:hover::after, .tb-bar [data-tip]:focus-visible::after {
+  opacity: 1; transform: translate(-50%, 0) scale(1); transition-delay: .45s;
+}
+.tb-bar.is-passthrough [data-tip]::after { display: none; }
+
+/* indicador de "interagindo" (Ctrl pressionado) */
+.tb-chip {
+  position: absolute; left: 50%; bottom: calc(100% + 10px);
+  display: flex; align-items: center; gap: 6px; height: 26px; padding: 0 11px 0 9px;
+  border-radius: 999px; background: var(--pn-orange); color: #fff; white-space: nowrap; pointer-events: none;
+  font: 600 11.5px/1 -apple-system, BlinkMacSystemFont, "SF Pro Text", var(--pn-font);
+  box-shadow: 0 6px 16px rgba(217, 119, 87, .35);
+  opacity: 0; transform: translate(-50%, 6px) scale(.95);
+  transition: opacity .16s ease, transform .22s cubic-bezier(.3, 1.5, .5, 1);
+}
+.tb-chip svg { width: 13px; height: 13px; }
+.tb-bar.is-passthrough .tb-chip { opacity: 1; transform: translate(-50%, 0) scale(1); }
 
 /* ---------------------------------------------------------------- painel lateral (histórico) */
 .panel {

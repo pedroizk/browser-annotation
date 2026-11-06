@@ -38,7 +38,7 @@ try {
     page.evaluate((s) => document.querySelector('browser-annotation-root')?.shadowRoot.querySelectorAll(s).length ?? -1, sel);
 
   await page.keyboard.press("Control+'");
-  assert.equal(await count('.toolbar'), 1, 'toolbar aparece ao ativar o modo');
+  assert.equal(await count('.tb-bar'), 1, 'barra de ações aparece ao ativar o modo');
 
   await page.click('[data-testid=cta-primary]');
   await page.waitForTimeout(200);

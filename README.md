@@ -11,7 +11,7 @@ Extensão do Chrome (Manifest V3) inspirada no *Orca annotation* para devs anota
   - <kbd>↑</kbd> seleciona o elemento pai, <kbd>↓</kbd> volta para o filho, <kbd>Enter</kbd> seleciona.
   - Os cliques na página ficam bloqueados enquanto o modo está ativo (você não dispara botões ou links sem querer).
   - **Segure <kbd>Ctrl</kbd> (ou <kbd>⌘</kbd>) para interagir com a página** sem comentar: abrir um modal, um menu, navegar, preencher um campo… Soltou, volta a anotar. O clique é entregue como um clique normal (Ctrl + clique não abre o link em nova aba).
-  - Barra de ações minimalista, só com ícones (com tooltip): logo + indicador piscando, dicas de <kbd>↑</kbd> e <kbd>Ctrl</kbd>, comentários, copiar abertos e sair. Os números aparecem como badges.
+  - Barra de ações compacta no estilo Apple (cápsula translúcida com blur, tema claro/escuro), só com ícones e tooltips: logo + indicador piscando, dicas de <kbd>↑</kbd> e <kbd>Ctrl</kbd>, comentários (com badge de contagem), copiar abertos e sair.
 - **Comentários**: clique no elemento, escreva e salve com <kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>Enter</kbd>.
   - Animação de criação: onda em volta do elemento, explosão de pixels laranja e um pin em pixel-art que “cai” no canto do componente.
   - O pin numerado fica preso ao elemento (acompanha scroll, resize e re-renderizações) até você resolver.
