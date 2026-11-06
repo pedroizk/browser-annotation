@@ -29,8 +29,35 @@ const ctx = await chromium.launchPersistentContext(profile, {
 let failed = false;
 try {
   await ctx.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: new globalThis.URL(URL).origin });
-  if (!ctx.serviceWorkers().length) await ctx.waitForEvent('serviceworker');
+  const sw = ctx.serviceWorkers()[0] || (await ctx.waitForEvent('serviceworker'));
   const page = await ctx.newPage();
+  // Os atalhos (⌘/Alt + Shift + E / K) são comandos do Chrome, que não chegam em modo
+  // headless; o teste dispara o mesmo caminho que o comando usa: service worker → aba.
+  const command = async (type) => {
+    await sw.evaluate(async (t) => {
+      const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+      await sendToTab(tab, { type: t });
+    }, type);
+    await page.waitForTimeout(300);
+  };
+  const shortcuts = await sw.evaluate(() => chrome.commands.getAll());
+  assert.equal(shortcuts.find((c) => c.name === 'toggle-annotation').shortcut, 'Alt+Shift+E', 'atalho do modo registrado');
+  assert.equal(shortcuts.find((c) => c.name === 'toggle-panel').shortcut, 'Alt+Shift+K', 'atalho da lista registrado');
+  const sc = await sw.evaluate(() => getShortcuts());
+  assert.deepEqual(sc.fallback, { toggle: false, panel: false }, 'atalhos registrados: a página não trata o padrão');
+  // reconhecimento do atalho padrão quando a página precisa tratá-lo
+  const isDefault = (e, kind, mac = false) => sw.evaluate(([ev, k, m]) => BrowserAnnotation.isDefaultShortcut(ev, k, m), [e, kind, mac]);
+  const ev = (o) => Object.assign({ altKey: true, shiftKey: true, ctrlKey: false, metaKey: false }, o);
+  const evMac = (o) => ev(Object.assign({ altKey: false, metaKey: true }, o));
+  assert.equal(await isDefault(ev({ key: 'E', code: 'KeyE' }), 'toggle'), true, 'Alt+Shift+E');
+  assert.equal(await isDefault(ev({ key: 'K', code: 'KeyK' }), 'panel'), true, 'Alt+Shift+K');
+  assert.equal(await isDefault(ev({ key: 'K', code: 'KeyV' }), 'panel'), true, 'layout com o K em outra posição (Dvorak)');
+  assert.equal(await isDefault(ev({ key: 'K', code: 'KeyK', ctrlKey: true }), 'panel'), false, 'Ctrl junto não é o atalho');
+  assert.equal(await isDefault(ev({ key: 'D', code: 'KeyD' }), 'panel'), false, 'D não é o atalho da lista');
+  assert.equal(await isDefault(evMac({ key: 'k', code: 'KeyK' }), 'panel', true), true, '⇧⌘K no Mac');
+  assert.equal(await isDefault(evMac({ key: 'e', code: 'KeyE' }), 'toggle', true), true, '⇧⌘E no Mac');
+  assert.equal(await isDefault(ev({ key: 'Ë', code: 'KeyE' }), 'toggle', true), false, '⌥⇧E não é o atalho no Mac');
+  assert.equal(await isDefault(evMac({ key: 'e', code: 'KeyE' }), 'toggle', false), false, 'Win/Meta não é o atalho fora do Mac');
   let dialogs = 0;
   page.on('dialog', (d) => (dialogs++, d.dismiss()));
   await page.goto(URL);
@@ -38,8 +65,12 @@ try {
   const count = (sel) =>
     page.evaluate((s) => document.querySelector('browser-annotation-root')?.shadowRoot.querySelectorAll(s).length ?? -1, sel);
 
-  await page.keyboard.press("Control+'");
+  await command('pn:toggle');
   assert.equal(await count('.tb-bar'), 1, 'barra de ações aparece ao ativar o modo');
+  const tip = (act) =>
+    page.evaluate((a) => document.querySelector('browser-annotation-root').shadowRoot.querySelector(`.tb-bar [data-act=${a}]`).dataset.tip, act);
+  assert.equal(await tip('panel'), 'Comentários  Alt+Shift+K', 'dica da lista mostra o atalho');
+  assert.equal(await tip('exit'), 'Sair  Alt+Shift+E ou Esc', 'dica de sair mostra o atalho');
 
   await page.click('[data-testid=cta-primary]');
   await page.waitForTimeout(200);
@@ -55,7 +86,7 @@ try {
   assert.equal(await count('.pin'), 1, 'pin persiste após recarregar');
   assert.equal(await count('.pin.orphan'), 0, 'pin reancorado no elemento');
 
-  await page.keyboard.press("Control+Shift+'");
+  await command('pn:panel');
   await page.waitForTimeout(300);
   assert.equal(await count('.panel .card'), 1, 'painel lista o comentário');
   await page.evaluate(() => document.querySelector('browser-annotation-root').shadowRoot.querySelector('.panel-foot .btn.primary').click());
@@ -93,8 +124,20 @@ try {
   assert.equal(await count('.pin'), 1, 'comentário salvo no modo momentâneo');
   assert.equal(await cursorStyle(), false, 'modo desliga depois de salvar');
 
+  // Segurar Alt e só depois apertar Shift (começo de Alt+Shift+K): o modo temporário não fica na tela
+  await page.keyboard.down('Alt');
+  await page.waitForTimeout(300);
+  assert.equal(await cursorStyle(), true, 'segurar Alt ativa o modo');
+  await page.keyboard.down('Shift');
+  await page.waitForTimeout(100);
+  assert.equal(await cursorStyle(), false, 'Shift junto desliga o modo temporário');
+  await page.keyboard.up('Shift');
+  await page.keyboard.up('Alt');
+  await page.waitForTimeout(100);
+  assert.equal(await cursorStyle(), false, 'continua desligado ao soltar');
+
   // Impressão digital viva: o componente muda entre um reload e outro
-  await page.keyboard.press("Control+'");
+  await command('pn:toggle');
   await page.click('.grid .card:nth-child(2) h3');
   await page.waitForTimeout(250);
   await page.keyboard.type('Trocar o título do card');
@@ -133,13 +176,21 @@ try {
   assert.equal(await count('.pin.orphan'), 0, 'novo vínculo persiste após recarregar');
 
   // o texto copiado inclui o texto original
-  await page.keyboard.press("Control+Shift+'");
+  await command('pn:panel');
   await page.waitForTimeout(300);
   await page.evaluate(() => document.querySelector('browser-annotation-root').shadowRoot.querySelector('.panel-foot .btn.primary').click());
   await page.waitForTimeout(300);
   const clip2 = await page.evaluate(() => navigator.clipboard.readText());
   assert.match(clip2, /Texto quando o comentário foi feito: "Usuários"/);
   assert.match(clip2, /Texto visível: "Clientes"/);
+
+  // página de histórico mostra os atalhos configurados
+  const history = await ctx.newPage();
+  await history.goto(`chrome-extension://${new globalThis.URL(sw.url()).host}/src/history/history.html`);
+  await history.waitForTimeout(500);
+  assert.equal(await history.textContent('#sc-toggle'), 'Alt+Shift+E', 'histórico mostra o atalho do modo');
+  assert.equal(await history.textContent('#sc-panel'), 'Alt+Shift+K', 'histórico mostra o atalho da lista');
+  await history.close();
 
   console.log('✓ smoke test ok');
 } catch (err) {

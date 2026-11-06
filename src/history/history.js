@@ -13,6 +13,7 @@
     search: '',
     sort: 'new',
     editing: null,
+    shortcuts: null, // { toggle, panel, fallback } — null enquanto carrega
   };
 
   function el(tag, props, ...children) {
@@ -246,8 +247,10 @@
     if (!list.length) {
       const msg = state.all.length
         ? 'Nenhum comentário corresponde aos filtros.'
-        : 'Ainda não há comentários. Abra qualquer página e pressione ⌘/Ctrl + \' para começar a anotar.';
-      content.append(el('div', { class: 'empty', html: PN.icons.bubble(48) }, el('div', { text: msg })));
+        : PN.shortcutLabel(state.shortcuts, 'toggle')
+          ? `Ainda não há comentários. Abra qualquer página e pressione ${PN.shortcutHtml(PN.shortcutLabel(state.shortcuts, 'toggle'))} para começar a anotar.`
+          : 'Ainda não há comentários. Abra qualquer página e clique no ícone da extensão para começar a anotar.';
+      content.append(el('div', { class: 'empty', html: PN.icons.bubble(48) }, el('div', { html: msg })));
       return;
     }
 
@@ -342,6 +345,18 @@
   }
 
   // ------------------------------------------------------------------ init
+  async function loadShortcuts() {
+    try {
+      state.shortcuts = await chrome.runtime.sendMessage({ type: 'pn:get-shortcuts' });
+    } catch (_) {
+      /* service worker indisponível: mostra os padrões */
+    }
+    const show = (kind) => PN.shortcutHtml(PN.shortcutLabel(state.shortcuts, kind)) || '<em>sem atalho</em>';
+    $('#sc-toggle').innerHTML = show('toggle');
+    $('#sc-panel').innerHTML = show('panel');
+    if (state.loaded) renderContent(); // a mensagem de "sem comentários" cita o atalho
+  }
+
   async function load() {
     state.settings = await store.getSettings();
     state.all = await store.all();
@@ -349,14 +364,14 @@
     $('#opt-query').checked = !!state.settings.matchQuery;
     $('#opt-hold').value = state.settings.holdKey || 'Alt';
     $('#opt-toolbar-size').value = state.settings.toolbarSize || 'small';
+    state.loaded = true;
     render();
   }
 
   function init() {
     $('#logo').innerHTML = PN.icons.bubble(36);
-    const mod = IS_MAC ? '⌘' : 'Ctrl';
-    $('#kbd-mod').textContent = mod;
-    $('#kbd-mod2').textContent = mod;
+    loadShortcuts();
+    window.addEventListener('focus', loadShortcuts); // o usuário pode ter trocado em chrome://extensions/shortcuts
 
     $('#search').addEventListener('input', (e) => {
       state.search = e.target.value;

@@ -17,6 +17,63 @@
     toolbarSize: 'small',
   };
 
+  // Atalhos padrão (definidos em manifest.json → commands): a tecla ao lado da barra de espaço
+  // (⌘ no Mac, Alt no Windows/Linux/ChromeOS) + Shift + letra. Letras em vez de pontuação,
+  // porque a posição de ' ; . / muda entre layouts (ex.: ABNT2) e esbarra em atalhos do sistema.
+  // Combinações com letra já usadas pelo Chrome ou pelo sistema:
+  //   - Chrome no Mac, ⌘⇧: A, B, C, D, F, G, H, I, J, L, M, N, R, T, V, W, Z
+  //   - macOS, ⌘⇧: Q (sair da sessão), Y (nota adesiva), além de 3/4/5 (capturas de tela)
+  //   - Chrome no Windows/Linux, Alt+Shift: A, B, C, I, N, P, R, T, W, X, Z
+  //   - ChromeOS, Alt+Shift: I, L, M, N, P, S, V
+  // Livres em todos: E, K, O, U. Escolhemos E (ativar) e K (lista de comentários).
+  PN.SHORTCUTS = {
+    toggle: { key: 'E', mac: '⇧⌘E', other: 'Alt+Shift+E' },
+    panel: { key: 'K', mac: '⇧⌘K', other: 'Alt+Shift+K' },
+  };
+
+  // { toggle, panel }: true quando o Chrome não conseguiu registrar o atalho na instalação
+  // (ex.: outra extensão já usava a combinação). Nesse caso a própria página trata o padrão.
+  PN.SHORTCUT_FALLBACK_KEY = 'shortcutFallback';
+
+  PN.isMac = function () {
+    const p = (g.navigator && (g.navigator.userAgentData?.platform || g.navigator.platform || g.navigator.userAgent)) || '';
+    return /Mac|iPhone|iPad/i.test(p);
+  };
+
+  PN.defaultShortcut = function (kind) {
+    return PN.isMac() ? PN.SHORTCUTS[kind].mac : PN.SHORTCUTS[kind].other;
+  };
+
+  /**
+   * Atalho a mostrar na interface. `sc` = { toggle, panel, fallback } vindo de chrome.commands.
+   * '' quando o usuário removeu o atalho em chrome://extensions/shortcuts.
+   */
+  PN.shortcutLabel = function (sc, kind) {
+    if (!sc) return PN.defaultShortcut(kind); // ainda carregando
+    if (sc[kind]) return sc[kind];
+    return sc.fallback && sc.fallback[kind] ? PN.defaultShortcut(kind) : '';
+  };
+
+  /** O evento é o atalho padrão (⌘ no Mac / Alt nos outros + Shift + letra)? Usa a letra do layout; se a tecla virar símbolo, cai no e.code. */
+  PN.isDefaultShortcut = function (e, kind, mac = PN.isMac()) {
+    const mod = mac ? e.metaKey && !e.altKey : e.altKey && !e.metaKey;
+    if (!mod || !e.shiftKey || e.ctrlKey) return false;
+    const letter = /^[a-z]$/i.test(e.key) ? e.key.toUpperCase() : /^Key[A-Z]$/.test(e.code) ? e.code.slice(3) : '';
+    return letter === PN.SHORTCUTS[kind].key;
+  };
+
+  /** "⇧⌘X" (formato do Chrome no Mac) → ['⇧','⌘','X'] | "Alt+Shift+X" → ['Alt','Shift','X'] */
+  PN.shortcutKeys = function (label) {
+    if (!label) return [];
+    return label.includes('+') ? label.split('+') : Array.from(label);
+  };
+
+  PN.shortcutHtml = function (label) {
+    return PN.shortcutKeys(label)
+      .map((k) => `<kbd>${PN.escapeHtml(k)}</kbd>`)
+      .join(label.includes('+') ? '+' : '');
+  };
+
   PN.uid = function () {
     try {
       if (g.crypto && typeof g.crypto.randomUUID === 'function') return g.crypto.randomUUID();
