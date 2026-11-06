@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Demo — Browser Annotation</title>
+  <style>
+    body { margin: 0; font: 15px/1.5 system-ui, sans-serif; background: #f6f7f9; color: #222; }
+    header { display: flex; align-items: center; justify-content: space-between; padding: 16px 32px; background: #fff; border-bottom: 1px solid #e5e7eb; }
+    header nav a { margin-left: 18px; color: #444; text-decoration: none; }
+    main { max-width: 960px; margin: 32px auto; padding: 0 24px; }
+    .hero { padding: 40px; background: #fff; border-radius: 16px; border: 1px solid #e5e7eb; }
+    .hero h1 { margin: 0 0 8px; font-size: 32px; }
+    .btn { display: inline-block; padding: 10px 18px; border-radius: 8px; border: 0; background: #2563eb; color: #fff; font: inherit; cursor: pointer; }
+    .btn.secondary { background: #e5e7eb; color: #111; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 24px; }
+    .card { padding: 20px; background: #fff; border-radius: 12px; border: 1px solid #e5e7eb; }
+    .card h3 { margin: 0 0 6px; }
+    form { margin-top: 24px; display: flex; gap: 8px; }
+    input { flex: 1; padding: 10px 12px; border-radius: 8px; border: 1px solid #d1d5db; font: inherit; }
+    .tall { height: 900px; }
+  </style>
+</head>
+<body>
+  <header>
+    <strong class="logo">Acme Dashboard</strong>
+    <nav><a href="#">Visão geral</a><a href="#">Relatórios</a><a href="#">Configurações</a></nav>
+  </header>
+  <main>
+    <section class="hero">
+      <h1>Bem-vindo de volta 👋</h1>
+      <p class="subtitle">Aqui está o resumo da sua conta nesta semana.</p>
+      <button class="btn" data-testid="cta-primary" onclick="alert('clicou!')">Criar relatório</button>
+      <button class="btn secondary">Ver tutorial</button>
+    </section>
+    <div class="grid">
+      <div class="card"><h3>Receita</h3><p>R$ 12.430</p></div>
+      <div class="card"><h3>Usuários</h3><p>1.204</p></div>
+      <div class="card"><h3>Conversão</h3><p>3,2%</p></div>
+    </div>
+    <form onsubmit="event.preventDefault()">
+      <input name="email" type="email" placeholder="seu@email.com" />
+      <button class="btn" type="submit">Assinar newsletter</button>
+    </form>
+    <div class="tall"></div>
+  </main>
+</body>
+</html>

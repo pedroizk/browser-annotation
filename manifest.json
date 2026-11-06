@@ -1,0 +1,73 @@
+{
+  "manifest_version": 3,
+  "name": "Browser Annotation",
+  "short_name": "Browser Annotation",
+  "version": "0.1.0",
+  "description": "Anote componentes da tela em que você está trabalhando e copie os comentários em aberto para o Claude ou outra LLM.",
+  "minimum_chrome_version": "111",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "Browser Annotation — ativar modo anotação (⌘/Ctrl + ')",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png"
+    }
+  },
+  "background": {
+    "service_worker": "src/background/service-worker.js"
+  },
+  "permissions": [
+    "storage",
+    "unlimitedStorage",
+    "scripting",
+    "contextMenus",
+    "tabs"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "commands": {
+    "toggle-annotation": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Period",
+        "mac": "Command+Shift+Period"
+      },
+      "description": "Ativar/desativar o modo anotação (atalho alternativo; ⌘/Ctrl + ' funciona direto na página)"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "src/content/page-bridge.js"
+      ],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "src/shared/constants.js",
+        "src/shared/url.js",
+        "src/shared/storage.js",
+        "src/shared/export.js",
+        "src/shared/icons.js",
+        "src/content/locator.js",
+        "src/content/styles.js",
+        "src/content/ui.js",
+        "src/content/main.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}
